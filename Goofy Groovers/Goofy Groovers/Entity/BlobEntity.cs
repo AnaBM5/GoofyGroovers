@@ -15,7 +15,12 @@ public class BlobEntity
 
     SpriteBatch spriteBatch;
 
-    public IUpdateable()
+    public void Update()
+    {
+
+    }
+
+    public void Draw()
     {
 
     }

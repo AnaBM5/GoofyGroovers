@@ -1,40 +1,28 @@
 ﻿using Goofy_Groovers;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PlatformGame.GameClient;
 
 namespace PlatformGame.Managers
 {
     public class GameManager
     {
+        private MouseManager mouseManager;
 
         public GameManager(GoofyGroovers game)
         {
-             
         }
+
         public void Update()
         {
-
-          
-
+            mouseManager.update();
         }
 
         public void Draw()
         {
- 
-
         }
 
         public void HandleNetworkCommunication()
         {
-            
             GreetingClient.RunClient();  //We call the RunClient method
         }
-
     }
 }
