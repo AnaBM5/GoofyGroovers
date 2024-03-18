@@ -36,6 +36,7 @@ namespace PlatformGame.GameClient
                 string response = reader.ReadLine();
 
                 Console.WriteLine("The server says " + response);                 //We display the server's response on the console
+
                 client.Close();                 //We close the "socket"
             }
             catch (Exception e)
