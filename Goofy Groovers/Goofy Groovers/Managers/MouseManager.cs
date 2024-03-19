@@ -6,22 +6,21 @@ using System;
 /// Summary description for Class1
 /// </summary>
 public class MouseManager
-
 {
-
-    Point mouseClickStartPoint;
-    Point mouseClickEndPoint;
-    //Don't need, but
-    Vector2 jumpDirection;
-
-    MouseState mouseState;
+    private MouseState mouseState;
     private MouseState oldState;
+    private Boolean newJumpInitiated = false;
+    private Point mouseClickStartPoint;
+    private Point mouseClickEndPoint;
 
-    int clickDragDistance;
+    //Don't need, but
+    private Vector2 jumpDirection;
+
+    private int jumpForceOutOfTen;
+    private int clickDragDistance;
 
     public MouseManager()
-	{
-
+    {
         //
         // TODO: Add constructor logic here
         //
@@ -29,27 +28,30 @@ public class MouseManager
 
     public void Update()
     {
-        if (CheckMousePressLeftButton())
-            {
-            CheckMouseReleaseLeftButton();
-            // Do something scary
-        }
+        CheckMousePressLeftButton();
+        if (newJumpInitiated) CheckMouseReleaseLeftButton();
+
         // Do something even scarier
     }
-    public bool CheckMousePressLeftButton()
+
+    public void CheckMousePressLeftButton()
     {
         if (mouseState.LeftButton == ButtonState.Pressed)
         {
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
-            return true;
+            newJumpInitiated = true;
         }
-        return false;
-
         // TODO: Show visual cues on p-p-p-power-meter!
     }
 
     public void CheckMouseReleaseLeftButton(/* here we'll put a reference to the blob*/)
     {
+        if (mouseState.LeftButton == ButtonState.Released)
+        {
+            jumpForceOutOfTen = 10; //potential units, kinda?
+            newJumpInitiated = false;
+        }
+
         //  Check if the distance is bigger than accidental click (>10px for example?)
 
         // We will return following to the blob:
