@@ -7,26 +7,51 @@ using System;
 /// </summary>
 public class BlobEntity
 {
+    private bool isJumping = false;
+    private Vector2 position;
+    private Vector2 positionOld; //TODO: decide fate?
 
-    Vector2 position;
-    Vector2 acceleration;
-    Vector2 jumpEndPoint;
-    Vector2 jumpStartPoint;
+    private float velocity;
+    private float elapsedSecondsSinceJumpStart;
+    private float elapsedSecondsSinceLastSprite;
 
-    SpriteBatch spriteBatch;
+    private float jumpTheta;
+    private Vector2 jumpEndPoint;
+    private Vector2 jumpStartPoint;
 
-    public void Update()
+    //private Sprite sprite;
+    private SpriteBatch spriteBatch;
+
+    public void Update(float elapsedSeconds)
     {
+        if (isJumping)
+        {
+            elapsedSecondsSinceJumpStart += elapsedSeconds;
+            positionOld = position;
+            position = jumpStartPoint + new Vector2(
+                velocity * (float)Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart,
+                velocity * (float)Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart - 0.5f * 9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
+            if (jumpTheta > 90 / (180 * Math.PI) && jumpTheta < 270 / (180 * Math.PI) && (position.X >= jumpEndPoint.X) || (position.X <= jumpEndPoint.X))
+            {
+                position = jumpEndPoint; //TODO: Is it adjusted for the sprite size (radius-wise)?
+
+                jumpTheta = 0;
+                isJumping = false;
+            }
+
+            // Check if we're at the end yet
+        }
     }
 
     public void Draw()
     {
-
+        spriteBatch
+        Draw
     }
 
     public BlobEntity()
-	{
+    {
         //
         // TODO: Add constructor logic here
         //
