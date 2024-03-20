@@ -37,9 +37,10 @@ namespace Goofy_Groovers
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            _gameManager.Update();
             // We do not execute network operations in this main thread, but in a task.
-            //https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
-            Task.Run(() => _gameManager.HandleNetworkCommunication());
+            // https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
+            // Task.Run(() => _gameManager.HandleNetworkCommunication());
 
             base.Update(gameTime);
         }

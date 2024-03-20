@@ -9,7 +9,8 @@ public class MouseManager
 {
     private MouseState mouseState;
     private MouseState oldState;
-    private Boolean newJumpInitiated = false;
+    private Boolean isNewJumpInitiated = false;
+
     private Point mouseClickStartPoint;
     private Point mouseClickEndPoint;
 
@@ -26,10 +27,10 @@ public class MouseManager
         //
     }
 
-    public void Update()
+    public void Update(float elapsedSeconds)
     {
         CheckMousePressLeftButton();
-        if (newJumpInitiated) CheckMouseReleaseLeftButton();
+        if (isNewJumpInitiated) CheckMouseReleaseLeftButton();
 
         // Do something even scarier
     }
@@ -39,7 +40,7 @@ public class MouseManager
         if (mouseState.LeftButton == ButtonState.Pressed)
         {
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
-            newJumpInitiated = true;
+            isNewJumpInitiated = true;
         }
         // TODO: Show visual cues on p-p-p-power-meter!
     }
@@ -49,7 +50,7 @@ public class MouseManager
         if (mouseState.LeftButton == ButtonState.Released)
         {
             jumpForceOutOfTen = 10; //potential units, kinda?
-            newJumpInitiated = false;
+            isNewJumpInitiated = false;
         }
 
         //  Check if the distance is bigger than accidental click (>10px for example?)
@@ -59,8 +60,9 @@ public class MouseManager
         // velocity (vec2)
     }
 
-    internal void update()
+
+    public bool newJumpInitiated()
     {
-        throw new NotImplementedException();
+        return isNewJumpInitiated;
     }
 }

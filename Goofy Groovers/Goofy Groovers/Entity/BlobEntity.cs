@@ -9,6 +9,7 @@ public class BlobEntity
 {
     private bool isJumping = false;
     private Vector2 position;
+    private bool isOwnedByUser;
     private Vector2 positionOld; //TODO: decide fate?
 
     private float velocity;
@@ -46,8 +47,6 @@ public class BlobEntity
 
     public void Draw()
     {
-        spriteBatch
-        Draw
     }
 
     public BlobEntity()
@@ -55,5 +54,28 @@ public class BlobEntity
         //
         // TODO: Add constructor logic here
         //
+    }
+
+    public BlobEntity(Vector2 position, bool isOwnedByUser)
+    {
+        this.position = position;
+        this.isOwnedByUser = isOwnedByUser;
+    }
+
+    public void SetJumpEndPoint(Vector2 endpoint)
+    {
+        this.jumpEndPoint = endpoint;
+    }
+
+    internal float GetTheta()
+    {
+        return this.jumpTheta;
+        throw new NotImplementedException();
+    }
+
+    internal float GetVelocity()
+    {
+        return this.velocity;
+        throw new NotImplementedException();
     }
 }
