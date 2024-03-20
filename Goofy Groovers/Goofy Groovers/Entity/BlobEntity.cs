@@ -23,11 +23,11 @@ public class BlobEntity
     //private Sprite sprite;
     private SpriteBatch spriteBatch;
 
-    public void Update(float elapsedSeconds)
+    public void Update(GameTime gameTime)
     {
         if (isJumping)
         {
-            elapsedSecondsSinceJumpStart += elapsedSeconds;
+            elapsedSecondsSinceJumpStart += (float) gameTime.ElapsedGameTime.TotalSeconds;
             positionOld = position;
             position = jumpStartPoint + new Vector2(
                 velocity * (float)Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart,
@@ -49,12 +49,7 @@ public class BlobEntity
     {
     }
 
-    public BlobEntity()
-    {
-        //
-        // TODO: Add constructor logic here
-        //
-    }
+    public BlobEntity() {}
 
     public BlobEntity(Vector2 position, bool isOwnedByUser)
     {
@@ -67,15 +62,23 @@ public class BlobEntity
         this.jumpEndPoint = endpoint;
     }
 
-    internal float GetTheta()
+    public float GetTheta()
     {
         return this.jumpTheta;
-        throw new NotImplementedException();
     }
 
-    internal float GetVelocity()
+    public float GetVelocity()
     {
         return this.velocity;
-        throw new NotImplementedException();
+    }
+
+    public Vector2 GetPosition()
+    {
+        return this.position;
+    }
+
+    internal object GetEndpoint()
+    {
+        return this.jumpEndPoint;
     }
 }

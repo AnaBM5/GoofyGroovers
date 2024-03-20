@@ -11,6 +11,7 @@ public class MouseManager
     private MouseState mouseState;
     private MouseState oldState;
     private Boolean newJumpInitiated = false;
+    private Boolean newJumpAttempted = false;
 
     private Point mouseClickStartPoint;
     private Point mouseClickEndPoint;
@@ -22,6 +23,7 @@ public class MouseManager
 
     private int jumpForceOutOfTen;
     private int clickDragDistance;
+    private float theta;
 
     public MouseManager()
     {
@@ -30,7 +32,7 @@ public class MouseManager
         //
     }
 
-    public void Update(float elapsedSeconds)
+    public void Update()
     {
         mouseState = Mouse.GetState();
 
@@ -66,6 +68,7 @@ public class MouseManager
             jumpForceOutOfTen = 10; //potential units, kinda?
 
             newJumpInitiated = false;
+            newJumpAttempted = true;
             CalculateAngle();
         }
 
@@ -92,14 +95,29 @@ public class MouseManager
         //Squared dot product between them
         float dotProduct = (float)(Math.Pow(directionVector.X * horizontalVector.X + directionVector.Y * horizontalVector.Y,2));
 
-        float theta = (float)(Math.Acos(dotProduct / (invertedVectorLength * horizontalVectorLength)));
+        theta = (float)(Math.Acos(dotProduct / (invertedVectorLength * horizontalVectorLength)));
 
         float thetaDeegres = (float)(180 / Math.PI) * theta;
 
     }
     
-    public bool IsNewJumpInitiated()
+    public bool IsNewJumpAttempted()
     {
-        return newJumpInitiated;
+        return newJumpAttempted;
+    }
+
+    public void EndNewJumpAttempt()
+    {
+        this.newJumpAttempted = false;
+    }
+
+    internal float GetTheta()
+    {
+        return theta;
+    }
+
+    internal float GetVelocity()
+    {
+        return 1;
     }
 }
