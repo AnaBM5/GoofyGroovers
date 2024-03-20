@@ -12,6 +12,7 @@ namespace Goofy_Groovers
         private SpriteBatch _spriteBatch;
 
         private GameManager _gameManager;
+        private MouseManager _mouseManager;
 
         public GoofyGroovers()
         {
@@ -23,6 +24,7 @@ namespace Goofy_Groovers
         protected override void Initialize()
         {
             _gameManager = new GameManager(this);
+            _mouseManager = new MouseManager();
             base.Initialize();
         }
 
@@ -40,6 +42,7 @@ namespace Goofy_Groovers
             // We do not execute network operations in this main thread, but in a task.
             //https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
             Task.Run(() => _gameManager.HandleNetworkCommunication());
+            _mouseManager.Update();
 
             base.Update(gameTime);
         }
