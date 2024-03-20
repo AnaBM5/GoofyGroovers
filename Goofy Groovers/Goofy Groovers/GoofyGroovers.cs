@@ -12,6 +12,7 @@ namespace Goofy_Groovers
         private SpriteBatch _spriteBatch;
 
         private GameManager _gameManager;
+        private MouseManager _mouseManager;
 
         public GoofyGroovers()
         {
@@ -23,6 +24,7 @@ namespace Goofy_Groovers
         protected override void Initialize()
         {
             _gameManager = new GameManager(this);
+            _mouseManager = new MouseManager();
             base.Initialize();
         }
 
