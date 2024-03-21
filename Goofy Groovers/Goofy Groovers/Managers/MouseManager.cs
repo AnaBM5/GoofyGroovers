@@ -41,7 +41,7 @@ public class MouseManager
         //
         // TODO: Add constructor logic here
         //
-        maxVectorLength = 150;
+        maxVectorLength = 400;
     }
 
     public void Update()
@@ -51,8 +51,6 @@ public class MouseManager
             CheckMousePressLeftButton();
         else                                //else, checks if it has been released
             CheckMouseReleaseLeftButton();
-
-        // Do something even scarier
     }
 
     public void CheckMousePressLeftButton()
@@ -62,7 +60,7 @@ public class MouseManager
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
             newJumpInitiated = true;
 
-            // Debug.WriteLine("Start: "+mouseClickStartPoint);
+            // Debug.WriteLine("Start: " + mouseClickStartPoint);
         }
         // TODO: Show visual cues on p-p-p-power-meter!
     }
@@ -75,9 +73,6 @@ public class MouseManager
         }
         else
         {
-            // Debug.WriteLine("End: "+mouseClickEndPoint);
-            //Calculate angle
-            jumpForceOutOfTen = 10; //potential units, kinda?
             newJumpInitiated = false;
             newJumpAttempted = true;
             CalculateAngle();
@@ -88,11 +83,10 @@ public class MouseManager
 
     private void CalculateAngle()
     {
-        //TODO: Verify angles being taken, maybe check horizontal vector depending on direction???
         //take difference between points and adds it to the original point to go to the other direction
         directionVector = mouseClickStartPoint + (mouseClickStartPoint - mouseClickEndPoint);
         //horizontal vector as reference for calculating angle
-        horizontalVector = new Point(mouseClickStartPoint.X-100, mouseClickStartPoint.Y);
+        horizontalVector = new Point(mouseClickStartPoint.X - 100, mouseClickStartPoint.Y);
 
         Point originDirectionVector = directionVector - mouseClickStartPoint;
         Point originHorizontalVector = horizontalVector - mouseClickStartPoint;
@@ -121,7 +115,6 @@ public class MouseManager
         float thetaDeegres = (float)(180 / Math.PI) * theta;
 
         // Debug.WriteLine(thetaDeegres);
-
     }
 
     public void Draw()
@@ -143,13 +136,13 @@ public class MouseManager
             movementVelocity = 5;
         else if (currentVectorLength >= maxVectorLength)
             movementVelocity = maxSpeed;
-        if (currentVectorLength< maxVectorLength)
+        if (currentVectorLength < maxVectorLength)
         {
             maxSpeed *= currentVectorLength / maxVectorLength;
             movementVelocity = maxSpeed;
         }
 
-        Debug.WriteLine("Speed: " + movementVelocity);
+        //Debug.WriteLine("Speed: " + movementVelocity);
     }
     
     public bool IsNewJumpAttempted()

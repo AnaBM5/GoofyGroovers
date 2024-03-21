@@ -38,6 +38,7 @@ public class BlobEntity
             if (isJumping)
             {
                 position = jumpEndPoint;
+                isJumping = false;  
             }
 
             /*if (isJumping)
@@ -126,9 +127,13 @@ public class BlobEntity
         return this.jumpEndPoint;
     }
 
-    internal void SetJumping(bool isJumping)
+    internal void SetJumpingState(bool isJumping)
     {
         this.isJumping = isJumping;
+    }
+    public bool GetJumpingState()
+    {
+        return this.isJumping;
     }
 
     internal void SetVelocity(float velocity)

@@ -6,9 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using PlatformGame.GameClient;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace PlatformGame.Managers
 {
@@ -16,12 +14,12 @@ namespace PlatformGame.Managers
     {
         private MouseManager _mouseManager;
         private BlobEntity[] blobEntities;
-        private Vector2[] map;
+        private List<Vector2> map;
 
         public BlobEntity playerBlob;
 
         private Vector2 position;
-        private List<Vector2> parabolicMovement;   
+        private List<Vector2> parabolicMovement;
 
         public Texture2D dotTexture;
         public Texture2D squareTexture;
@@ -34,11 +32,11 @@ namespace PlatformGame.Managers
             playerBlob = blobEntities[0];
             _mouseManager = new MouseManager();
 
-            map = new Vector2[4];
-            map.SetValue(new Vector2(128, 128), 0);
-            map.SetValue(new Vector2(128, 256), 1);
-            map.SetValue(new Vector2(256, 256), 2);
-            map.SetValue(new Vector2(256, 128), 3);
+            map = new List<Vector2>();
+            map.Add(new Vector2(128, 128));
+            map.Add(new Vector2(128, 256));
+            map.Add(new Vector2(256, 256));
+            map.Add(new Vector2(256, 128));
 
             parabolicMovement = new List<Vector2>();
         }
@@ -51,7 +49,7 @@ namespace PlatformGame.Managers
                 // Calculate the force of the jump, pass it to the blob
                 // Calculate the new intersection point FIRST, pass it to the blob
                 // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
-
+                if (!playerBlob.GetJumpingState())
                 FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
             }
             foreach (var blob in blobEntities)
@@ -60,59 +58,61 @@ namespace PlatformGame.Managers
             }
         }
 
-        public bool FindIntersection(Vector2[] map, BlobEntity blob, float theta, float velocity)
+        public bool FindIntersection(List<Vector2> map, BlobEntity blob, float theta, float velocity)
         {
             parabolicMovement.Clear(); // DEBUG: Remove
             double timeDelta = 0.1;
-            double timeLimit = 4;
+            double timeLimit = 20;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
-            position = blob.GetPosition();
-            for (double time = timeDelta; time <= 10; time += timeDelta)
-            {
-                // Debug.WriteLine("Position: " + position.ToString());
-                positionOld = position;
-                position = playerBlob.GetPosition() + new Vector2(
-                    -velocity * (float)(Math.Cos(theta) * time),
-                    -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
-                parabolicMovement.Add(position);
-                for (int iterator = 0; iterator < timeLimit; iterator++)
+            position = playerBlob.GetPosition() + new Vector2(
+                    -velocity * (float)(Math.Cos(theta) * timeDelta),
+                    -velocity * (float)(Math.Sin(theta) * timeDelta) - 0.5f * -9.8f * (float)Math.Pow(timeDelta, 2));
+            if (LineUtil.PointInPolygon(map, position))
+                for (double time = timeDelta * 2; time <= timeLimit; time += timeDelta)
                 {
-                    if (iterator == 0)
+                    // Debug.WriteLine("Position: " + position.ToString());
+                    positionOld = position;
+                    position = playerBlob.GetPosition() + new Vector2(
+                        -velocity * (float)(Math.Cos(theta) * time),
+                        -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
+                    parabolicMovement.Add(position);
+                    for (int iterator = 0; iterator < map.Count; iterator++)
                     {
-                        intervalStartPoint = map.Last();
-                    }
-                    else
-                    {
-                        intervalStartPoint = intervalEndPoint;
-                    }
+                        if (iterator == 0)
+                        {
+                            intervalStartPoint = map.Last();
+                        }
+                        else
+                        {
+                            intervalStartPoint = intervalEndPoint;
+                        }
 
-                    intervalEndPoint = map[iterator];
-                    if (LineUtil.IntersectLineSegments2D(positionOld, position, intervalStartPoint, intervalEndPoint, out intersection))
-                    {
-                        playerBlob.SetJumpStartPoint(position);
-                        playerBlob.SetJumpEndPoint(intersection);
-                        playerBlob.SetVelocity(_mouseManager.GetVelocity());
-                        playerBlob.SetThetha(_mouseManager.GetTheta());
-                        playerBlob.SetJumping(true);
-                        _mouseManager.EndNewJumpAttempt();
-                        break;
-                        //timeLimit = 0;
+                        intervalEndPoint = map[iterator];
+                        if (LineUtil.IntersectLineSegments2D(positionOld, position, intervalStartPoint, intervalEndPoint, out intersection))
+                        {
+                            playerBlob.SetJumpStartPoint(position);
+                            playerBlob.SetJumpEndPoint(intersection);
+                            playerBlob.SetVelocity(_mouseManager.GetVelocity());
+                            playerBlob.SetThetha(_mouseManager.GetTheta());
+                            playerBlob.SetJumpingState(true);
+                            _mouseManager.EndNewJumpAttempt();
+                            timeLimit = 0;
+                            break;
+                        }
                     }
-                }
-            } // Adjust the step size as needed
+                } // Adjust the step size as needed
 
-             Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
+            // Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
             return false;
         }
 
         public void Draw(GameTime gameTime)
         {
             Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
-            for (int iterator = 0;iterator < parabolicMovement.Count(); iterator++)
-            { 
-                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 7, (int)parabolicMovement.ElementAt(iterator).Y -7, 15, 15), Color.Black);
+            for (int iterator = 0; iterator < parabolicMovement.Count(); iterator++)
+            {
+                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 12, (int)parabolicMovement.ElementAt(iterator).Y - 12, 25, 25), Color.Black);
             }
-            playerBlob.Draw(gameTime);
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
             playerBlob.Draw(gameTime);
         }
