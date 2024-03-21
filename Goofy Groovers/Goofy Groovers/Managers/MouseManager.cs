@@ -47,8 +47,6 @@ public class MouseManager
     public void Update()
     {
         mouseState = Mouse.GetState();
-
-        Console.WriteLine(mouseState.LeftButton == ButtonState.Pressed);
         if (!newJumpInitiated)              //if the jump hasn't been initiated it checks for mouse click
             CheckMousePressLeftButton();
         else                                //else, checks if it has been released
@@ -64,7 +62,7 @@ public class MouseManager
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
             newJumpInitiated = true;
 
-            Debug.WriteLine("Start: "+mouseClickStartPoint);
+            // Debug.WriteLine("Start: "+mouseClickStartPoint);
         }
         // TODO: Show visual cues on p-p-p-power-meter!
     }
@@ -77,7 +75,7 @@ public class MouseManager
         }
         else
         {
-            Debug.WriteLine("End: "+mouseClickEndPoint);
+            // Debug.WriteLine("End: "+mouseClickEndPoint);
             //Calculate angle
             jumpForceOutOfTen = 10; //potential units, kinda?
             newJumpInitiated = false;
@@ -86,10 +84,6 @@ public class MouseManager
         }
 
         //  Check if the distance is bigger than accidental click (>10px for example?)
-
-        // We will return following to the blob:
-        // angle
-        // velocity (vec2)
     }
 
     private void CalculateAngle()
@@ -126,9 +120,7 @@ public class MouseManager
 
         float thetaDeegres = (float)(180 / Math.PI) * theta;
 
-        
-
-        Debug.WriteLine(thetaDeegres);
+        // Debug.WriteLine(thetaDeegres);
 
     }
 

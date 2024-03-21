@@ -43,9 +43,11 @@ namespace Goofy_Groovers
             Texture2D dotSprite = Content.Load<Texture2D>("dotSprite");
             _gameManager.getMouseManager().setDotSprite(dotSprite);
             _gameManager.dotTexture = dotSprite;
+            _gameManager.playerBlob.SetTexture(dotSprite);
 
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
             _gameManager.squareTexture = squareSprite;
+            
         }
 
         protected override void Update(GameTime gameTime)
@@ -68,7 +70,7 @@ namespace Goofy_Groovers
             // Add your drawing code here
             Globals._spriteBatch.Begin();
             // Draw game objects using _spriteBatch
-            _gameManager.Draw();
+            _gameManager.Draw(gameTime);
             _gameManager.getMouseManager().Draw();
             Globals._spriteBatch.End();
 
