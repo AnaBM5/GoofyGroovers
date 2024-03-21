@@ -20,6 +20,7 @@ namespace PlatformGame.Managers
 
         private Vector2 position;
         private List<Vector2> parabolicMovement;
+        private List<Vector2> tilePositions;
 
         public Texture2D dotTexture;
         public Texture2D squareTexture;
@@ -32,11 +33,29 @@ namespace PlatformGame.Managers
             playerBlob = blobEntities[0];
             _mouseManager = new MouseManager();
 
-            map = new List<Vector2>();
-            map.Add(new Vector2(128, 128));
-            map.Add(new Vector2(128, 256));
-            map.Add(new Vector2(256, 256));
-            map.Add(new Vector2(256, 128));
+            map = new List<Vector2>
+            {
+                new Vector2(128, 128),
+                new Vector2(128, 384),
+                new Vector2(512, 384),
+                new Vector2(512, 256),
+                new Vector2(640, 256),
+                new Vector2(640, 128),
+                new Vector2(384, 128),
+                new Vector2(384, 256),
+                new Vector2(256, 256),
+                new Vector2(256, 128)
+            };
+
+            tilePositions = new List<Vector2>
+            {
+                new Vector2(128, 128),
+                new Vector2(128, 256),
+                new Vector2(256, 256),
+                new Vector2(384, 256),
+                new Vector2(384, 128),
+                new Vector2(512, 128),
+            };
 
             parabolicMovement = new List<Vector2>();
         }
@@ -60,7 +79,7 @@ namespace PlatformGame.Managers
 
         public bool FindIntersection(List<Vector2> map, BlobEntity blob, float theta, float velocity)
         {
-            parabolicMovement.Clear(); // DEBUG: Remove
+            //parabolicMovement.Clear(); // DEBUG: Remove
             double timeDelta = 0.1;
             double timeLimit = 20;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
@@ -108,10 +127,15 @@ namespace PlatformGame.Managers
 
         public void Draw(GameTime gameTime)
         {
-            Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
+            //Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
+            for (int iterator = 0; iterator < tilePositions.Count(); iterator++)
+            {
+                Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)tilePositions.ElementAt(iterator).X, (int)tilePositions.ElementAt(iterator).Y, 128, 128), Color.PeachPuff);
+            }
+
             for (int iterator = 0; iterator < parabolicMovement.Count(); iterator++)
             {
-                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 12, (int)parabolicMovement.ElementAt(iterator).Y - 12, 25, 25), Color.Black);
+                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 2, (int)parabolicMovement.ElementAt(iterator).Y - 2, 5, 5), Color.Black);
             }
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
             playerBlob.Draw(gameTime);

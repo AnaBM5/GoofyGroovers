@@ -115,6 +115,7 @@ namespace Goofy_Groovers.Util
         }
 
         /// <summary>
+        /// Example code by Rod Stephens licensed under CC-BY 4.0.
         /// Return true if the point is in the polygon.
         /// </summary>
         /// <param name="pointArray"> Array of points, a polygon against
