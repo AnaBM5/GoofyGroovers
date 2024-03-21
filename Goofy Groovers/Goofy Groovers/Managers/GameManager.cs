@@ -53,10 +53,10 @@ namespace PlatformGame.Managers
 
         public bool FindIntersection(Vector2[] map, BlobEntity blob, float theta, float velocity)
         {
-            double timeDelta = 0.5;
+            double timeDelta = 0.1;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
             position = blob.GetPosition();
-            for (double time = timeDelta; time <= 10; time += timeDelta)
+            for (double time = timeDelta; time <= 5; time += timeDelta)
             {
                 Debug.WriteLine("Position: " + position.ToString());
                 positionOld = position;

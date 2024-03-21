@@ -96,19 +96,26 @@ public class MouseManager
         //horizontal vector as reference for calculating angle
         horizontalVector = new Point(mouseClickStartPoint.X-100, mouseClickStartPoint.Y);
 
+        Point originDirectionVector = directionVector - mouseClickStartPoint;
+        Point originHorizontalVector = horizontalVector - mouseClickStartPoint;
 
-        //Squared lengths of vectors
-        float invertedVectorLength = (float) (Math.Pow(directionVector.X, 2) + Math.Pow(directionVector.Y, 2));
-        float horizontalVectorLength = (float) (Math.Pow(horizontalVector.X, 2) + Math.Pow(horizontalVector.Y, 2));
 
-        //Squared dot product between them
-        float dotProduct = (float)(Math.Pow(directionVector.X * horizontalVector.X + directionVector.Y * horizontalVector.Y,2));
+        //lengths of vectors
+        float invertedVectorLength = (float)Math.Sqrt((Math.Pow(originDirectionVector.X, 2) + Math.Pow(originDirectionVector.Y, 2)));
+        float horizontalVectorLength = (float)Math.Sqrt((Math.Pow(originHorizontalVector.X, 2) + Math.Pow(originHorizontalVector.Y, 2)));
+
+        //dot product between them
+        float dotProduct = (float)originDirectionVector.X * originHorizontalVector.X + originDirectionVector.Y * originHorizontalVector.Y;
 
         theta = (float)(Math.Acos(dotProduct / (invertedVectorLength * horizontalVectorLength)));
 
+        //if the mouse was dragged to a lower y position than the starting point, adjusts it so it takes angles from 180 degrees to 360
+        if (mouseClickEndPoint.Y < mouseClickStartPoint.Y)
+            theta = (float) (2 * Math.PI) - theta;
+
         float thetaDeegres = (float)(180 / Math.PI) * theta;
 
-        Debug.WriteLine(theta);
+        Debug.WriteLine(thetaDeegres);
 
     }
 
