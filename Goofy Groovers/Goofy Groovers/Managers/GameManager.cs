@@ -103,11 +103,12 @@ namespace PlatformGame.Managers
         public void Draw(GameTime gameTime)
         {
             Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
-            playerBlob.Draw(gameTime);
+           
             for (int iterator = 0;iterator < parabolicMovement.Count(); iterator++)
             { 
-                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 12, (int)parabolicMovement.ElementAt(iterator).Y - 12, 25, 25), Color.Black);
+                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 7, (int)parabolicMovement.ElementAt(iterator).Y -7, 15, 15), Color.Black);
             }
+            playerBlob.Draw(gameTime);
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
         }
 

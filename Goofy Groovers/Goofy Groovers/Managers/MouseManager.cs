@@ -141,7 +141,9 @@ public class MouseManager
 
         if (currentVectorLength == 0) 
             movementVelocity = 5;
-        if(currentVectorLength< maxVectorLength)
+        else if (currentVectorLength >= maxVectorLength)
+            movementVelocity = maxSpeed;
+        if (currentVectorLength< maxVectorLength)
         {
             maxSpeed *= currentVectorLength / maxVectorLength;
             movementVelocity = maxSpeed;
