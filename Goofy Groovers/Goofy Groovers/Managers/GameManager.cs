@@ -5,8 +5,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PlatformGame.GameClient;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace PlatformGame.Managers
 {
@@ -14,10 +16,12 @@ namespace PlatformGame.Managers
     {
         private MouseManager _mouseManager;
         private BlobEntity[] blobEntities;
-        private BlobEntity playerBlob;
         private Vector2[] map;
-        public Texture2D dotTexture;
+
+        public BlobEntity playerBlob;
+
         private Vector2 position;
+        private List<Vector2> parabolicMovement;   
 
         public GameManager(GoofyGroovers game)
         {
@@ -32,6 +36,8 @@ namespace PlatformGame.Managers
             map.SetValue(new Vector2(128, 256), 1);
             map.SetValue(new Vector2(256, 256), 2);
             map.SetValue(new Vector2(256, 128), 3);
+
+            parabolicMovement = new List<Vector2>();
         }
 
         public void Update(GameTime elapsedSeconds)
@@ -53,17 +59,18 @@ namespace PlatformGame.Managers
 
         public bool FindIntersection(Vector2[] map, BlobEntity blob, float theta, float velocity)
         {
+            parabolicMovement.Clear();
             double timeDelta = 0.1;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
             position = blob.GetPosition();
-            for (double time = timeDelta; time <= 5; time += timeDelta)
+            for (double time = timeDelta; time <= 10; time += timeDelta)
             {
-                Debug.WriteLine("Position: " + position.ToString());
+                // Debug.WriteLine("Position: " + position.ToString());
                 positionOld = position;
                 position = playerBlob.GetPosition() + new Vector2(
-                velocity * (float)(Math.Cos(theta) * time),
-                velocity * (float)(Math.Sin(theta) * time) - 0.5f * 9.8f * (float)Math.Pow(time, 2));
-                
+                    -velocity * (float)(Math.Cos(theta) * time),
+                    -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
+                parabolicMovement.Add(position);
                 for (int iterator = 0; iterator < 4; iterator++)
                 {
                     if (iterator == 0)
@@ -78,22 +85,26 @@ namespace PlatformGame.Managers
                     intervalEndPoint = map[iterator];
                     if (LineUtil.IntersectLineSegments2D(positionOld, position, intervalStartPoint, intervalEndPoint, out intersection))
                     { // TODO: Fix, constantly identifies (0,0) as an intersection point.
-                        blob.SetJumpEndPoint(intersection);
+                        playerBlob.SetJumpEndPoint(intersection);
+                        //playerBlob.SetJumping(true);
                         _mouseManager.EndNewJumpAttempt();
                         break;
                     }
                 }
             } // Adjust the step size as needed
 
-            // Sanity~Debug check
-            Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
+             Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
             return false;
         }
 
-        public void Draw()
+        public void Draw(GameTime gameTime)
         {
-            Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)playerBlob.GetPosition().X - 12, (int)playerBlob.GetPosition().Y - 12, 25, 25), Color.Red);
-            Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
+            playerBlob.Draw(gameTime);
+            for (int iterator = 0;iterator < parabolicMovement.Count(); iterator++)
+            { 
+                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 12, (int)parabolicMovement.ElementAt(iterator).Y - 12, 25, 25), Color.Black);
+            }
+            Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
         }
 
         public void HandleNetworkCommunication()
