@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using PlatformGame.GameClient;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace PlatformGame.Managers
@@ -63,13 +64,21 @@ namespace PlatformGame.Managers
         public void Update(GameTime elapsedSeconds)
         {
             _mouseManager.Update();
-            if (_mouseManager.IsNewJumpAttempted())
+
+            if (!playerBlob.GetJumpingState())
             {
-                // Calculate the force of the jump, pass it to the blob
-                // Calculate the new intersection point FIRST, pass it to the blob
-                // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
-                if (!playerBlob.GetJumpingState())
-                FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                if (_mouseManager.IsNewJumpInitiated())
+                {
+                    VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                }
+
+                if (_mouseManager.IsNewJumpAttempted())
+                {
+                    // Calculate the force of the jump, pass it to the blob
+                    // Calculate the new intersection point FIRST, pass it to the blob
+                    // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
+                    FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                }
             }
             foreach (var blob in blobEntities)
             {
@@ -77,9 +86,23 @@ namespace PlatformGame.Managers
             }
         }
 
+        private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
+        {
+            parabolicMovement.Clear();
+            double timeDelta = 0.2;
+            double timeLimit = 5;
+            for (double time = 0; time <= timeLimit; time += timeDelta)
+            {
+                // Debug.WriteLine("Position: " + position.ToString());
+                parabolicMovement.Add(playerBlob.GetPosition() + new Vector2(
+                    -velocity * (float)(Math.Cos(theta) * time),
+                    -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2)));
+            }
+        }
+
         public bool FindIntersection(List<Vector2> map, BlobEntity blob, float theta, float velocity)
         {
-            //parabolicMovement.Clear(); // DEBUG: Remove
+            parabolicMovement.Clear();
             double timeDelta = 0.1;
             double timeLimit = 20;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;

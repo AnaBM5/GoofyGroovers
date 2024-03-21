@@ -70,12 +70,12 @@ public class MouseManager
         if (mouseState.LeftButton == ButtonState.Pressed)
         {
             mouseClickEndPoint = new Point(mouseState.X, mouseState.Y);
+            CalculateAngle();
         }
         else
         {
             newJumpInitiated = false;
             newJumpAttempted = true;
-            CalculateAngle();
         }
 
         //  Check if the distance is bigger than accidental click (>10px for example?)
