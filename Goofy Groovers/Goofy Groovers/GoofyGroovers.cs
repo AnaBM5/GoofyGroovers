@@ -10,10 +10,8 @@ namespace Goofy_Groovers
 {
     public class GoofyGroovers : Game
     {
-        private SpriteBatch _spriteBatch;
 
         private GameManager _gameManager;
-        private MouseManager _mouseManager;
 
         public GoofyGroovers()
         {
@@ -45,6 +43,9 @@ namespace Goofy_Groovers
             Texture2D dotSprite = Content.Load<Texture2D>("dotSprite");
             _gameManager.getMouseManager().setDotSprite(dotSprite);
             _gameManager.dotTexture = dotSprite;
+
+            Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
+            _gameManager.squareTexture = squareSprite;
         }
 
         protected override void Update(GameTime gameTime)
@@ -62,7 +63,7 @@ namespace Goofy_Groovers
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.DarkSlateBlue);
 
             // Add your drawing code here
             Globals._spriteBatch.Begin();

@@ -33,7 +33,7 @@ public class BlobEntity
                 velocity * (float)Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart,
                 velocity * (float)Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart - 0.5f * 9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-            if (jumpTheta > 90 / (180 * Math.PI) && jumpTheta < 270 / (180 * Math.PI) && (position.X >= jumpEndPoint.X) || (position.X <= jumpEndPoint.X))
+            if (jumpTheta > 90 * (180 / Math.PI) && jumpTheta < 270 * (180 / Math.PI) && (position.X >= jumpEndPoint.X) || (position.X <= jumpEndPoint.X))
             {
                 position = jumpEndPoint; //TODO: Is it adjusted for the sprite size (radius-wise)?
 

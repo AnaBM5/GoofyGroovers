@@ -27,6 +27,9 @@ public class MouseManager
     private int clickDragDistance;
     private float theta;
 
+    private float maxVectorLength;
+    private float movementVelocity;
+
 
     //Sprites and coordinates used for testing
     private Texture2D dotTexture;
@@ -38,6 +41,7 @@ public class MouseManager
         //
         // TODO: Add constructor logic here
         //
+        maxVectorLength = 150;
     }
 
     public void Update()
@@ -104,16 +108,25 @@ public class MouseManager
         float invertedVectorLength = (float)Math.Sqrt((Math.Pow(originDirectionVector.X, 2) + Math.Pow(originDirectionVector.Y, 2)));
         float horizontalVectorLength = (float)Math.Sqrt((Math.Pow(originHorizontalVector.X, 2) + Math.Pow(originHorizontalVector.Y, 2)));
 
+        //uses length to define Speed
+        DefineVelocity(invertedVectorLength);
+
         //dot product between them
         float dotProduct = (float)originDirectionVector.X * originHorizontalVector.X + originDirectionVector.Y * originHorizontalVector.Y;
 
-        theta = (float)(Math.Acos(dotProduct / (invertedVectorLength * horizontalVectorLength)));
+
+        if (invertedVectorLength == 0)
+            theta = (float)Math.PI;
+        else
+            theta = (float)(Math.Acos(dotProduct / (invertedVectorLength * horizontalVectorLength)));
 
         //if the mouse was dragged to a lower y position than the starting point, adjusts it so it takes angles from 180 degrees to 360
         if (mouseClickEndPoint.Y < mouseClickStartPoint.Y)
             theta = (float) (2 * Math.PI) - theta;
 
         float thetaDeegres = (float)(180 / Math.PI) * theta;
+
+        
 
         Debug.WriteLine(thetaDeegres);
 
@@ -128,6 +141,21 @@ public class MouseManager
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
 
+    }
+
+    private void DefineVelocity(float currentVectorLength)
+    {
+        float maxSpeed = 100;
+
+        if (currentVectorLength == 0) 
+            movementVelocity = 5;
+        if(currentVectorLength< maxVectorLength)
+        {
+            maxSpeed *= currentVectorLength / maxVectorLength;
+            movementVelocity = maxSpeed;
+        }
+
+        Debug.WriteLine("Speed: " + movementVelocity);
     }
     
     public bool IsNewJumpAttempted()
@@ -147,7 +175,7 @@ public class MouseManager
 
     internal float GetVelocity()
     {
-        return 100;
+        return movementVelocity;
     }
     public bool IsNewJumpInitiated()
     {

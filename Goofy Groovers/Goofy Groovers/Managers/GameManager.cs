@@ -16,8 +16,10 @@ namespace PlatformGame.Managers
         private BlobEntity[] blobEntities;
         private BlobEntity playerBlob;
         private Vector2[] map;
-        public Texture2D dotTexture;
         private Vector2 position;
+
+        public Texture2D dotTexture;
+        public Texture2D squareTexture;
 
         public GameManager(GoofyGroovers game)
         {
@@ -53,16 +55,16 @@ namespace PlatformGame.Managers
 
         public bool FindIntersection(Vector2[] map, BlobEntity blob, float theta, float velocity)
         {
-            double timeDelta = 0.1;
+            double timeDelta = 0.2;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
             position = blob.GetPosition();
-            for (double time = timeDelta; time <= 5; time += timeDelta)
+            for (double time = timeDelta; time <= 10; time += timeDelta)
             {
                 Debug.WriteLine("Position: " + position.ToString());
                 positionOld = position;
                 position = playerBlob.GetPosition() + new Vector2(
-                velocity * (float)(Math.Cos(theta) * time),
-                velocity * (float)(Math.Sin(theta) * time) - 0.5f * 9.8f * (float)Math.Pow(time, 2));
+                -velocity * (float)(Math.Cos(theta) * time),
+                -velocity * (float)(Math.Sin(theta) * time) + 0.5f * 9.8f * (float)Math.Pow(time, 2));
                 
                 for (int iterator = 0; iterator < 4; iterator++)
                 {
@@ -92,6 +94,9 @@ namespace PlatformGame.Managers
 
         public void Draw()
         {
+            Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
+
+
             Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)playerBlob.GetPosition().X - 12, (int)playerBlob.GetPosition().Y - 12, 25, 25), Color.Red);
             Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
         }
