@@ -1,14 +1,15 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Goofy_Groovers.Managers;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PlatformGame.Managers;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Goofy_Groovers
 {
     public class GoofyGroovers : Game
     {
-        private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
         private GameManager _gameManager;
@@ -16,7 +17,15 @@ namespace Goofy_Groovers
 
         public GoofyGroovers()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            Globals._graphics = new GraphicsDeviceManager(this);
+
+            //Not necessary for now but is going to be used later to have the game in full screen
+            /*
+            Globals._graphics.IsFullScreen = true;
+            Globals._graphics.PreferredBackBufferWidth = 1920;
+            Globals._graphics.PreferredBackBufferHeight = 1080;
+            */
+
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
@@ -24,14 +33,18 @@ namespace Goofy_Groovers
         protected override void Initialize()
         {
             _gameManager = new GameManager(this);
-            _mouseManager = new MouseManager();
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            Globals._spriteBatch = new SpriteBatch(GraphicsDevice);
+
             // Load game content here if needed
+
+            Texture2D dotSprite = Content.Load<Texture2D>("dotSprite");
+            _gameManager.getMouseManager().setDotSprite(dotSprite);
+            _gameManager.dotTexture = dotSprite;
         }
 
         protected override void Update(GameTime gameTime)
@@ -52,9 +65,11 @@ namespace Goofy_Groovers
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Add your drawing code here
-            _spriteBatch.Begin();
+            Globals._spriteBatch.Begin();
             // Draw game objects using _spriteBatch
-            _spriteBatch.End();
+            _gameManager.Draw();
+            _gameManager.getMouseManager().Draw();
+            Globals._spriteBatch.End();
 
             base.Draw(gameTime);
         }

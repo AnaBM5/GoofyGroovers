@@ -1,7 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Goofy_Groovers.Managers;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Diagnostics;
 
 /// <summary>
 /// Summary description for Class1
@@ -24,6 +26,12 @@ public class MouseManager
     private int jumpForceOutOfTen;
     private int clickDragDistance;
     private float theta;
+
+
+    //Sprites and coordinates used for testing
+    private Texture2D dotTexture;
+    private Point directionVector;
+    private Point horizontalVector;
 
     public MouseManager()
     {
@@ -51,6 +59,8 @@ public class MouseManager
         {
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
             newJumpInitiated = true;
+
+            Debug.WriteLine("Start: "+mouseClickStartPoint);
         }
         // TODO: Show visual cues on p-p-p-power-meter!
     }
@@ -63,10 +73,9 @@ public class MouseManager
         }
         else
         {
-
+            Debug.WriteLine("End: "+mouseClickEndPoint);
             //Calculate angle
             jumpForceOutOfTen = 10; //potential units, kinda?
-
             newJumpInitiated = false;
             newJumpAttempted = true;
             CalculateAngle();
@@ -83,9 +92,9 @@ public class MouseManager
     {
         //TODO: Verify angles being taken, maybe check horizontal vector depending on direction???
         //take difference between points and adds it to the original point to go to the other direction
-        Point directionVector = mouseClickStartPoint + (mouseClickStartPoint - mouseClickEndPoint);
+        directionVector = mouseClickStartPoint + (mouseClickStartPoint - mouseClickEndPoint);
         //horizontal vector as reference for calculating angle
-        Point horizontalVector = new Point(mouseClickStartPoint.X-10, mouseClickStartPoint.Y);
+        horizontalVector = new Point(mouseClickStartPoint.X-100, mouseClickStartPoint.Y);
 
 
         //Squared lengths of vectors
@@ -98,6 +107,19 @@ public class MouseManager
         theta = (float)(Math.Acos(dotProduct / (invertedVectorLength * horizontalVectorLength)));
 
         float thetaDeegres = (float)(180 / Math.PI) * theta;
+
+        Debug.WriteLine(theta);
+
+    }
+
+    public void Draw()
+    {
+        //draw the dots on the positions
+        Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y-12, 25,25), Color.White);
+        Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
+
+        Globals._spriteBatch.Draw(dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
+        Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
 
     }
     
@@ -118,6 +140,15 @@ public class MouseManager
 
     internal float GetVelocity()
     {
-        return 1;
+        return 100;
+    }
+    public bool IsNewJumpInitiated()
+    {
+        return newJumpInitiated;
+    }
+
+    public void setDotSprite (Texture2D dotTexture)
+    {
+        this.dotTexture = dotTexture;
     }
 }

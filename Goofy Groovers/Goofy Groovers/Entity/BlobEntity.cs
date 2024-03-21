@@ -23,11 +23,11 @@ public class BlobEntity
     //private Sprite sprite;
     private SpriteBatch spriteBatch;
 
-    public void Update(GameTime gameTime)
+    public void Update(GameTime elapsedSeconds)
     {
         if (isJumping)
         {
-            elapsedSecondsSinceJumpStart += (float) gameTime.ElapsedGameTime.TotalSeconds;
+            elapsedSecondsSinceJumpStart += (float) elapsedSeconds.ElapsedGameTime.TotalSeconds;
             positionOld = position;
             position = jumpStartPoint + new Vector2(
                 velocity * (float)Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart,
@@ -77,7 +77,7 @@ public class BlobEntity
         return this.position;
     }
 
-    internal object GetEndpoint()
+    public Vector2 GetEndpoint()
     {
         return this.jumpEndPoint;
     }
