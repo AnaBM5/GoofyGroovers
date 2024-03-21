@@ -31,27 +31,36 @@ public class BlobEntity
     public void Update(GameTime elapsedSeconds)
     {
         timeSinceLastUpdate += (float)elapsedSeconds.ElapsedGameTime.TotalSeconds;
-        if (timeSinceLastUpdate > 0)
+        if (timeSinceLastUpdate > 1)
         {
             timeSinceLastUpdate = 0;
+
             if (isJumping)
             {
-                //elapsedSecondsSinceJumpStart += (float) (0.001 * elapsedSeconds.ElapsedGameTime.TotalSeconds);
-                elapsedSecondsSinceJumpStart += (float) 0.1;
+                position = jumpEndPoint;
+            }
+
+            /*if (isJumping)
+            {
+                elapsedSecondsSinceJumpStart += (float) (elapsedSeconds.ElapsedGameTime.TotalSeconds);
+                //elapsedSecondsSinceJumpStart += (float) 0.1;
                 positionOld = position;
                 position = jumpStartPoint + new Vector2(
                     -velocity * (float)Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart,
                     -velocity * (float)Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
-                Debug.WriteLine("Position: " + GetPosition().ToString());
-                if (jumpTheta > 90 / (180 * Math.PI) && jumpTheta < 270 / (180 * Math.PI) && (position.X >= jumpEndPoint.X) || (position.X <= jumpEndPoint.X) || /*If fell through the floor */ position.Y > 10000)
+                
+                if (jumpTheta > 90 / (180 * Math.PI) && jumpTheta < 270 / (180 * Math.PI) && (position.X >= jumpEndPoint.X) || (position.X <= jumpEndPoint.X))
                 {
-                    position = jumpEndPoint; //TODO: Is it adjusted for the sprite size (radius-wise)?
-
+                    position = jumpEndPoint; // Is it adjusted for the sprite size (radius-wise)?
                     jumpTheta = 0;
                     isJumping = false;
                 }
-                // Check if we're at the end yet
-            }
+
+                if (position.Y > 1000) *//*If fell through the floor *//* 
+                {
+                    position = new Vector2(192, 192);
+                }
+            }*/
         }
     }
 
@@ -61,7 +70,9 @@ public class BlobEntity
     }
 
     public BlobEntity()
-    { }
+    {
+    
+    }
 
     public BlobEntity(Vector2 position, bool isOwnedByUser)
     {
@@ -78,8 +89,11 @@ public class BlobEntity
 
     public void SetJumpEndPoint(Vector2 endpoint)
     {
-        this.jumpStartPoint = position;
         this.jumpEndPoint = endpoint;
+    }
+    public void SetJumpStartPoint(Vector2 startpoint)
+    {
+        this.jumpStartPoint = startpoint;
     }
 
     public void SetTexture(Texture2D texture)
@@ -115,5 +129,15 @@ public class BlobEntity
     internal void SetJumping(bool isJumping)
     {
         this.isJumping = isJumping;
+    }
+
+    internal void SetVelocity(float velocity)
+    {
+        this.velocity = velocity; 
+    }
+
+    internal void SetThetha(float thetha)
+    {
+        this.jumpTheta = thetha;
     }
 }

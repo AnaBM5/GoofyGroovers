@@ -62,8 +62,9 @@ namespace PlatformGame.Managers
 
         public bool FindIntersection(Vector2[] map, BlobEntity blob, float theta, float velocity)
         {
-            parabolicMovement.Clear();
+            parabolicMovement.Clear(); // DEBUG: Remove
             double timeDelta = 0.1;
+            double timeLimit = 4;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
             position = blob.GetPosition();
             for (double time = timeDelta; time <= 10; time += timeDelta)
@@ -74,7 +75,7 @@ namespace PlatformGame.Managers
                     -velocity * (float)(Math.Cos(theta) * time),
                     -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
                 parabolicMovement.Add(position);
-                for (int iterator = 0; iterator < 4; iterator++)
+                for (int iterator = 0; iterator < timeLimit; iterator++)
                 {
                     if (iterator == 0)
                     {
@@ -87,11 +88,15 @@ namespace PlatformGame.Managers
 
                     intervalEndPoint = map[iterator];
                     if (LineUtil.IntersectLineSegments2D(positionOld, position, intervalStartPoint, intervalEndPoint, out intersection))
-                    { // TODO: Fix, constantly identifies (0,0) as an intersection point.
+                    {
+                        playerBlob.SetJumpStartPoint(position);
                         playerBlob.SetJumpEndPoint(intersection);
-                        //playerBlob.SetJumping(true);
+                        playerBlob.SetVelocity(_mouseManager.GetVelocity());
+                        playerBlob.SetThetha(_mouseManager.GetTheta());
+                        playerBlob.SetJumping(true);
                         _mouseManager.EndNewJumpAttempt();
                         break;
+                        //timeLimit = 0;
                     }
                 }
             } // Adjust the step size as needed
@@ -103,13 +108,13 @@ namespace PlatformGame.Managers
         public void Draw(GameTime gameTime)
         {
             Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
-           
             for (int iterator = 0;iterator < parabolicMovement.Count(); iterator++)
             { 
                 Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 7, (int)parabolicMovement.ElementAt(iterator).Y -7, 15, 15), Color.Black);
             }
             playerBlob.Draw(gameTime);
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
+            playerBlob.Draw(gameTime);
         }
 
         public void HandleNetworkCommunication()
