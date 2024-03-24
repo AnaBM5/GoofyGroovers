@@ -122,6 +122,24 @@ namespace Goofy_Groovers.Util
         /// which the position is checked.</param>
         /// <param name="testedPoint"> Position to be checked</param>
         /// <returns></returns>
+
+        public static List<Vector2> CalculatePointsOnCircle(Vector2 centerPoint, float radius, int numberOfPoints)
+        {
+            List<Vector2> points = new List<Vector2>();
+            float angleIncrement = (float)(2 * Math.PI) / numberOfPoints;
+
+            for (int i = 0; i < numberOfPoints; i++)
+            {
+                float angle = i * angleIncrement;
+                float x = centerPoint.X + radius * (float)Math.Cos(angle);
+                float y = centerPoint.Y + radius * (float)Math.Sin(angle);
+                points.Add(new Vector2(x, y));
+            }
+
+            return points;
+        }
+
+
         public static bool PointInPolygon(List<Vector2> pointArray, Vector2 testedPoint)
         {
             // Get the angle between the point and the

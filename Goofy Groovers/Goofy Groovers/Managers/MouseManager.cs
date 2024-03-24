@@ -55,7 +55,7 @@ public class MouseManager
 
     public void CheckMousePressLeftButton()
     {
-        if (mouseState.LeftButton == ButtonState.Pressed)
+        if (mouseState.LeftButton == ButtonState.Pressed && !(mouseState.RightButton == ButtonState.Pressed))
         {
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
             newJumpInitiated = true;
@@ -76,6 +76,11 @@ public class MouseManager
         {
             newJumpInitiated = false;
             newJumpAttempted = true;
+        }
+
+        if (mouseState.RightButton == ButtonState.Pressed)
+        {
+            newJumpInitiated = false;
         }
 
         //  Check if the distance is bigger than accidental click (>10px for example?)

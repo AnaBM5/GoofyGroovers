@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework.Graphics;
 using PlatformGame.GameClient;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace PlatformGame.Managers
@@ -20,11 +19,17 @@ namespace PlatformGame.Managers
         public BlobEntity playerBlob;
 
         private Vector2 position;
-        private List<Vector2> parabolicMovement;
+        private List<Vector2> parabolicMovementVisualisation;
+
+        private double parabolicVisualisationTimeDelta;
+        private double parabolicVisualisationTimeMax;
+        private double parabolicVisualisationOffset;
+
         private List<Vector2> tilePositions;
 
         public Texture2D dotTexture;
         public Texture2D squareTexture;
+        private double elapsedSecondsSinceVisualisationShift;
 
         public GameManager(GoofyGroovers game)
         {
@@ -33,6 +38,10 @@ namespace PlatformGame.Managers
             blobEntities[0] = new BlobEntity(new Vector2(192, 192), true);
             playerBlob = blobEntities[0];
             _mouseManager = new MouseManager();
+
+            parabolicVisualisationTimeDelta = 0.2;
+            parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
+            parabolicVisualisationTimeMax = 20;
 
             map = new List<Vector2>
             {
@@ -58,7 +67,7 @@ namespace PlatformGame.Managers
                 new Vector2(512, 128),
             };
 
-            parabolicMovement = new List<Vector2>();
+            parabolicMovementVisualisation = new List<Vector2>();
         }
 
         public void Update(GameTime elapsedSeconds)
@@ -84,43 +93,63 @@ namespace PlatformGame.Managers
             {
                 blob.Update(elapsedSeconds);
             }
+
+            elapsedSecondsSinceVisualisationShift += elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            if (elapsedSecondsSinceVisualisationShift > 0.01)
+            {
+                elapsedSecondsSinceVisualisationShift = 0;
+                parabolicVisualisationOffset += 0.01;
+            }
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
         {
-            parabolicMovement.Clear();
-            double timeDelta = 0.2;
-            double timeLimit = 5;
-            for (double time = 0; time <= timeLimit; time += timeDelta)
+            parabolicMovementVisualisation.Clear();
+            for (double time = 0; time <= parabolicVisualisationTimeMax; time += parabolicVisualisationTimeDelta)
             {
-                // Debug.WriteLine("Position: " + position.ToString());
-                parabolicMovement.Add(playerBlob.GetPosition() + new Vector2(
-                    -velocity * (float)(Math.Cos(theta) * time),
-                    -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2)));
+                position = playerBlob.GetPosition() + new Vector2(
+                    -velocity * (float)(Math.Cos(theta) * (time + parabolicVisualisationOffset)),
+                    -velocity * (float)(Math.Sin(theta) * (time + parabolicVisualisationOffset)) - 0.5f * -9.8f * (float)Math.Pow((time + parabolicVisualisationOffset), 2));
+                if (LineUtil.PointInPolygon(map, position))
+                {
+                    parabolicMovementVisualisation.Add(position);
+                }
+                else
+                {
+                    time = parabolicVisualisationTimeMax;
+                }
+                if (parabolicVisualisationOffset >= parabolicVisualisationTimeDelta)
+                {
+                    parabolicVisualisationOffset = 0;
+                }
             }
         }
 
         public bool FindIntersection(List<Vector2> map, BlobEntity blob, float theta, float velocity)
         {
-            parabolicMovement.Clear();
-            double timeDelta = 0.1;
+            parabolicMovementVisualisation.Clear();
             double timeLimit = 20;
             Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
             position = playerBlob.GetPosition() + new Vector2(
-                    -velocity * (float)(Math.Cos(theta) * timeDelta),
-                    -velocity * (float)(Math.Sin(theta) * timeDelta) - 0.5f * -9.8f * (float)Math.Pow(timeDelta, 2));
+                    -velocity * (float)(Math.Cos(theta) * parabolicVisualisationTimeDelta),
+                    -velocity * (float)(Math.Sin(theta) * parabolicVisualisationTimeDelta) - 0.5f * -9.8f * (float)Math.Pow(parabolicVisualisationTimeDelta, 2));
             if (LineUtil.PointInPolygon(map, position))
-                for (double time = timeDelta * 2; time <= timeLimit; time += timeDelta)
+                for (double time = parabolicVisualisationTimeDelta * 2; time <= timeLimit && !playerBlob.GetJumpingState(); time += parabolicVisualisationTimeDelta)
                 {
                     // Debug.WriteLine("Position: " + position.ToString());
                     positionOld = position;
                     position = playerBlob.GetPosition() + new Vector2(
                         -velocity * (float)(Math.Cos(theta) * time),
                         -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
-                    parabolicMovement.Add(position);
-                    for (int iterator = 0; iterator < map.Count; iterator++)
+                    parabolicMovementVisualisation.Add(position); // Remove for no "trace"
+                    
+                    // Too expensive and not yet necessary to check
+                    // checkedPositions = LineUtil.CalculatePointsOnCircle(position, 12, 4);
+                    // checkedPositions.Add(positionOld);
+
+                    for (int mapBordersIterator = 0; mapBordersIterator < map.Count && !playerBlob.GetJumpingState(); mapBordersIterator++)
                     {
-                        if (iterator == 0)
+                        if (mapBordersIterator == 0)
                         {
                             intervalStartPoint = map.Last();
                         }
@@ -129,7 +158,7 @@ namespace PlatformGame.Managers
                             intervalStartPoint = intervalEndPoint;
                         }
 
-                        intervalEndPoint = map[iterator];
+                        intervalEndPoint = map[mapBordersIterator];
                         if (LineUtil.IntersectLineSegments2D(positionOld, position, intervalStartPoint, intervalEndPoint, out intersection))
                         {
                             playerBlob.SetJumpStartPoint(position);
@@ -138,7 +167,7 @@ namespace PlatformGame.Managers
                             playerBlob.SetThetha(_mouseManager.GetTheta());
                             playerBlob.SetJumpingState(true);
                             _mouseManager.EndNewJumpAttempt();
-                            timeLimit = 0;
+
                             break;
                         }
                     }
@@ -156,9 +185,9 @@ namespace PlatformGame.Managers
                 Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)tilePositions.ElementAt(iterator).X, (int)tilePositions.ElementAt(iterator).Y, 128, 128), Color.PeachPuff);
             }
 
-            for (int iterator = 0; iterator < parabolicMovement.Count(); iterator++)
+            for (int iterator = 0; iterator < parabolicMovementVisualisation.Count(); iterator++)
             {
-                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovement.ElementAt(iterator).X - 2, (int)parabolicMovement.ElementAt(iterator).Y - 2, 5, 5), Color.Black);
+                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.Black);
             }
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
             playerBlob.Draw(gameTime);
