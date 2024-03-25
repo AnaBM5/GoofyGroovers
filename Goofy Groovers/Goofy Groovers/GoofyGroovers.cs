@@ -3,14 +3,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PlatformGame.Managers;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Goofy_Groovers
 {
     public class GoofyGroovers : Game
     {
-
         private GameManager _gameManager;
 
         public GoofyGroovers()
@@ -30,15 +27,17 @@ namespace Goofy_Groovers
 
         protected override void Initialize()
         {
+            // TODO: Communicate information to server as the name/color have been chosen
+            // and load the information about the other blobs.
             _gameManager = new GameManager(this);
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            Globals._spriteBatch = new SpriteBatch(GraphicsDevice);
-
             // Load game content here if needed
+            Globals._spriteBatch = new SpriteBatch(GraphicsDevice);
+            Globals._gameFont = Content.Load<SpriteFont>("Fonts/Minecraft");
 
             Texture2D dotSprite = Content.Load<Texture2D>("dotSprite");
             _gameManager.getMouseManager().setDotSprite(dotSprite);
@@ -47,7 +46,6 @@ namespace Goofy_Groovers
 
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
             _gameManager.squareTexture = squareSprite;
-            
         }
 
         protected override void Update(GameTime gameTime)

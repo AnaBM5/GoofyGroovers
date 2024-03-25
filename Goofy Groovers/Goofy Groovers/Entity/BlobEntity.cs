@@ -23,6 +23,9 @@ public class BlobEntity
     private Vector2 jumpEndPoint;
     private Vector2 jumpStartPoint;
 
+    private string blobUserName;
+    private Color blobUserColor;
+
     //private Sprite sprite;
     private SpriteBatch spriteBatch;
 
@@ -38,7 +41,7 @@ public class BlobEntity
             if (isJumping)
             {
                 position = jumpEndPoint;
-                isJumping = false;  
+                isJumping = false;
             }
 
             /*if (isJumping)
@@ -49,7 +52,7 @@ public class BlobEntity
                 position = jumpStartPoint + new Vector2(
                     -velocity * (float)Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart,
                     -velocity * (float)Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
-                
+
                 if (jumpTheta > 90 / (180 * Math.PI) && jumpTheta < 270 / (180 * Math.PI) && (position.X >= jumpEndPoint.X) || (position.X <= jumpEndPoint.X))
                 {
                     position = jumpEndPoint; // Is it adjusted for the sprite size (radius-wise)?
@@ -57,7 +60,7 @@ public class BlobEntity
                     isJumping = false;
                 }
 
-                if (position.Y > 1000) *//*If fell through the floor *//* 
+                if (position.Y > 1000) *//*If fell through the floor *//*
                 {
                     position = new Vector2(192, 192);
                 }
@@ -67,12 +70,19 @@ public class BlobEntity
 
     public void Draw(GameTime gameTime)
     {
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)GetPosition().X - 12, (int)GetPosition().Y - 12, 25, 25), Color.Red);
+        if (blobUserName.Length >= 13)
+        {
+            Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", GetPosition() + new Vector2(-35, 20), Color.Black);
+        }
+        else
+        {
+            Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, GetPosition() + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
+        }
+        Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)GetPosition().X - 12, (int)GetPosition().Y - 12, 25, 25), blobUserColor);
     }
 
     public BlobEntity()
     {
-    
     }
 
     public BlobEntity(Vector2 position, bool isOwnedByUser)
@@ -92,6 +102,7 @@ public class BlobEntity
     {
         this.jumpEndPoint = endpoint;
     }
+
     public void SetJumpStartPoint(Vector2 startpoint)
     {
         this.jumpStartPoint = startpoint;
@@ -127,22 +138,33 @@ public class BlobEntity
         return this.jumpEndPoint;
     }
 
-    internal void SetJumpingState(bool isJumping)
+    public void SetJumpingState(bool isJumping)
     {
         this.isJumping = isJumping;
     }
+
     public bool GetJumpingState()
     {
         return this.isJumping;
     }
 
-    internal void SetVelocity(float velocity)
+    public void SetVelocity(float velocity)
     {
-        this.velocity = velocity; 
+        this.velocity = velocity;
     }
 
-    internal void SetThetha(float thetha)
+    public void SetThetha(float thetha)
     {
         this.jumpTheta = thetha;
+    }
+
+    public void SetUserName(string userName)
+    {
+        this.blobUserName = userName;
+    }
+
+    public void SetUserColor(Color color)
+    {
+        this.blobUserColor = color;
     }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Goofy_Groovers.Util
 {
-    internal class LineUtil
+    public class LineUtil
     {
         public static void Swap<T>(ref T lhs, ref T rhs)
         {
@@ -138,7 +138,6 @@ namespace Goofy_Groovers.Util
 
             return points;
         }
-
 
         public static bool PointInPolygon(List<Vector2> pointArray, Vector2 testedPoint)
         {

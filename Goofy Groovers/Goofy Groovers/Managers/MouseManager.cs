@@ -30,9 +30,9 @@ public class MouseManager
     private float maxVectorLength;
     private float movementVelocity;
 
-
     //Sprites and coordinates used for testing
     private Texture2D dotTexture;
+
     private Point directionVector;
     private Point horizontalVector;
 
@@ -96,7 +96,6 @@ public class MouseManager
         Point originDirectionVector = directionVector - mouseClickStartPoint;
         Point originHorizontalVector = horizontalVector - mouseClickStartPoint;
 
-
         //lengths of vectors
         float invertedVectorLength = (float)Math.Sqrt((Math.Pow(originDirectionVector.X, 2) + Math.Pow(originDirectionVector.Y, 2)));
         float horizontalVectorLength = (float)Math.Sqrt((Math.Pow(originHorizontalVector.X, 2) + Math.Pow(originHorizontalVector.Y, 2)));
@@ -107,7 +106,6 @@ public class MouseManager
         //dot product between them
         float dotProduct = (float)originDirectionVector.X * originHorizontalVector.X + originDirectionVector.Y * originHorizontalVector.Y;
 
-
         if (invertedVectorLength == 0)
             theta = (float)Math.PI;
         else
@@ -115,7 +113,7 @@ public class MouseManager
 
         //if the mouse was dragged to a lower y position than the starting point, adjusts it so it takes angles from 180 degrees to 360
         if (mouseClickEndPoint.Y < mouseClickStartPoint.Y)
-            theta = (float) (2 * Math.PI) - theta;
+            theta = (float)(2 * Math.PI) - theta;
 
         float thetaDeegres = (float)(180 / Math.PI) * theta;
 
@@ -125,19 +123,18 @@ public class MouseManager
     public void Draw()
     {
         //draw the dots on the positions
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y-12, 25,25), Color.White);
+        Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y - 12, 25, 25), Color.White);
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
 
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
-
     }
 
     private void DefineVelocity(float currentVectorLength)
     {
         float maxSpeed = 100;
 
-        if (currentVectorLength == 0) 
+        if (currentVectorLength == 0)
             movementVelocity = 5;
         else if (currentVectorLength >= maxVectorLength)
             movementVelocity = maxSpeed;
@@ -149,7 +146,7 @@ public class MouseManager
 
         //Debug.WriteLine("Speed: " + movementVelocity);
     }
-    
+
     public bool IsNewJumpAttempted()
     {
         return newJumpAttempted;
@@ -160,21 +157,22 @@ public class MouseManager
         this.newJumpAttempted = false;
     }
 
-    internal float GetTheta()
+    public float GetTheta()
     {
         return theta;
     }
 
-    internal float GetVelocity()
+    public float GetVelocity()
     {
         return movementVelocity;
     }
+
     public bool IsNewJumpInitiated()
     {
         return newJumpInitiated;
     }
 
-    public void setDotSprite (Texture2D dotTexture)
+    public void setDotSprite(Texture2D dotTexture)
     {
         this.dotTexture = dotTexture;
     }

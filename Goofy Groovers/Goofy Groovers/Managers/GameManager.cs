@@ -37,6 +37,12 @@ namespace PlatformGame.Managers
             blobEntities = new BlobEntity[1];
             blobEntities[0] = new BlobEntity(new Vector2(192, 192), true);
             playerBlob = blobEntities[0];
+
+            // TODO: Pop-up window?
+            playerBlob.SetUserName("Player 1");
+            // TODO: Random color from an array -> tell server to update said array?
+            playerBlob.SetUserColor(Color.Red);
+
             _mouseManager = new MouseManager();
 
             parabolicVisualisationTimeDelta = 0.2;
@@ -142,7 +148,7 @@ namespace PlatformGame.Managers
                         -velocity * (float)(Math.Cos(theta) * time),
                         -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
                     parabolicMovementVisualisation.Add(position); // Remove for no "trace"
-                    
+
                     // Too expensive and not yet necessary to check
                     // checkedPositions = LineUtil.CalculatePointsOnCircle(position, 12, 4);
                     // checkedPositions.Add(positionOld);
