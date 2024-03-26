@@ -39,9 +39,9 @@ namespace PlatformGame.Managers
             playerBlob = blobEntities[0];
 
             // TODO: Pop-up window?
-            playerBlob.SetUserName("Player 1");
+            playerBlob.SetUserName("");
             // TODO: Random color from an array -> tell server to update said array?
-            playerBlob.SetUserColor(Color.Red);
+            playerBlob.SetUserColor(Color.Blue);
 
             _mouseManager = new MouseManager();
 
