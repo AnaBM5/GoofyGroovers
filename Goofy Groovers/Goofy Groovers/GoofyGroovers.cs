@@ -15,11 +15,15 @@ namespace Goofy_Groovers
             Globals._graphics = new GraphicsDeviceManager(this);
 
             //Not necessary for now but is going to be used later to have the game in full screen
+
             /*
             Globals._graphics.IsFullScreen = true;
             Globals._graphics.PreferredBackBufferWidth = 1920;
             Globals._graphics.PreferredBackBufferHeight = 1080;
             */
+
+            Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
+            Globals.windowHeight = (ushort) Globals._graphics.PreferredBackBufferHeight;
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -46,6 +50,9 @@ namespace Goofy_Groovers
 
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
             _gameManager.squareTexture = squareSprite;
+
+            _gameManager.getLevelManager().setPlatformSprite(squareSprite);
+            _gameManager.getLevelManager().setBackgroundSprite(squareSprite);
         }
 
         protected override void Update(GameTime gameTime)

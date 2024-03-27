@@ -124,10 +124,10 @@ public class MouseManager
     {
         //draw the dots on the positions
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y - 12, 25, 25), Color.White);
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
+        //Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
 
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
+        //Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
     }
 
     private void DefineVelocity(float currentVectorLength)

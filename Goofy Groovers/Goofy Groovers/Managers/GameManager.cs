@@ -13,6 +13,7 @@ namespace PlatformGame.Managers
     public class GameManager
     {
         private MouseManager _mouseManager;
+        private TileMapManager _levelManager;
         private BlobEntity[] blobEntities;
         private List<Vector2> map;
 
@@ -37,6 +38,8 @@ namespace PlatformGame.Managers
             blobEntities = new BlobEntity[1];
             blobEntities[0] = new BlobEntity(new Vector2(192, 192), true);
             playerBlob = blobEntities[0];
+
+            _levelManager = new TileMapManager();
 
             // TODO: Pop-up window?
             playerBlob.SetUserName("Player 1");
@@ -186,11 +189,13 @@ namespace PlatformGame.Managers
         public void Draw(GameTime gameTime)
         {
             //Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
+            /*
             for (int iterator = 0; iterator < tilePositions.Count(); iterator++)
             {
                 Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)tilePositions.ElementAt(iterator).X, (int)tilePositions.ElementAt(iterator).Y, 128, 128), Color.PeachPuff);
             }
-
+            */
+            _levelManager.Draw();
             for (int iterator = 0; iterator < parabolicMovementVisualisation.Count(); iterator++)
             {
                 Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.Black);
@@ -207,6 +212,11 @@ namespace PlatformGame.Managers
         public MouseManager getMouseManager()
         {
             return _mouseManager;
+        }
+
+        public TileMapManager getLevelManager()
+        {
+            return _levelManager;
         }
     }
 }
