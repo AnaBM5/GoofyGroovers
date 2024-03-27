@@ -61,10 +61,11 @@ namespace Goofy_Groovers
 
         public string GetPlayerInitialsFromUser()
         {
+            
             KeyboardState keyboardState = Keyboard.GetState();
 
             Keys[] pressedKeys = keyboardState.GetPressedKeys();                                           //We get the pressed keys per frame 
-
+            
             if (pressedKeys.Length > 0 && !isKeyPressed)                                                   //We verify is the key is being press
             {
                 Keys firstKey = pressedKeys[0];                                                            //We get the first pressed key 
@@ -79,6 +80,11 @@ namespace Goofy_Groovers
                     initials = initials.Substring(0, initials.Length - 1);                                 //if it is pressed we eliminate one character 
                     isKeyPressed = true;
                 }
+                else if (firstKey == Keys.Space && initials.Length > 0)                                      //We allow the user to press space 
+                {
+                    initials += " ";
+                    isKeyPressed = true;
+                }
                 else if (gameState == GameState.LoginScreen && firstKey == Keys.Enter && initials.Length >=3)    //When the player press enter we set a random colour 
                 {
                     int randomIndex = random.Next(availableColors.Count);
@@ -88,7 +94,7 @@ namespace Goofy_Groovers
                     availableColors.RemoveAt(randomIndex);
 
                     isKeyPressed = true;
-                    return "EnterPressed";  // Return a specific string to indicate Enter key is pressed
+                    return "EnterPressed";                                                                 // Return a specific string to indicate Enter key is pressed
                 }
             }
             else if (pressedKeys.Length == 0)                                                              //if there's nothing written, we understand that ther's has not been a key pressed 
@@ -155,18 +161,13 @@ namespace Goofy_Groovers
 
             // Calculate the position to center the message horizontally and vertically
             Vector2 messageSize = Globals._gameFont.MeasureString(message);
-            Vector2 position = new Vector2(
-                (GraphicsDevice.Viewport.Width - messageSize.X) / 2,
-                (GraphicsDevice.Viewport.Height - messageSize.Y) / 2
-            );
+            Vector2 position = new Vector2((GraphicsDevice.Viewport.Width - messageSize.X) / 2 - 25,(GraphicsDevice.Viewport.Height - messageSize.Y) / 2 - 30);
 
             Vector2 initialsSize = Globals._gameFont.MeasureString(initials);
-            Vector2 initialsPosition = new Vector2(
-                (GraphicsDevice.Viewport.Width - initialsSize.X) / 2,  // Center horizontally
-                300                                                   // Fixed vertical position for initials
-            );
-            Globals._spriteBatch.DrawString(Globals._gameFont, message, position, Color.White);
-            Globals._spriteBatch.DrawString(Globals._gameFont, initials, initialsPosition, Color.Black);
+            Vector2 initialsPosition = new Vector2((GraphicsDevice.Viewport.Width - initialsSize.X - 30) / 2, 250);                                                  // Fixed vertical position for initials
+
+            Globals._spriteBatch.DrawString(Globals._gameFont, message, position, Color.White,0f, Vector2.Zero, 1.2f, SpriteEffects.None, 0f);
+            Globals._spriteBatch.DrawString(Globals._gameFont, initials, initialsPosition, Color.Black,0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
         }
     }
 }
