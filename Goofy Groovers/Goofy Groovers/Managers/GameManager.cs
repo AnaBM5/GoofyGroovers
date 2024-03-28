@@ -54,22 +54,6 @@ namespace PlatformGame.Managers
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
             parabolicVisualisationTimeMax = 20;
 
-            /*
-            map = new List<Vector2>
-            {
-                new Vector2(128, 128),
-                new Vector2(128, 384),
-                new Vector2(512, 384),
-                new Vector2(512, 256),
-                new Vector2(640, 256),
-                new Vector2(640, 128),
-                new Vector2(384, 128),
-                new Vector2(384, 256),
-                new Vector2(256, 256),
-                new Vector2(256, 128)
-            };
-            */
-
             map = _levelManager.getLevelOutlinePixelCoordinates();
             obstacles = _levelManager.getObstaclesPixelCoordinates();
 
@@ -102,15 +86,6 @@ namespace PlatformGame.Managers
                     // Calculate the force of the jump, pass it to the blob
                     // Calculate the new intersection point FIRST, pass it to the blob
                     // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
-                    
-                    /*
-                    List<Vector2> allSections = new List<Vector2>();
-                    allSections.AddRange(map);
-                    foreach (Vector2[] obstacle in obstacles)
-                    {
-                        allSections.AddRange(obstacle);
-                    }
-                    */
 
                     FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
@@ -151,7 +126,7 @@ namespace PlatformGame.Managers
             }
         }
 
-        public bool FindIntersection(List<Vector2> map, BlobEntity blob, float theta, float velocity)
+        public void FindIntersection(List<Vector2> map, BlobEntity blob, float theta, float velocity)
         {
             parabolicMovementVisualisation.Clear();
 
@@ -170,12 +145,12 @@ namespace PlatformGame.Managers
                 playerBlob.SetJumpEndPoint(trajectoryPositions[1]);
                 playerBlob.SetVelocity(_mouseManager.GetVelocity());
                 playerBlob.SetThetha(_mouseManager.GetTheta());
+                playerBlob.DefineJumpDirection();
                 playerBlob.SetJumpingState(true);
                 _mouseManager.EndNewJumpAttempt();
 
             }
             // Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
-            return false;
         }
 
         private Vector2[] InterceptAllObstacles(float theta, float velocity)

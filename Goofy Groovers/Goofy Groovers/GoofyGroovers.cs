@@ -16,11 +16,12 @@ namespace Goofy_Groovers
 
             //Not necessary for now but is going to be used later to have the game in full screen
 
-            
+            //Comment this section to deactivate full screen
+            /*
             Globals._graphics.IsFullScreen = true;
             Globals._graphics.PreferredBackBufferWidth = 1920;
             Globals._graphics.PreferredBackBufferHeight = 1080;
-            
+            //-------------*/
 
             Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
             Globals.windowHeight = (ushort) Globals._graphics.PreferredBackBufferHeight;
