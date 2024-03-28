@@ -1,6 +1,7 @@
 ﻿using Goofy_Groovers;
 using Goofy_Groovers.Managers;
 using Goofy_Groovers.Util;
+using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PlatformGame.GameClient;
@@ -16,6 +17,7 @@ namespace PlatformGame.Managers
         private TileMapManager _levelManager;
         private BlobEntity[] blobEntities;
         private List<Vector2> map;
+        private List<Vector2[]> obstacles;
 
         public BlobEntity playerBlob;
 
@@ -52,6 +54,7 @@ namespace PlatformGame.Managers
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
             parabolicVisualisationTimeMax = 20;
 
+            /*
             map = new List<Vector2>
             {
                 new Vector2(128, 128),
@@ -65,6 +68,10 @@ namespace PlatformGame.Managers
                 new Vector2(256, 256),
                 new Vector2(256, 128)
             };
+            */
+
+            map = _levelManager.getLevelOutlinePixelCoordinates();
+            obstacles = _levelManager.getObstaclesPixelCoordinates();
 
             tilePositions = new List<Vector2>
             {
@@ -95,6 +102,16 @@ namespace PlatformGame.Managers
                     // Calculate the force of the jump, pass it to the blob
                     // Calculate the new intersection point FIRST, pass it to the blob
                     // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
+                    
+                    /*
+                    List<Vector2> allSections = new List<Vector2>();
+                    allSections.AddRange(map);
+                    foreach (Vector2[] obstacle in obstacles)
+                    {
+                        allSections.AddRange(obstacle);
+                    }
+                    */
+
                     FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
             }
@@ -119,7 +136,7 @@ namespace PlatformGame.Managers
                 position = playerBlob.GetPosition() + new Vector2(
                     -velocity * (float)(Math.Cos(theta) * (time + parabolicVisualisationOffset)),
                     -velocity * (float)(Math.Sin(theta) * (time + parabolicVisualisationOffset)) - 0.5f * -9.8f * (float)Math.Pow((time + parabolicVisualisationOffset), 2));
-                if (LineUtil.PointInPolygon(map, position))
+                if (LineUtil.PointInPolygon(map, position) && OutsideObstacles())
                 {
                     parabolicMovementVisualisation.Add(position);
                 }
@@ -137,12 +154,52 @@ namespace PlatformGame.Managers
         public bool FindIntersection(List<Vector2> map, BlobEntity blob, float theta, float velocity)
         {
             parabolicMovementVisualisation.Clear();
-            double timeLimit = 20;
-            Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
+
+            Vector2[] trajectoryPositions = new Vector2[2];
+
             position = playerBlob.GetPosition() + new Vector2(
                     -velocity * (float)(Math.Cos(theta) * parabolicVisualisationTimeDelta),
                     -velocity * (float)(Math.Sin(theta) * parabolicVisualisationTimeDelta) - 0.5f * -9.8f * (float)Math.Pow(parabolicVisualisationTimeDelta, 2));
-            if (LineUtil.PointInPolygon(map, position))
+           
+            if (LineUtil.PointInPolygon(map, position) && OutsideObstacles())
+            {
+                trajectoryPositions = InterceptAllObstacles(theta, velocity);
+                position = trajectoryPositions[0];
+
+                playerBlob.SetJumpStartPoint(position);
+                playerBlob.SetJumpEndPoint(trajectoryPositions[1]);
+                playerBlob.SetVelocity(_mouseManager.GetVelocity());
+                playerBlob.SetThetha(_mouseManager.GetTheta());
+                playerBlob.SetJumpingState(true);
+                _mouseManager.EndNewJumpAttempt();
+
+            }
+            // Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
+            return false;
+        }
+
+        private Vector2[] InterceptAllObstacles(float theta, float velocity)
+        {
+            Vector2 positionOld, intervalStartPoint, intervalEndPoint = Vector2.Zero, intersection = Vector2.Zero;
+
+            double lowestTime = double.MaxValue;
+            double timeLimit = 20;
+
+            Vector2 originalPosition = position;
+
+            List<Vector2> currentSection;
+            Vector2[] positionsReturned = new Vector2[2];
+
+            for(int counter = -1; counter< obstacles.Count; counter++)
+            {
+                position = originalPosition;
+
+                //first one is map, rest is obstacles
+                if (counter == -1)
+                    currentSection = map;
+                else
+                    currentSection = obstacles[counter].ToList();
+
                 for (double time = parabolicVisualisationTimeDelta * 2; time <= timeLimit && !playerBlob.GetJumpingState(); time += parabolicVisualisationTimeDelta)
                 {
                     // Debug.WriteLine("Position: " + position.ToString());
@@ -150,40 +207,52 @@ namespace PlatformGame.Managers
                     position = playerBlob.GetPosition() + new Vector2(
                         -velocity * (float)(Math.Cos(theta) * time),
                         -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
-                    parabolicMovementVisualisation.Add(position); // Remove for no "trace"
+                    //parabolicMovementVisualisation.Add(position); // Remove for no "trace"
 
-                    // Too expensive and not yet necessary to check
-                    // checkedPositions = LineUtil.CalculatePointsOnCircle(position, 12, 4);
-                    // checkedPositions.Add(positionOld);
-
-                    for (int mapBordersIterator = 0; mapBordersIterator < map.Count && !playerBlob.GetJumpingState(); mapBordersIterator++)
+                    //TODO: add an if here that, if it is too far, just dont calculate, question is how many pixels far is "too far"
+                    for (int mapBordersIterator = 0; mapBordersIterator < currentSection.Count && !playerBlob.GetJumpingState(); mapBordersIterator++)
                     {
                         if (mapBordersIterator == 0)
                         {
-                            intervalStartPoint = map.Last();
+                            intervalStartPoint = currentSection.Last();
                         }
                         else
                         {
                             intervalStartPoint = intervalEndPoint;
                         }
 
-                        intervalEndPoint = map[mapBordersIterator];
+                        intervalEndPoint = currentSection[mapBordersIterator];
                         if (LineUtil.IntersectLineSegments2D(positionOld, position, intervalStartPoint, intervalEndPoint, out intersection))
                         {
-                            playerBlob.SetJumpStartPoint(position);
-                            playerBlob.SetJumpEndPoint(intersection);
-                            playerBlob.SetVelocity(_mouseManager.GetVelocity());
-                            playerBlob.SetThetha(_mouseManager.GetTheta());
-                            playerBlob.SetJumpingState(true);
-                            _mouseManager.EndNewJumpAttempt();
+                            //if the player touches this line first
+                            //saves position and intersection to check of the closest hit
+                            if (time < lowestTime)
+                            {
+                                positionsReturned[0] = position;
+                                positionsReturned[1] = intersection;
+                                lowestTime = time;
+                            }
+                            
 
                             break;
                         }
                     }
-                } // Adjust the step size as needed
+                }
+            }
 
-            // Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
-            return false;
+            return positionsReturned;
+        }
+
+        private bool OutsideObstacles()
+        {
+            List<Vector2> coordList;
+            foreach (Vector2[] obstacle in obstacles)
+            {
+                coordList = obstacle.ToList();
+                if(LineUtil.PointInPolygon(coordList, position))
+                    return false;
+            }
+            return true;
         }
 
         public void Draw(GameTime gameTime)
@@ -198,7 +267,7 @@ namespace PlatformGame.Managers
             _levelManager.Draw();
             for (int iterator = 0; iterator < parabolicMovementVisualisation.Count(); iterator++)
             {
-                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.Black);
+                Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.White);
             }
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
             playerBlob.Draw(gameTime);
