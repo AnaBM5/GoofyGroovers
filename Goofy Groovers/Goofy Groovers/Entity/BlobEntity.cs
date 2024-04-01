@@ -13,7 +13,7 @@ public class BlobEntity
     private Vector2 position;
     private bool isOwnedByUser;
     private Vector2 positionOld; //TODO: decide fate?
-    private double timeSinceLastUpdate = 0;
+    private float timeSinceLastUpdate = 0;
 
     private float velocity;
     private float elapsedSecondsSinceJumpStart;
@@ -42,6 +42,8 @@ public class BlobEntity
     {
         this.position = position;
         this.isOwnedByUser = isOwnedByUser;
+
+        jumpStartPoint = position;
         jumpDirection = new bool[2];
     }
 
@@ -50,36 +52,39 @@ public class BlobEntity
         this.position = position;
         this.isOwnedByUser = isOwnedByUser;
         this.dotTexture = dotTexture;
+
+        jumpStartPoint = position;
         jumpDirection = new bool[2];
     }
 
     public void Update(GameTime elapsedSeconds)
     {
         timeSinceLastUpdate += (float)elapsedSeconds.ElapsedGameTime.TotalSeconds;
+        if(timeSinceLastUpdate > 0.2f)
+        {
+            timeSinceLastUpdate = 0.2f;
+        }
+
+        elapsedSecondsSinceJumpStart += timeSinceLastUpdate;
 
         //Here make it move if isJumping is true
         //We got start, end, theta and velocity, just define current position base on deltaTime
 
 
-        if(isJumping)
+        if (isJumping)
         {
-            /*
-            if (timeSinceLastUpdate > 0.0001f)
-            {*/
                 
-                position += new Vector2(
-                        -velocity * (float)(Math.Cos(jumpTheta) * timeSinceLastUpdate),
-                        -velocity * (float)(Math.Sin(jumpTheta) * timeSinceLastUpdate) - 0.5f * 9.8f * (float)Math.Pow(timeSinceLastUpdate, 2));
+                position = jumpStartPoint + new Vector2(
+                        -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
+                        -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-                if ((position.X <= jumpEndPoint.X) == jumpDirection[0])
+                if ((position.X <= jumpEndPoint.X) != jumpDirection[0])
                 {
                     position = jumpEndPoint;
                     isJumping = false;
+
                 }
-                /*
-                timeSinceLastUpdate = 0;
-                //if it has gone pass the end position, goes to end position and ends jump
-            }*/
+                
         }
 
         /*
@@ -215,5 +220,10 @@ public class BlobEntity
     public void SetUserColor(Color color)
     {
         this.blobUserColor = color;
+    }
+
+    public void SetSecondsSinceJumpStarted(float time)
+    {
+        this.elapsedSecondsSinceJumpStart = time;
     }
 }

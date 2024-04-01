@@ -132,16 +132,19 @@ public class MouseManager
 
     private void DefineVelocity(float currentVectorLength)
     {
-        float maxSpeed = 100;
-
-        if (currentVectorLength == 0)
-            movementVelocity = 5;
-        else if (currentVectorLength >= maxVectorLength)
-            movementVelocity = maxSpeed;
+        float maxSpeed = 110;
+        
+        movementVelocity = 20;
+        /*
+                if (currentVectorLength == 0)
+                    movementVelocity = 50;
+                else */
+        if (currentVectorLength >= maxVectorLength)
+            movementVelocity += maxSpeed;
         if (currentVectorLength < maxVectorLength)
         {
             maxSpeed *= currentVectorLength / maxVectorLength;
-            movementVelocity = maxSpeed;
+            movementVelocity += maxSpeed;
         }
 
         //Debug.WriteLine("Speed: " + movementVelocity);

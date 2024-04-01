@@ -141,11 +141,12 @@ namespace PlatformGame.Managers
                 trajectoryPositions = InterceptAllObstacles(theta, velocity);
                 position = trajectoryPositions[0];
 
-                playerBlob.SetJumpStartPoint(position);
+                playerBlob.SetJumpStartPoint(playerBlob.GetPosition());
                 playerBlob.SetJumpEndPoint(trajectoryPositions[1]);
                 playerBlob.SetVelocity(_mouseManager.GetVelocity());
                 playerBlob.SetThetha(_mouseManager.GetTheta());
                 playerBlob.DefineJumpDirection();
+                playerBlob.SetSecondsSinceJumpStarted(0);
                 playerBlob.SetJumpingState(true);
                 _mouseManager.EndNewJumpAttempt();
 
@@ -203,7 +204,7 @@ namespace PlatformGame.Managers
                             //saves position and intersection to check of the closest hit
                             if (time < lowestTime)
                             {
-                                positionsReturned[0] = position;
+                                positionsReturned[0] = positionOld;
                                 positionsReturned[1] = intersection;
                                 lowestTime = time;
                             }
