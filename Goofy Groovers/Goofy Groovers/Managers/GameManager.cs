@@ -1,19 +1,23 @@
 ﻿using Goofy_Groovers;
+using Goofy_Groovers.Entity;
 using Goofy_Groovers.Managers;
 using Goofy_Groovers.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using PlatformGame.GameClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
 
 namespace PlatformGame.Managers
 {
     public class GameManager
     {
         private MouseManager _mouseManager;
-        private BlobEntity[] blobEntities;
+        private List<BlobEntity> blobEntities;
+        private List<BlobEntity> updatedBlobEntities;
+        private Thread serverTransmitterThread;
         private List<Vector2> map;
 
         public BlobEntity playerBlob;
@@ -30,13 +34,16 @@ namespace PlatformGame.Managers
         public Texture2D dotTexture;
         public Texture2D squareTexture;
         private double elapsedSecondsSinceVisualisationShift;
+        private double elapsedSecondsSinceTransmissionToServer;
 
         public GameManager(GoofyGroovers game)
         {
             _mouseManager = new MouseManager();
-            blobEntities = new BlobEntity[1];
-            blobEntities[0] = new BlobEntity(new Vector2(192, 192), true);
-            playerBlob = blobEntities[0];
+            blobEntities = new List<BlobEntity>();
+            updatedBlobEntities = new List<BlobEntity>();
+            blobEntities.Add(new BlobEntity("Player 1", true, Color.White, new Vector2(192, 192)));
+
+            playerBlob = blobEntities.ElementAt(0); ;
 
             // TODO: Pop-up window?
             playerBlob.SetUserName("");
@@ -76,9 +83,11 @@ namespace PlatformGame.Managers
             parabolicMovementVisualisation = new List<Vector2>();
         }
 
-        public void Update(GameTime elapsedSeconds)
+        public void Update(GameTime elapsedSeconds, GoofyGroovers game)
         {
-            _mouseManager.Update();
+            elapsedSecondsSinceVisualisationShift += elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            elapsedSecondsSinceTransmissionToServer += elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            _mouseManager.Update(game);
 
             if (!playerBlob.GetJumpingState())
             {
@@ -95,16 +104,33 @@ namespace PlatformGame.Managers
                     FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
             }
-            foreach (var blob in blobEntities)
+
+            if (elapsedSecondsSinceTransmissionToServer > 1.0)
             {
-                blob.Update(elapsedSeconds);
+                elapsedSecondsSinceTransmissionToServer = 0;
+                // Updates every 0.01, because otherwise it's almost a mess, for now 
+                try
+                {
+                    serverTransmitterThread = new Thread(
+                        () => GameClient.TransmitToServer(playerBlob, blobEntities));
+                    serverTransmitterThread.Start();
+                }
+                catch (Exception)
+                {
+                }
+
             }
 
-            elapsedSecondsSinceVisualisationShift += elapsedSeconds.ElapsedGameTime.TotalSeconds;
             if (elapsedSecondsSinceVisualisationShift > 0.01)
             {
                 elapsedSecondsSinceVisualisationShift = 0;
                 parabolicVisualisationOffset += 0.01;
+
+            }
+
+            foreach (var blob in blobEntities)
+            {
+                blob.Update(elapsedSeconds);
             }
         }
 
@@ -197,11 +223,6 @@ namespace PlatformGame.Managers
             }
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
             playerBlob.Draw(gameTime);
-        }
-
-        public void HandleNetworkCommunication()
-        {
-            GreetingClient.RunClient();  //We call the RunClient method
         }
 
         public MouseManager getMouseManager()

@@ -16,5 +16,6 @@ namespace Goofy_Groovers.Managers
         public static GraphicsDeviceManager _graphics;
         public static SpriteBatch _spriteBatch;
         public static SpriteFont _gameFont;
+        public static GameClient _gameClient;
     }
 }
