@@ -72,7 +72,7 @@ namespace Goofy_Groovers.Managers
 
                 string jsonResponse = reader.ReadLine();
                 Console.WriteLine("The server says " + jsonResponse); //Display the server's jsonResponse on the console
-                if (jsonResponse.Equals("")
+                if (jsonResponse != null)
                 {
                     Response jsonData = JsonConvert.DeserializeObject<Response>(jsonResponse);
 
@@ -85,19 +85,20 @@ namespace Goofy_Groovers.Managers
                                 player.position = playerData.position;
                                 player.jumpStartPoint = playerData.jumpStartPoint;
                                 player.jumpEndPoint = playerData.jumpEndPoint;
+                                player.jumpTheta = playerData.jumpTheta;
                                 player.isJumping = playerData.isJumping;
                             }
                         }
                         else
                         {
                             blobs.Add(new BlobEntity(
-                                playerData.blobUserName, false, playerData.blobUserId, playerData.blobUserColor, playerData.position, playerData.isJumping,
-                                playerData.jumpStartPoint, playerData.jumpEndPoint));
+                                playerData.blobUserName, false, playerData.blobUserId, playerData.blobUserColor, playerData.position));
                         }
                     }
                     client.Close(); //We close the "socket"*
                     return true;
-                }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .Close(); //We close the "socket"*
+                }
+                client.Close(); //We close the "socket"*
                 return false;
             }
             catch (Exception e)

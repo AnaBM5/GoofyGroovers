@@ -107,11 +107,9 @@ namespace Goofy_Server
             try
             {
                 string message = reader.ReadLine(); //read the message from the client
-                Debug.WriteLine("Client says: " + message);
-
+                writer.WriteLine(HandleMessage(message));
+                writer.Flush();
                 Debug.WriteLine("Server says: " + HandleMessage(message));
-                //writer.WriteLine(); // we send the message to the client
-                //writer.Flush();
             }
             catch (Exception e)
             {
@@ -154,6 +152,7 @@ namespace Goofy_Server
                                 existingPlayerData.isJumping = true;
                                 existingPlayerData.jumpStartPoint = newPlayerData.jumpStartPoint;
                                 existingPlayerData.jumpEndPoint = newPlayerData.jumpEndPoint;
+                                existingPlayerData.jumpTheta = newPlayerData.jumpTheta;
                             }
                             else
                             {
