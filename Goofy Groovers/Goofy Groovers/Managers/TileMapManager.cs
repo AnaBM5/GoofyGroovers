@@ -178,6 +178,8 @@ namespace Goofy_Groovers.Managers
 
         private void DetectMapLimits()
         {
+            //Convert the tile positions into pixel coordinates for where the obstacle is on the screen
+
 
             Vector2 pixelCoordinates;
             Vector2[] obstacleCoordinates;
@@ -215,30 +217,51 @@ namespace Goofy_Groovers.Managers
 
 
             }
-            //Convert the tile positions into pixel coordinates for where the shape is
+            
         }
 
-        public void ModifyOffset(Vector2 playerPosition)
+        public Vector2 ModifyOffset(Vector2 playerWorldPosition)
         {
+            //Depending on distance from camera is offset velocity/value
+
+            Vector2 playerScreenPosition = new Vector2(playerWorldPosition.X - mapOffsetX, playerWorldPosition.Y - mapOffsetY);
             //Depending on the player's position on the screen, either adds or subtracts from the x and y offsets
             //Called every player update
 
-            if (playerPosition.X < 640 && mapOffsetX > 0)
+            if (playerScreenPosition.X < Globals.windowWidth / 3 && mapOffsetX > 0)
+            {
                 mapOffsetX--;
-            else if (playerPosition.X > 1280 && mapOffsetX < mapWidth* tileSize - Globals.windowWidth) //not sure if should be mapWidth*64 -1 or -64 (maybe - screen length?)
+                playerScreenPosition.X++;
+            }
+            else if (playerScreenPosition.X > Globals.windowWidth * 2 / 3 && mapOffsetX < mapWidth * tileSize - Globals.windowWidth) //not sure if should be mapWidth*64 -1 or -64 (maybe - screen length?)
+            {
                 mapOffsetX++;
+                playerScreenPosition.X--;
+            }
 
 
-            if (playerPosition.Y < 360 && mapOffsetY > 0)
+            if (playerScreenPosition.Y < Globals.windowHeight / 3 && mapOffsetY > 0)
+            {
                 mapOffsetY--;
-            else if (playerPosition.Y > 1280 && mapOffsetY < mapHeight * tileSize - Globals.windowHeight)
+                playerScreenPosition.Y++;
+            }
+            else if (playerScreenPosition.Y > Globals.windowHeight * 2 / 3 && mapOffsetY < mapHeight * tileSize - Globals.windowHeight)
+            {
                 mapOffsetY++;
+                playerScreenPosition.Y--;
+            }
+                
 
+            //playerWorldPosition.X = playerScreenPosition.X + mapOffsetX;
+            //playerWorldPosition.Y = playerScreenPosition.Y + mapOffsetY;   
 
             //for x: 640 & 1280
             //for y: 360 & 720
 
             DetectMapLimits();
+
+            //Return player screen position?
+            return playerScreenPosition;
         }
 
 
@@ -286,6 +309,19 @@ namespace Goofy_Groovers.Managers
                         //Debug.WriteLine("DON'T show tile in position" + xCounter + " , " + yCounter);
                 }
             }
+        }
+
+        public Vector2 GetWorldPosition(Vector2 cameraPosition)
+        {
+            Vector2 worldPosition = new Vector2(cameraPosition.X + mapOffsetX, cameraPosition.Y + mapOffsetY); 
+            return worldPosition;
+        }
+
+        public Vector2 GetCameraPosition(Vector2 worldPosition)
+        {
+            Vector2 cameraPosition = new Vector2(worldPosition.X - mapOffsetX, worldPosition.Y - mapOffsetY);
+
+            return cameraPosition;
         }
 
         public void setBackgroundSprite(Texture2D backgroundTile)

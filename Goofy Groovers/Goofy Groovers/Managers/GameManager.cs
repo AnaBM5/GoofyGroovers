@@ -37,11 +37,14 @@ namespace PlatformGame.Managers
         public GameManager(GoofyGroovers game)
         {
             _mouseManager = new MouseManager();
+            _levelManager = new TileMapManager();
+
+
             blobEntities = new BlobEntity[1];
-            blobEntities[0] = new BlobEntity(new Vector2(192, 192), true);
+            blobEntities[0] = new BlobEntity(new Vector2(192, 192), _levelManager.GetCameraPosition(new Vector2(192, 192)),  true);
             playerBlob = blobEntities[0];
 
-            _levelManager = new TileMapManager();
+            
 
             // TODO: Pop-up window?
             playerBlob.SetUserName("Player 1");
@@ -90,6 +93,9 @@ namespace PlatformGame.Managers
                     FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
             }
+            
+            playerBlob.SetCameraPosition(_levelManager.ModifyOffset(playerBlob.GetWorldPosition()));
+            
             foreach (var blob in blobEntities)
             {
                 blob.Update(elapsedSeconds);
@@ -108,7 +114,7 @@ namespace PlatformGame.Managers
             parabolicMovementVisualisation.Clear();
             for (double time = 0; time <= parabolicVisualisationTimeMax; time += parabolicVisualisationTimeDelta)
             {
-                position = playerBlob.GetPosition() + new Vector2(
+                position = playerBlob.GetCameraPosition() + new Vector2(
                     -velocity * (float)(Math.Cos(theta) * (time + parabolicVisualisationOffset)),
                     -velocity * (float)(Math.Sin(theta) * (time + parabolicVisualisationOffset)) - 0.5f * -9.8f * (float)Math.Pow((time + parabolicVisualisationOffset), 2));
                 if (LineUtil.PointInPolygon(map, position) && OutsideObstacles())
@@ -132,7 +138,7 @@ namespace PlatformGame.Managers
 
             Vector2[] trajectoryPositions = new Vector2[2];
 
-            position = playerBlob.GetPosition() + new Vector2(
+            position = playerBlob.GetCameraPosition() + new Vector2(
                     -velocity * (float)(Math.Cos(theta) * parabolicVisualisationTimeDelta),
                     -velocity * (float)(Math.Sin(theta) * parabolicVisualisationTimeDelta) - 0.5f * -9.8f * (float)Math.Pow(parabolicVisualisationTimeDelta, 2));
            
@@ -141,7 +147,7 @@ namespace PlatformGame.Managers
                 trajectoryPositions = InterceptAllObstacles(theta, velocity);
                 position = trajectoryPositions[0];
 
-                playerBlob.SetJumpStartPoint(playerBlob.GetPosition());
+                playerBlob.SetJumpStartPoint(playerBlob.GetWorldPosition());
                 playerBlob.SetJumpEndPoint(trajectoryPositions[1]);
                 playerBlob.SetVelocity(_mouseManager.GetVelocity());
                 playerBlob.SetThetha(_mouseManager.GetTheta());
@@ -180,7 +186,7 @@ namespace PlatformGame.Managers
                 {
                     // Debug.WriteLine("Position: " + position.ToString());
                     positionOld = position;
-                    position = playerBlob.GetPosition() + new Vector2(
+                    position = playerBlob.GetCameraPosition() + new Vector2(
                         -velocity * (float)(Math.Cos(theta) * time),
                         -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
                     //parabolicMovementVisualisation.Add(position); // Remove for no "trace"
@@ -205,7 +211,7 @@ namespace PlatformGame.Managers
                             if (time < lowestTime)
                             {
                                 positionsReturned[0] = positionOld;
-                                positionsReturned[1] = intersection;
+                                positionsReturned[1] = _levelManager.GetWorldPosition(intersection);
                                 lowestTime = time;
                             }
                             
@@ -219,6 +225,7 @@ namespace PlatformGame.Managers
             return positionsReturned;
         }
 
+        //Is not detecting these right, check position passed?
         private bool OutsideObstacles()
         {
             List<Vector2> coordList;
@@ -245,7 +252,8 @@ namespace PlatformGame.Managers
             {
                 Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.White);
             }
-            Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
+            Vector2 endPointCameraaPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
+            Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)endPointCameraaPos.X - 12, (int)endPointCameraaPos.Y - 12, 25, 25), Color.BlueViolet);
             playerBlob.Draw(gameTime);
         }
 

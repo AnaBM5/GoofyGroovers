@@ -10,14 +10,14 @@ using System.Diagnostics;
 public class BlobEntity
 {
     private bool isJumping = false;
-    private Vector2 position;
-    private bool isOwnedByUser;
-    private Vector2 positionOld; //TODO: decide fate?
+    private Vector2 cameraPosition;
+    private Vector2 worldPosition;
+    private bool isOwnedByUser;    
     private float timeSinceLastUpdate = 0;
 
     private float velocity;
     private float elapsedSecondsSinceJumpStart;
-    private float elapsedSecondsSinceLastSprite;
+    //private float elapsedSecondsSinceLastSprite;
 
     private float jumpTheta;
     private Vector2 jumpEndPoint;
@@ -38,22 +38,33 @@ public class BlobEntity
         jumpDirection = new bool[2];
     }
 
-    public BlobEntity(Vector2 position, bool isOwnedByUser)
+    public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
     {
-        this.position = position;
+        this.worldPosition = worldPosition;
+        this.cameraPosition = cameraPosition;
         this.isOwnedByUser = isOwnedByUser;
 
-        jumpStartPoint = position;
+        jumpStartPoint = worldPosition;
         jumpDirection = new bool[2];
     }
-
-    public BlobEntity(Vector2 position, bool isOwnedByUser, Texture2D dotTexture)
+    /* changeOffset automatically changes worldPos so this not necessary?
+    public BlobEntity(Vector2 cameraPosition, bool isOwnedByUser, Vector2 worldPosition)
     {
-        this.position = position;
+        this.cameraPosition = cameraPosition;
+        this.worldPosition = worldPosition;
+        this.isOwnedByUser = isOwnedByUser;
+
+        jumpStartPoint = cameraPosition;
+        jumpDirection = new bool[2];
+    }
+    */
+    public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
+    {
+        this.worldPosition = worldPosition;
         this.isOwnedByUser = isOwnedByUser;
         this.dotTexture = dotTexture;
 
-        jumpStartPoint = position;
+        jumpStartPoint = worldPosition;
         jumpDirection = new bool[2];
     }
 
@@ -74,17 +85,18 @@ public class BlobEntity
         if (isJumping)
         {
                 
-                position = jumpStartPoint + new Vector2(
+                worldPosition = jumpStartPoint + new Vector2(
                         -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
                         -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-                if ((position.X <= jumpEndPoint.X) != jumpDirection[0])
+                if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0])
                 {
-                    position = jumpEndPoint;
+                    worldPosition = jumpEndPoint;
                     isJumping = false;
 
                 }
                 
+
         }
 
         /*
@@ -127,13 +139,13 @@ public class BlobEntity
     {
         if (blobUserName.Length >= 13)
         {
-            Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", GetPosition() + new Vector2(-35, 20), Color.Black);
+            Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-35, 20), Color.Black);
         }
         else
         {
-            Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, GetPosition() + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
+            Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
         }
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)GetPosition().X - 12, (int)GetPosition().Y - 12, 25, 25), blobUserColor);
+        Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
     }
 
     public void DefineJumpDirection()
@@ -182,9 +194,19 @@ public class BlobEntity
         return this.velocity;
     }
 
-    public Vector2 GetPosition()
+    public void SetCameraPosition(Vector2 position)
     {
-        return this.position;
+        this.cameraPosition = position;
+    }
+
+    public Vector2 GetCameraPosition()
+    {
+        return this.cameraPosition;
+    }
+
+    public Vector2 GetWorldPosition()
+    {
+        return this.worldPosition;
     }
 
     public Vector2 GetEndpoint()
@@ -226,4 +248,5 @@ public class BlobEntity
     {
         this.elapsedSecondsSinceJumpStart = time;
     }
+
 }
