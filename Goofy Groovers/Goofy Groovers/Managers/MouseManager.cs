@@ -1,4 +1,5 @@
-﻿using Goofy_Groovers.Managers;
+﻿using Goofy_Groovers;
+using Goofy_Groovers.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -44,18 +45,20 @@ public class MouseManager
         maxVectorLength = 400;
     }
 
-    public void Update()
+    public void Update(GoofyGroovers game)
     {
         mouseState = Mouse.GetState();
         if (!newJumpInitiated)              //if the jump hasn't been initiated it checks for mouse click
-            CheckMousePressLeftButton();
+            CheckMousePressLeftButton(game);
         else                                //else, checks if it has been released
             CheckMouseReleaseLeftButton();
     }
 
-    public void CheckMousePressLeftButton()
+    public void CheckMousePressLeftButton(GoofyGroovers game)
     {
-        if (mouseState.LeftButton == ButtonState.Pressed && !(mouseState.RightButton == ButtonState.Pressed))
+        if (mouseState.LeftButton == ButtonState.Pressed &&
+            !(mouseState.RightButton == ButtonState.Pressed) &&
+            game.IsActive)
         {
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
             newJumpInitiated = true;

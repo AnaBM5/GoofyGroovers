@@ -1,13 +1,15 @@
 ﻿using Goofy_Groovers;
+using Goofy_Groovers.Entity;
 using Goofy_Groovers.Managers;
 using Goofy_Groovers.Util;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using PlatformGame.GameClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
 
 namespace PlatformGame.Managers
 {
@@ -15,7 +17,10 @@ namespace PlatformGame.Managers
     {
         private MouseManager _mouseManager;
         private TileMapManager _levelManager;
-        private BlobEntity[] blobEntities;
+      
+        private List<BlobEntity> blobEntities;
+        private Thread serverTransmitterThread;
+      
         private List<Vector2> map;
         private List<Vector2[]> obstacles;
 
@@ -33,25 +38,19 @@ namespace PlatformGame.Managers
         public Texture2D dotTexture;
         public Texture2D squareTexture;
         private double elapsedSecondsSinceVisualisationShift;
+        private double elapsedSecondsSinceTransmissionToServer;
 
         public GameManager(GoofyGroovers game)
         {
             _mouseManager = new MouseManager();
             _levelManager = new TileMapManager();
 
+            blobEntities = new List<BlobEntity>();
+            blobEntities.Add(new BlobEntity(new Vector2(192, 192), _levelManager.GetCameraPosition(new Vector2(192, 192)),  true));
+            playerBlob = blobEntities.ElementAt(0);
 
-            blobEntities = new BlobEntity[1];
-            blobEntities[0] = new BlobEntity(new Vector2(192, 192), _levelManager.GetCameraPosition(new Vector2(192, 192)),  true);
-            playerBlob = blobEntities[0];
-
-            
-
-            // TODO: Pop-up window?
             playerBlob.SetUserName("Player 1");
-            // TODO: Random color from an array -> tell server to update said array?
-            playerBlob.SetUserColor(Color.Red);
-
-            _mouseManager = new MouseManager();
+            playerBlob.SetUserColor(Color.Blue);
 
             parabolicVisualisationTimeDelta = 0.2;
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
@@ -73,9 +72,11 @@ namespace PlatformGame.Managers
             parabolicMovementVisualisation = new List<Vector2>();
         }
 
-        public void Update(GameTime elapsedSeconds)
+        public void Update(GameTime elapsedSeconds, GoofyGroovers game)
         {
-            _mouseManager.Update();
+            elapsedSecondsSinceVisualisationShift += elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            elapsedSecondsSinceTransmissionToServer += elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            _mouseManager.Update(game);
 
             if (!playerBlob.GetJumpingState())
             {
@@ -93,20 +94,35 @@ namespace PlatformGame.Managers
                     FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
             }
-            
+          
             playerBlob.SetCameraPosition(_levelManager.ModifyOffset(playerBlob.GetWorldPosition()));
             
             foreach (var blob in blobEntities)
             {
                 blob.Update(elapsedSeconds);
             }
+          
+            if (elapsedSecondsSinceTransmissionToServer > 0.01)
+            {
+                elapsedSecondsSinceTransmissionToServer = 0;
+                try
+                {
+                    serverTransmitterThread = new Thread(
+                        () => GameClient.TransmitToServer(playerBlob, blobEntities));
+                    serverTransmitterThread.Start();
+                }
+                catch (Exception)
+                {
+                }
+            }
 
-            elapsedSecondsSinceVisualisationShift += elapsedSeconds.ElapsedGameTime.TotalSeconds;
             if (elapsedSecondsSinceVisualisationShift > 0.01)
             {
                 elapsedSecondsSinceVisualisationShift = 0;
                 parabolicVisualisationOffset += 0.01;
+
             }
+
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
@@ -191,7 +207,11 @@ namespace PlatformGame.Managers
                         -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow(time, 2));
                     //parabolicMovementVisualisation.Add(position); // Remove for no "trace"
 
-                    //TODO: add an if here that, if it is too far, just dont calculate, question is how many pixels far is "too far"
+                    // TODO: add an if here that, if it is too far, just dont calculate, question is how many pixels far is "too far"
+                    //    Suggestion: What is the theoretical maximal height and length of the jump? 
+                    //    1st - in case the jump is straight up, 2nd - in case the jump is at 45 degrees.
+                    //    Since we "know" the maximum speed, we could find the length in pixels and limit the check by positive height and both -/+ length
+                    //    as the jump couldn't be any higher/longer.
                     for (int mapBordersIterator = 0; mapBordersIterator < currentSection.Count && !playerBlob.GetJumpingState(); mapBordersIterator++)
                     {
                         if (mapBordersIterator == 0)
@@ -252,14 +272,14 @@ namespace PlatformGame.Managers
             {
                 Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.White);
             }
-            Vector2 endPointCameraaPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
-            Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)endPointCameraaPos.X - 12, (int)endPointCameraaPos.Y - 12, 25, 25), Color.BlueViolet);
-            playerBlob.Draw(gameTime);
-        }
 
-        public void HandleNetworkCommunication()
-        {
-            GreetingClient.RunClient();  //We call the RunClient method
+            Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
+            Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
+
+            foreach (var blob in blobEntities)
+            {
+                blob.Draw(this.dotTexture, gameTime);
+            }
         }
 
         public MouseManager getMouseManager()
