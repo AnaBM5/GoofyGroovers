@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Numerics;
-using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace Goofy_Groovers.Managers
@@ -60,11 +56,11 @@ namespace Goofy_Groovers.Managers
             ReadFile();
             ModifyOffset(new Vector2(0, 0));
         }
+
         private void ReadFile()
         {
             String path = Path.Combine(Environment.CurrentDirectory, fileName);
             Debug.WriteLine("PATH: " + path);
-
 
             //Search how can we avoid using strings for this, too expensive
             List<String[]> levelMap = new List<String[]>();
@@ -74,17 +70,15 @@ namespace Goofy_Groovers.Managers
                 if (File.Exists(path))
                 {
                     var lines = File.ReadAllLines(path);                                           //We Read from text file
-                    
+
                     String[] line;
                     Vector2 newCoordinates;
                     Vector2[] newObstacle;
 
                     int lineCount = lines.Length;
 
-                    mapWidth = int.Parse (lines.ElementAt(0));
-                    mapHeight = int.Parse (lines.ElementAt(1));
-
-                    
+                    mapWidth = int.Parse(lines.ElementAt(0));
+                    mapHeight = int.Parse(lines.ElementAt(1));
 
                     int lineCounter;
                     //Take tile info for sprites
@@ -102,23 +96,21 @@ namespace Goofy_Groovers.Managers
                         }
                         else if (lineCounter == mapHeight + 2)
                         {
-
                             line = lines.ElementAt(lineCounter).Split('|');
 
                             //split each coord into 2
                             foreach (string coordinate in line)
                             {
-                                newCoordinates.X = int.Parse (coordinate.Split(",").ElementAt(0));
+                                newCoordinates.X = int.Parse(coordinate.Split(",").ElementAt(0));
                                 newCoordinates.Y = int.Parse(coordinate.Split(",").ElementAt(1));
 
                                 levelOutline.Add(newCoordinates);
                             }
-
-                        }else
+                        }
+                        else
                         {
                             line = lines.ElementAt(lineCounter).Split('|');
 
-                            
                             newObstacle = new Vector2[line.Length];
 
                             int coordinateCounter;
@@ -130,21 +122,15 @@ namespace Goofy_Groovers.Managers
 
                                 newCoordinates.X = int.Parse(line.ElementAt(coordinateCounter).Split(",").ElementAt(0));
                                 newCoordinates.Y = int.Parse(line.ElementAt(coordinateCounter).Split(",").ElementAt(1));
-                                
+
                                 newObstacle[coordinateCounter] = newCoordinates;
                             }
 
                             levelObstacles.Add(newObstacle);
-
-                            
                         }
-                         
-                        
-
                     }
 
                     //Take corner positions for collision detection
-
 
                     /*
                     mapHeight = lines.Length;
@@ -152,17 +138,15 @@ namespace Goofy_Groovers.Managers
                     int lineCounter;
                     for(lineCounter = 0; lineCounter < mapHeight; lineCounter++)
                     {
-                        
                         var line = lines.ElementAt(lineCounter).Split(' ');
 
                         if (lineCounter == 0)
                             mapWidth = line.Length;
-                        
+
                         if (line.Length == mapWidth)
                             levelMap.Add(line);
                         else
                             throw new Exception("Map line " +lineCounter+ " doesn't have right width");
-                        
                     }
                     */
                 }
@@ -173,13 +157,11 @@ namespace Goofy_Groovers.Managers
             }
 
             levelData = levelMap;
-
         }
 
         private void DetectMapLimits()
         {
             //Convert the tile positions into pixel coordinates for where the obstacle is on the screen
-
 
             Vector2 pixelCoordinates;
             Vector2[] obstacleCoordinates;
@@ -190,34 +172,26 @@ namespace Goofy_Groovers.Managers
             levelOutlinePixelCoordinates.Clear();
             levelObstaclesPixelCoordinates.Clear();
 
-
-
             foreach (Vector2 coordinate in levelOutline)
             {
                 pixelCoordinates = new Vector2(coordinate.X * tileSize - mapOffsetX, coordinate.Y * tileSize - mapOffsetY);
                 levelOutlinePixelCoordinates.Add(pixelCoordinates);
-
             }
             levelObstaclesAmount = levelObstacles.Count;
 
             for (obstacleCounter = 0; obstacleCounter < levelObstaclesAmount; obstacleCounter++)
             {
-
                 lineLength = levelObstacles[obstacleCounter].Length;
                 obstacleCoordinates = new Vector2[lineLength];
 
-                for(coordinateCounter = 0; coordinateCounter < lineLength; coordinateCounter++)
+                for (coordinateCounter = 0; coordinateCounter < lineLength; coordinateCounter++)
                 {
                     pixelCoordinates = new Vector2(levelObstacles[obstacleCounter].ElementAt(coordinateCounter).X * tileSize - mapOffsetX,
                                                     levelObstacles[obstacleCounter].ElementAt(coordinateCounter).Y * tileSize - mapOffsetY);
                     obstacleCoordinates[coordinateCounter] = pixelCoordinates;
-
                 }
                 levelObstaclesPixelCoordinates.Add(obstacleCoordinates);
-
-
             }
-            
         }
 
         public Vector2 ModifyOffset(Vector2 playerWorldPosition)
@@ -233,32 +207,27 @@ namespace Goofy_Groovers.Managers
 
             float playerCameraDistance;
 
-
-
             if (playerScreenPosition.X < Globals.windowWidth / 3 && mapOffsetX > 0)
             {
-                playerCameraDistance =Globals.windowWidth / 3 - playerScreenPosition.X;
-                offsetMultiplier = 1 + (int) (playerCameraDistance / pixelRange);
+                playerCameraDistance = Globals.windowWidth / 3 - playerScreenPosition.X;
+                offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
 
                 mapOffsetX -= offsetMultiplier;
-                playerScreenPosition.X+= offsetMultiplier;
+                playerScreenPosition.X += offsetMultiplier;
             }
             else if (playerScreenPosition.X > Globals.windowWidth * 2 / 3 && mapOffsetX < mapWidth * tileSize - Globals.windowWidth) //not sure if should be mapWidth*64 -1 or -64 (maybe - screen length?)
             {
                 playerCameraDistance = playerScreenPosition.X - (Globals.windowWidth * 2 / 3);
-                offsetMultiplier = 1 + (int) (playerCameraDistance / pixelRange);
-                
+                offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
 
-                mapOffsetX+= offsetMultiplier;
-                playerScreenPosition.X-= offsetMultiplier;
+                mapOffsetX += offsetMultiplier;
+                playerScreenPosition.X -= offsetMultiplier;
             }
-
 
             if (playerScreenPosition.Y < Globals.windowHeight / 3 && mapOffsetY > 0)
             {
                 playerCameraDistance = Globals.windowHeight / 3 - playerScreenPosition.Y;
                 offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
-
 
                 mapOffsetY -= offsetMultiplier;
                 playerScreenPosition.Y += offsetMultiplier;
@@ -266,15 +235,14 @@ namespace Goofy_Groovers.Managers
             else if (playerScreenPosition.Y > Globals.windowHeight * 2 / 3 && mapOffsetY < mapHeight * tileSize - Globals.windowHeight)
             {
                 playerCameraDistance = playerScreenPosition.Y - (Globals.windowHeight * 2 / 3);
-                offsetMultiplier = 1 + (int) (playerCameraDistance / pixelRange);
-                
+                offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
+
                 mapOffsetY += offsetMultiplier;
                 playerScreenPosition.Y -= offsetMultiplier;
             }
-                
 
             //playerWorldPosition.X = playerScreenPosition.X + mapOffsetX;
-            //playerWorldPosition.Y = playerScreenPosition.Y + mapOffsetY;   
+            //playerWorldPosition.Y = playerScreenPosition.Y + mapOffsetY;
 
             //for x: 640 & 1280
             //for y: 360 & 720
@@ -285,7 +253,6 @@ namespace Goofy_Groovers.Managers
             return playerScreenPosition;
         }
 
-
         public void Draw()
         {
             //goes through the map and, if the tile is within visible parameters taking into account the offset, draws it
@@ -295,7 +262,7 @@ namespace Goofy_Groovers.Managers
 
             String currentTile;
 
-            for(yCounter = 0; yCounter < mapHeight; yCounter++)
+            for (yCounter = 0; yCounter < mapHeight; yCounter++)
             {
                 for (xCounter = 0; xCounter < mapWidth; xCounter++)
                 {
@@ -308,33 +275,34 @@ namespace Goofy_Groovers.Managers
                         && xPosition > -tileSize && xPosition < Globals.windowWidth)
                     {
                         //Debug.WriteLine("Show tile in position" + xCounter + " , " + yCounter);
-                        switch(currentTile)
+                        switch (currentTile)
                         {
                             case "0":
                                 Globals._spriteBatch.Draw(backgroundTile, new Rectangle(xPosition, yPosition, tileSize, tileSize), Color.White); //Color.PeachPuff
                                 break;
+
                             case "1":
                                 Globals._spriteBatch.Draw(platformTile, new Rectangle(xPosition, yPosition, tileSize, tileSize), Color.White); //Color.BlueViolet
                                 break;
+
                             case "2":
                                 Globals._spriteBatch.Draw(backgroundTile, new Rectangle(xPosition, yPosition, tileSize, tileSize), Color.Green);
                                 break;
+
                             default:
                                 Globals._spriteBatch.Draw(platformTile, new Rectangle(xPosition, yPosition, tileSize, tileSize), Color.White);
                                 break;
-
                         }
-
                     }
                     //else
-                        //Debug.WriteLine("DON'T show tile in position" + xCounter + " , " + yCounter);
+                    //Debug.WriteLine("DON'T show tile in position" + xCounter + " , " + yCounter);
                 }
             }
         }
 
         public Vector2 GetWorldPosition(Vector2 cameraPosition)
         {
-            Vector2 worldPosition = new Vector2(cameraPosition.X + mapOffsetX, cameraPosition.Y + mapOffsetY); 
+            Vector2 worldPosition = new Vector2(cameraPosition.X + mapOffsetX, cameraPosition.Y + mapOffsetY);
             return worldPosition;
         }
 
@@ -365,6 +333,4 @@ namespace Goofy_Groovers.Managers
             return levelObstaclesPixelCoordinates;
         }
     }
-
-
 }

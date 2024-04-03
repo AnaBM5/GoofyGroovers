@@ -1,5 +1,4 @@
-﻿using Goofy_Groovers.Entity;
-using Goofy_Groovers.Managers;
+﻿using Goofy_Groovers.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -19,7 +18,7 @@ namespace Goofy_Groovers.Entity
 
         public Vector2 worldPosition { get; set; }
         private Vector2 cameraPosition;
-      
+
         public bool isJumping { get; set; } = false;
         public float jumpTheta { get; set; }
         public Vector2 jumpStartPoint { get; set; }
@@ -38,88 +37,125 @@ namespace Goofy_Groovers.Entity
 
         public float velocity;
         private float elapsedSecondsSinceJumpStart;
-        // private float elapsedSecondsSinceLastSprite;    
+        // private float elapsedSecondsSinceLastSprite;
 
-      public BlobEntity()
-      {
-          jumpDirection = new bool[2];
-      }
+        public BlobEntity()
+        {
+            jumpDirection = new bool[2];
+            dotTexture = Globals._dotTexture;
+            Random rnd = new Random();
+            blobUserId = rnd.Next(1000);
+        }
 
-      public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
-      {
-          this.worldPosition = worldPosition;
-          this.cameraPosition = cameraPosition;
-          this.isOwnedByUser = isOwnedByUser;
+        public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
+        {
+            this.worldPosition = worldPosition;
+            this.cameraPosition = cameraPosition;
+            this.isOwnedByUser = isOwnedByUser;
+            dotTexture = Globals._dotTexture;
 
-          jumpStartPoint = worldPosition;
-          jumpDirection = new bool[2];
-      }
+            Random rnd = new Random();
+            blobUserId = rnd.Next(1000);
 
-      public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
-      {
-          this.worldPosition = worldPosition;
-          this.isOwnedByUser = isOwnedByUser;
-          this.dotTexture = dotTexture;
+            jumpStartPoint = worldPosition;
+            jumpDirection = new bool[2];
+        }
 
-          jumpStartPoint = worldPosition;
-          jumpDirection = new bool[2];
-      }
-      
-      public void Update(GameTime elapsedSeconds)
-      {
-          timeSinceLastUpdate += (float)elapsedSeconds.ElapsedGameTime.TotalSeconds;
-          if(timeSinceLastUpdate > 0.2f)
-          {
-              timeSinceLastUpdate = 0.2f;
-          }
+        public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
+        {
+            this.worldPosition = worldPosition;
+            this.isOwnedByUser = isOwnedByUser;
+            dotTexture = Globals._dotTexture;
 
-          elapsedSecondsSinceJumpStart += timeSinceLastUpdate;
+            Random rnd = new Random();
+            blobUserId = rnd.Next(1000);
+            jumpStartPoint = worldPosition;
+            jumpDirection = new bool[2];
+        }
 
-          //Here make it move if isJumping is true
-          //We got start, end, theta and velocity, just define current position base on deltaTime
+        //remotePlayerData.blobUserColor, remotePlayerData.worldPosition, false));
 
-          if (isJumping)
-          {
-                  worldPosition = jumpStartPoint + new Vector2(
-                          -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
-                          -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
+        public BlobEntity(string userName, int userId, Color userColor, Vector2 worldPosition, bool isOwnedByUser)
+        {
+            blobUserName = userName;
+            blobUserId = userId;
 
-                  if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0])
-                  {
-                      worldPosition = jumpEndPoint;
-                      isJumping = false;
-                  }
-          }
-      }
+            this.worldPosition = worldPosition;
+            this.isOwnedByUser = isOwnedByUser;
+            dotTexture = Globals._dotTexture;
 
-      public void Draw(GameTime gameTime)
-      {
-          if (blobUserName.Length >= 13)
-          {
-              Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-35, 20), Color.Black);
-          }
-          else
-          {
-              Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
-          }
-          Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
-      }
+            jumpStartPoint = worldPosition;
+            jumpDirection = new bool[2];
+        }
 
-      public void DefineJumpDirection()
-      {
-          //if its true, means the end jump point has a higher X or Y value than the starting point
+        public void Update(GameTime elapsedSeconds)
+        {
+            timeSinceLastUpdate += (float)elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            if (timeSinceLastUpdate > 0.2f)
+            {
+                timeSinceLastUpdate = 0.2f;
+            }
 
-          if (jumpStartPoint.X <= jumpEndPoint.X)
-              jumpDirection[0] = true;
-          else
-              jumpDirection[0] = false;
+            elapsedSecondsSinceJumpStart += timeSinceLastUpdate;
 
-          if (jumpStartPoint.Y <= jumpEndPoint.Y)
-              jumpDirection[1] = true;
-          else
-              jumpDirection[1] = false;
-      }
-      
+            //Here make it move if isJumping is true
+            //We got start, end, theta and velocity, just define current position base on deltaTime
+
+            if (isJumping)
+            {
+                worldPosition = jumpStartPoint + new Vector2(
+                        -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
+                        -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
+
+                if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0])
+                {
+                    worldPosition = jumpEndPoint;
+                    isJumping = false;
+                }
+            }
+        }
+
+        public void Draw(GameTime gameTime)
+        {
+            if (blobUserName.Length >= 13)
+            {
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-35, 20), Color.Black);
+            }
+            else
+            {
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
+            }
+            Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
+        }
+
+        public void DrawByWorldPosition(GameTime gameTime)
+        {
+            if (blobUserName.Length >= 13)
+            {
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", worldPosition + new Vector2(-35, 20), Color.Black);
+            }
+            else
+            {
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, worldPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
+            }
+            Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)worldPosition.X - 12, (int)worldPosition.Y - 12, 25, 25), blobUserColor);
+        }
+
+        public void DefineJumpDirection()
+        {
+            //if its true, means the end jump point has a higher X or Y value than the starting point
+
+            if (jumpStartPoint.X <= jumpEndPoint.X)
+                jumpDirection[0] = true;
+            else
+                jumpDirection[0] = false;
+
+            if (jumpStartPoint.Y <= jumpEndPoint.Y)
+                jumpDirection[1] = true;
+            else
+                jumpDirection[1] = false;
+        }
+
         public void SetJumpEndPoint(Vector2 endpoint)
         {
             this.jumpEndPoint = endpoint;
@@ -152,7 +188,7 @@ namespace Goofy_Groovers.Entity
 
         public Vector2 GetPosition()
         {
-            return this.position;
+            return this.worldPosition;
         }
 
         public Vector2 GetEndpoint()
@@ -160,9 +196,29 @@ namespace Goofy_Groovers.Entity
             return this.jumpEndPoint;
         }
 
+        public Vector2 GetCameraPosition()
+        {
+            return this.cameraPosition;
+        }
+
+        public void SetCameraPosition(Vector2 cameraPosition)
+        {
+            this.cameraPosition = cameraPosition;
+        }
+
+        public Vector2 GetWorldPosition()
+        {
+            return this.worldPosition;
+        }
+
         public void SetJumpingState(bool isJumping)
         {
             this.isJumping = isJumping;
+        }
+
+        public void SetSecondsSinceJumpStarted(float seconds)
+        {
+            this.elapsedSecondsSinceJumpStart = seconds;
         }
 
         public bool GetJumpingState()

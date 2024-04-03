@@ -1,10 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Goofy_Groovers.Managers
 {
@@ -17,5 +12,6 @@ namespace Goofy_Groovers.Managers
         public static SpriteBatch _spriteBatch;
         public static SpriteFont _gameFont;
         public static GameClient _gameClient;
+        public static Texture2D _dotTexture;
     }
 }

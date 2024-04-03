@@ -9,7 +9,7 @@ namespace Goofy_Server
         public int blobUserId{ get; set; }
         public Color blobUserColor{ get; set; }
 
-        public Vector2 position{ get; set; }
+        public Vector2 worldPosition { get; set; }
         public bool isJumping { get; set; } = false;
         public Vector2 jumpStartPoint{ get; set; }
         public Vector2 jumpEndPoint{ get; set; }
@@ -26,7 +26,7 @@ namespace Goofy_Server
         {
             this.blobUserName = name;
             this.blobUserColor = color;
-            this.position = position;
+            this.worldPosition = position;
             Random random = new();
             blobUserId = random.Next(1000);
         }

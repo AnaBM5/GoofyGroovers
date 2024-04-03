@@ -1,10 +1,8 @@
 ﻿using Goofy_Groovers;
 using Goofy_Groovers.Managers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Diagnostics;
 
 /// <summary>
 /// Summary description for Class1
@@ -32,7 +30,6 @@ public class MouseManager
     private float movementVelocity;
 
     //Sprites and coordinates used for testing
-    private Texture2D dotTexture;
 
     private Point directionVector;
     private Point horizontalVector;
@@ -126,17 +123,17 @@ public class MouseManager
     public void Draw()
     {
         //draw the dots on the positions
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y - 12, 25, 25), Color.White);
+        Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y - 12, 25, 25), Color.White);
         //Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
 
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
+        Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
         //Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
     }
 
     private void DefineVelocity(float currentVectorLength)
     {
         float maxSpeed = 110;
-        
+
         movementVelocity = 20;
         /*
                 if (currentVectorLength == 0)
@@ -176,10 +173,5 @@ public class MouseManager
     public bool IsNewJumpInitiated()
     {
         return newJumpInitiated;
-    }
-
-    public void setDotSprite(Texture2D dotTexture)
-    {
-        this.dotTexture = dotTexture;
     }
 }

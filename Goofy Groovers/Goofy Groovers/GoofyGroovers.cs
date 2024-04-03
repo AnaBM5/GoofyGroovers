@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Input;
 using PlatformGame.Managers;
 using System;
 using System.Collections.Generic;
-using static Goofy_Groovers.GoofyGroovers;
 
 namespace Goofy_Groovers
 {
@@ -38,7 +37,7 @@ namespace Goofy_Groovers
             //-------------*/
 
             Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
-            Globals.windowHeight = (ushort) Globals._graphics.PreferredBackBufferHeight;
+            Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -58,13 +57,10 @@ namespace Goofy_Groovers
             Globals._spriteBatch = new SpriteBatch(GraphicsDevice);
             Globals._gameFont = Content.Load<SpriteFont>("Fonts/Minecraft");
 
-            Texture2D dotSprite = Content.Load<Texture2D>("dotSprite");
-            _gameManager.getMouseManager().setDotSprite(dotSprite);
-            _gameManager.dotTexture = dotSprite;
-            _gameManager.playerBlob.SetTexture(dotSprite);
-
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
             _gameManager.squareTexture = squareSprite;
+            Globals._dotTexture = Content.Load<Texture2D>("dotSprite");
+            _gameManager.playerBlob.SetTexture(Globals._dotTexture);
 
             Texture2D platformSprite = Content.Load<Texture2D>("Sprites/foregroundSprite");
             _gameManager.getLevelManager().setPlatformSprite(platformSprite);
@@ -80,12 +76,12 @@ namespace Goofy_Groovers
             if (pressedKeys.Length > 0 && !isKeyPressed)
             {
                 Keys firstKey = pressedKeys[0];
-                
+
                 if ((char.IsLetterOrDigit((char)firstKey) || firstKey == Keys.Space) && initials.Length <= 13)
                 {
                     if (firstKey == Keys.Space && initials.Length == 0)
                     {
-                                                                                                                                        //We do nothing if the first key is space and there are no initials yet
+                        //We do nothing if the first key is space and there are no initials yet
                     }
                     else
                     {
@@ -128,7 +124,7 @@ namespace Goofy_Groovers
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            
+
             switch (gameState)
             {
                 case GameState.LoginScreen:
@@ -142,9 +138,6 @@ namespace Goofy_Groovers
                     _gameManager.Update(gameTime, this);
                     break;
             }
-            // We do not execute network operations in this main thread, but in a task.
-            // https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
-            // Task.Run(() => _gameManager.HandleNetworkCommunication());
 
             base.Update(gameTime);
         }

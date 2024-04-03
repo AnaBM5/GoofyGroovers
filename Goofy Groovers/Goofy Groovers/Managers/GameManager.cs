@@ -2,14 +2,14 @@
 using Goofy_Groovers.Entity;
 using Goofy_Groovers.Managers;
 using Goofy_Groovers.Util;
-using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PlatformGame.Managers
 {
@@ -17,10 +17,10 @@ namespace PlatformGame.Managers
     {
         private MouseManager _mouseManager;
         private TileMapManager _levelManager;
-      
+
         private List<BlobEntity> blobEntities;
         private Thread serverTransmitterThread;
-      
+
         private List<Vector2> map;
         private List<Vector2[]> obstacles;
 
@@ -46,7 +46,7 @@ namespace PlatformGame.Managers
             _levelManager = new TileMapManager();
 
             blobEntities = new List<BlobEntity>();
-            blobEntities.Add(new BlobEntity(new Vector2(192, 192), _levelManager.GetCameraPosition(new Vector2(192, 192)),  true));
+            blobEntities.Add(new BlobEntity(new Vector2(192, 192), _levelManager.GetCameraPosition(new Vector2(192, 192)), true));
             playerBlob = blobEntities.ElementAt(0);
 
             playerBlob.SetUserName("Player 1");
@@ -94,35 +94,38 @@ namespace PlatformGame.Managers
                     FindIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
             }
-          
+
             playerBlob.SetCameraPosition(_levelManager.ModifyOffset(playerBlob.GetWorldPosition()));
-            
+
             foreach (var blob in blobEntities)
             {
                 blob.Update(elapsedSeconds);
             }
-          
+
             if (elapsedSecondsSinceTransmissionToServer > 0.01)
             {
                 elapsedSecondsSinceTransmissionToServer = 0;
                 try
                 {
-                    serverTransmitterThread = new Thread(
-                        () => GameClient.TransmitToServer(playerBlob, blobEntities));
-                    serverTransmitterThread.Start();
+                    // We do not execute network operations in this thread, but in a task.
+                    // https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
+
+                    Task.Run(() => { GameClient.TransmitToServer(playerBlob, blobEntities); });
+                    /*                    serverTransmitterThread = new Thread(
+                                            () => GameClient.TransmitToServer(playerBlob, blobEntities));
+                                        serverTransmitterThread.Start();*/
                 }
                 catch (Exception)
                 {
+                    Debug.WriteLine("Oopsie");
                 }
             }
 
-            if (elapsedSecondsSinceVisualisationShift > 0.01)
+            if (elapsedSecondsSinceVisualisationShift > 1)
             {
                 elapsedSecondsSinceVisualisationShift = 0;
                 parabolicVisualisationOffset += 0.01;
-
             }
-
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
@@ -157,7 +160,7 @@ namespace PlatformGame.Managers
             position = playerBlob.GetCameraPosition() + new Vector2(
                     -velocity * (float)(Math.Cos(theta) * parabolicVisualisationTimeDelta),
                     -velocity * (float)(Math.Sin(theta) * parabolicVisualisationTimeDelta) - 0.5f * -9.8f * (float)Math.Pow(parabolicVisualisationTimeDelta, 2));
-           
+
             if (LineUtil.PointInPolygon(map, position) && OutsideObstacles())
             {
                 trajectoryPositions = InterceptAllObstacles(theta, velocity);
@@ -171,7 +174,6 @@ namespace PlatformGame.Managers
                 playerBlob.SetSecondsSinceJumpStarted(0);
                 playerBlob.SetJumpingState(true);
                 _mouseManager.EndNewJumpAttempt();
-
             }
             // Debug.WriteLine("EndPoint: " + blob.GetEndpoint().ToString());
         }
@@ -188,7 +190,7 @@ namespace PlatformGame.Managers
             List<Vector2> currentSection;
             Vector2[] positionsReturned = new Vector2[2];
 
-            for(int counter = -1; counter< obstacles.Count; counter++)
+            for (int counter = -1; counter < obstacles.Count; counter++)
             {
                 position = originalPosition;
 
@@ -208,7 +210,7 @@ namespace PlatformGame.Managers
                     //parabolicMovementVisualisation.Add(position); // Remove for no "trace"
 
                     // TODO: add an if here that, if it is too far, just dont calculate, question is how many pixels far is "too far"
-                    //    Suggestion: What is the theoretical maximal height and length of the jump? 
+                    //    Suggestion: What is the theoretical maximal height and length of the jump?
                     //    1st - in case the jump is straight up, 2nd - in case the jump is at 45 degrees.
                     //    Since we "know" the maximum speed, we could find the length in pixels and limit the check by positive height and both -/+ length
                     //    as the jump couldn't be any higher/longer.
@@ -234,7 +236,6 @@ namespace PlatformGame.Managers
                                 positionsReturned[1] = _levelManager.GetWorldPosition(intersection);
                                 lowestTime = time;
                             }
-                            
 
                             break;
                         }
@@ -252,7 +253,7 @@ namespace PlatformGame.Managers
             foreach (Vector2[] obstacle in obstacles)
             {
                 coordList = obstacle.ToList();
-                if(LineUtil.PointInPolygon(coordList, position))
+                if (LineUtil.PointInPolygon(coordList, position))
                     return false;
             }
             return true;
@@ -260,13 +261,6 @@ namespace PlatformGame.Managers
 
         public void Draw(GameTime gameTime)
         {
-            //Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)map[0].X, (int)map[0].Y, 128, 128), Color.LightSkyBlue);
-            /*
-            for (int iterator = 0; iterator < tilePositions.Count(); iterator++)
-            {
-                Globals._spriteBatch.Draw(squareTexture, new Rectangle((int)tilePositions.ElementAt(iterator).X, (int)tilePositions.ElementAt(iterator).Y, 128, 128), Color.PeachPuff);
-            }
-            */
             _levelManager.Draw();
             for (int iterator = 0; iterator < parabolicMovementVisualisation.Count(); iterator++)
             {
@@ -274,11 +268,13 @@ namespace PlatformGame.Managers
             }
 
             Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
-            Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
+            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
 
+            playerBlob.Draw(gameTime);
             foreach (var blob in blobEntities)
             {
-                blob.Draw(this.dotTexture, gameTime);
+                if (!blob.Equals(playerBlob))
+                    blob.DrawByWorldPosition(gameTime);
             }
         }
 

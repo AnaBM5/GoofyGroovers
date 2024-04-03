@@ -18,7 +18,8 @@ namespace Goofy_Server
         public string responseType;
         public List<BlobEntity> playerList;
 
-        public Response() {}
+        public Response()
+        { }
 
         public Response(string responseType)
         {
@@ -125,7 +126,7 @@ namespace Goofy_Server
         {
             Response jsonResponse = new Response("Update", new List<BlobEntity>());
 
-            if (!jsonMessage.Equals(""))
+            if (jsonMessage != null)
             {
                 BlobEntity newPlayerData = JsonConvert.DeserializeObject<BlobEntity>(jsonMessage,
                     new JsonSerializerSettings
@@ -135,41 +136,48 @@ namespace Goofy_Server
                             args.ErrorContext.Handled = true;
                         }
                     });
-                if (lobbyList.ElementAt(0).playerList.Count == 0)
-                {
-                    lobbyList.ElementAt(0).playerList.Add(newPlayerData);
-                }
 
-                if (lobbyList.ElementAt(0).playerList.Any(it => it.blobUserId == newPlayerData.blobUserId))
+                if (newPlayerData != null)
                 {
-                    foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
+                    if (lobbyList.ElementAt(0).playerList.Count == 0)
                     {
-                        if (existingPlayerData.blobUserId == newPlayerData.blobUserId)
+                        lobbyList.ElementAt(0).playerList.Add(newPlayerData);
+                    }
+                    else if (lobbyList.ElementAt(0).playerList.Any(it => it.blobUserId == newPlayerData.blobUserId))
+                    {
+                        foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
                         {
-                            existingPlayerData.position = newPlayerData.position;
-                            if (newPlayerData.isJumping)
+                            if (existingPlayerData.blobUserId == newPlayerData.blobUserId)
                             {
-                                existingPlayerData.isJumping = true;
-                                existingPlayerData.jumpStartPoint = newPlayerData.jumpStartPoint;
-                                existingPlayerData.jumpEndPoint = newPlayerData.jumpEndPoint;
-                                existingPlayerData.velocity = newPlayerData.velocity;
-                                existingPlayerData.jumpTheta = newPlayerData.jumpTheta;
+                                existingPlayerData.worldPosition = newPlayerData.worldPosition;
+                                if (newPlayerData.isJumping)
+                                {
+                                    existingPlayerData.isJumping = true;
+                                    existingPlayerData.jumpStartPoint = newPlayerData.jumpStartPoint;
+                                    existingPlayerData.jumpEndPoint = newPlayerData.jumpEndPoint;
+                                    existingPlayerData.velocity = newPlayerData.velocity;
+                                    existingPlayerData.jumpTheta = newPlayerData.jumpTheta;
+                                }
+                                else
+                                {
+                                    existingPlayerData.isJumping = false;
+                                }
                             }
                             else
                             {
-                                existingPlayerData.isJumping = false;
+                                jsonResponse.playerList.Add(existingPlayerData);
                             }
                         }
-                        else
-                        {
-                            jsonResponse.playerList.Add(existingPlayerData);
-                        }
+                    }
+                    else
+                    {
+                        jsonResponse.playerList = lobbyList.ElementAt(0).playerList;
+                        lobbyList.ElementAt(0).playerList.Add(newPlayerData);
                     }
                 }
-                else
+                else if (lobbyList.ElementAt(0).playerList.Count != 0)
                 {
                     jsonResponse.playerList = lobbyList.ElementAt(0).playerList;
-                    lobbyList.ElementAt(0).playerList.Add(newPlayerData);
                 }
 
                 // Response type:
