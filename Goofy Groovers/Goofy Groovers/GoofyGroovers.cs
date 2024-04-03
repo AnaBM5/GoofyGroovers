@@ -65,24 +65,30 @@ namespace Goofy_Groovers
         public bool GetPlayerInitialsFromUser()
         {
             KeyboardState keyboardState = Keyboard.GetState();
+            Keys[] pressedKeys = keyboardState.GetPressedKeys();
 
-            Keys[] pressedKeys = keyboardState.GetPressedKeys();                                           //We get the pressed keys per frame
-
-            if (pressedKeys.Length > 0 && !isKeyPressed)                                                   //We verify is the key is being press
+            if (pressedKeys.Length > 0 && !isKeyPressed)
             {
-                Keys firstKey = pressedKeys[0];                                                            //We get the first pressed key
-
-                if (char.IsLetter((char)firstKey) && initials.Length <= 13)                                  //We verify is the key is a letter
+                Keys firstKey = pressedKeys[0];
+                
+                if ((char.IsLetterOrDigit((char)firstKey) || firstKey == Keys.Space) && initials.Length <= 13)
                 {
-                    initials += ((char)firstKey).ToString();                                     //We make them uppercase
+                    if (firstKey == Keys.Space && initials.Length == 0)
+                    {
+                                                                                                                                        //We do nothing if the first key is space and there are no initials yet
+                    }
+                    else
+                    {
+                        initials += (firstKey == Keys.Space) ? " " : ((char)firstKey).ToString();
+                        isKeyPressed = true;
+                    }
+                }
+                else if (firstKey == Keys.Back && initials.Length > 0)
+                {
+                    initials = initials.Substring(0, initials.Length - 1);
                     isKeyPressed = true;
                 }
-                else if (firstKey == Keys.Back && initials.Length > 0)                                     //If backspace is pressed
-                {
-                    initials = initials.Substring(0, initials.Length - 1);                                 //if it is pressed we eliminate one character
-                    isKeyPressed = true;
-                }
-                else if (gameState == GameState.LoginScreen && firstKey == Keys.Enter && initials.Length >= 3)    //When the player press enter we set a random colour
+                else if (gameState == GameState.LoginScreen && firstKey == Keys.Enter && initials.Length >= 3)
                 {
                     int randomIndex = random.Next(availableColors.Count);
                     Color randomColor = availableColors[randomIndex];
@@ -92,15 +98,15 @@ namespace Goofy_Groovers
 
                     isKeyPressed = true;
                     _gameManager.playerBlob.SetUserName(initials);
-                    return true;                                                                 // Return a specific string to indicate Enter key is pressed
+                    return true;
                 }
             }
-            else if (pressedKeys.Length == 0)                                                              //if there's nothing written, we understand that ther's has not been a key pressed
+            else if (pressedKeys.Length == 0)
             {
                 isKeyPressed = false;
             }
 
-            return false;                                                                               //We return the player's  initilas
+            return false;
         }
 
         public int GetInitialsLenght()                                                                     //We create a method to get the players initials lenght
@@ -150,7 +156,11 @@ namespace Goofy_Groovers
                             (GraphicsDevice.Viewport.Width - messageSize.X) / 2 - 25,
                             (GraphicsDevice.Viewport.Height - messageSize.Y) / 2 - 30);
 
-                        Vector2 initialsSize = Globals._gameFont.MeasureString(initials); // FIX: Breaks on (unsupported) characters, such as ":"
+                        Vector2 initialsSize = Globals._gameFont.MeasureString(initials);                                        // FIX: Breaks on (unsupported) characters, such as ":" 
+                                                                                                                                 // FIX (UPDATE):  I made a few changes and the symbols are not allowed now,
+                                                                                                                                 // but I do not know why the only symbols that are causing problems are:
+                                                                                                                                 // ; // ' // [ , ] //  and // ` // but the other characters are not causing problems, as an example !,@,#,$,etc
+
                         Vector2 initialsPosition = new Vector2((GraphicsDevice.Viewport.Width - initialsSize.X - 30) / 2, 250); // Fixed vertical position for initials
 
                         Globals._spriteBatch.DrawString(Globals._gameFont, message, position, Color.White);
