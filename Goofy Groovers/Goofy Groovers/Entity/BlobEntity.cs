@@ -17,86 +17,109 @@ namespace Goofy_Groovers.Entity
         public int blobUserId { get; set; }
         public Color blobUserColor { get; set; }
 
-        public Vector2 position { get; set; }
+        public Vector2 worldPosition { get; set; }
+        private Vector2 cameraPosition;
+      
         public bool isJumping { get; set; } = false;
+        public float jumpTheta { get; set; }
         public Vector2 jumpStartPoint { get; set; }
         public Vector2 jumpEndPoint { get; set; }
+        private bool[] jumpDirection;
+
+        //private Sprite sprite;
+        private Texture2D dotTexture;
 
         public int frameNumber { get; set; }
         public int animationNumber { get; set; }
         public float animationEndTime { get; set; }
 
         public bool isOwnedByUser { get; set; }
-        private double timeSinceLastUpdate = 0;
+        private float timeSinceLastUpdate = 0;
 
         public float velocity;
         private float elapsedSecondsSinceJumpStart;
-        private float elapsedSecondsSinceLastSprite;
+        // private float elapsedSecondsSinceLastSprite;    
 
-        public float jumpTheta { get; set; }
+      public BlobEntity()
+      {
+          jumpDirection = new bool[2];
+      }
 
-        //private Sprite sprite;
-        private Texture2D dotTexture;
+      public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
+      {
+          this.worldPosition = worldPosition;
+          this.cameraPosition = cameraPosition;
+          this.isOwnedByUser = isOwnedByUser;
 
-        public void Update(GameTime elapsedSeconds)
-        {
-            timeSinceLastUpdate += (float)elapsedSeconds.ElapsedGameTime.TotalSeconds;
-            if (timeSinceLastUpdate > 1)
-            {
-                timeSinceLastUpdate = 0;
+          jumpStartPoint = worldPosition;
+          jumpDirection = new bool[2];
+      }
 
-                if (isJumping)
-                {
-                    position = jumpEndPoint;
-                    // TODO: Proper moving across the map
-                    isJumping = false;
-                }
-            }
-        }
+      public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
+      {
+          this.worldPosition = worldPosition;
+          this.isOwnedByUser = isOwnedByUser;
+          this.dotTexture = dotTexture;
 
-        public void Draw(Texture2D texture, GameTime gameTime)
-        {
-            if (blobUserName.Length >= 13)
-            {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", GetPosition() + new Vector2(-35, 20), Color.Black);
-            }
-            else
-            {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, GetPosition() + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
-            }
-            Globals._spriteBatch.Draw(texture, new Rectangle((int)GetPosition().X - 12, (int)GetPosition().Y - 12, 25, 25), blobUserColor);
-        }
+          jumpStartPoint = worldPosition;
+          jumpDirection = new bool[2];
+      }
+      
+      public void Update(GameTime elapsedSeconds)
+      {
+          timeSinceLastUpdate += (float)elapsedSeconds.ElapsedGameTime.TotalSeconds;
+          if(timeSinceLastUpdate > 0.2f)
+          {
+              timeSinceLastUpdate = 0.2f;
+          }
 
-        public BlobEntity() { }
+          elapsedSecondsSinceJumpStart += timeSinceLastUpdate;
 
-        public BlobEntity(string name, Color color, Vector2 position)
-        {
-            this.blobUserName = name;
-            this.blobUserColor = color;
-            this.position = position;
-            isOwnedByUser = false;
+          //Here make it move if isJumping is true
+          //We got start, end, theta and velocity, just define current position base on deltaTime
 
-            Random random = new();
-            blobUserId = random.Next(1000);
-        }
+          if (isJumping)
+          {
+                  worldPosition = jumpStartPoint + new Vector2(
+                          -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
+                          -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-        public BlobEntity(string name, bool isOwnedByUser, Color blobUserColor, Vector2 position) : this(name, blobUserColor, position)
-        {
-            this.isOwnedByUser = isOwnedByUser;
-        }
+                  if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0])
+                  {
+                      worldPosition = jumpEndPoint;
+                      isJumping = false;
+                  }
+          }
+      }
 
-        public BlobEntity(string name, bool isOwnedByUser, int id, Color blobUserColor, Vector2 position) : this(name, isOwnedByUser, blobUserColor, position)
-        {
-            this.blobUserId = id;
-        }
+      public void Draw(GameTime gameTime)
+      {
+          if (blobUserName.Length >= 13)
+          {
+              Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-35, 20), Color.Black);
+          }
+          else
+          {
+              Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
+          }
+          Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
+      }
 
-        public BlobEntity(string name, bool isOwnedByUser, int blobUserId, Color color, Vector2 position, bool isJumping, Vector2 jumpStartPoint, Vector2 jumpEndPoint) : this(name, isOwnedByUser, blobUserId, color, position)
-        {
-            this.isJumping = isJumping;
-            this.jumpStartPoint = jumpStartPoint;
-            this.jumpEndPoint = jumpEndPoint;
-        }
+      public void DefineJumpDirection()
+      {
+          //if its true, means the end jump point has a higher X or Y value than the starting point
 
+          if (jumpStartPoint.X <= jumpEndPoint.X)
+              jumpDirection[0] = true;
+          else
+              jumpDirection[0] = false;
+
+          if (jumpStartPoint.Y <= jumpEndPoint.Y)
+              jumpDirection[1] = true;
+          else
+              jumpDirection[1] = false;
+      }
+      
         public void SetJumpEndPoint(Vector2 endpoint)
         {
             this.jumpEndPoint = endpoint;

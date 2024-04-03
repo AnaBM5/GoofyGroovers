@@ -127,24 +127,27 @@ public class MouseManager
     {
         //draw the dots on the positions
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y - 12, 25, 25), Color.White);
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
+        //Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
 
         Globals._spriteBatch.Draw(dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
-        Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
+        //Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
     }
 
     private void DefineVelocity(float currentVectorLength)
     {
-        float maxSpeed = 100;
-
-        if (currentVectorLength == 0)
-            movementVelocity = 5;
-        else if (currentVectorLength >= maxVectorLength)
-            movementVelocity = maxSpeed;
+        float maxSpeed = 110;
+        
+        movementVelocity = 20;
+        /*
+                if (currentVectorLength == 0)
+                    movementVelocity = 50;
+                else */
+        if (currentVectorLength >= maxVectorLength)
+            movementVelocity += maxSpeed;
         if (currentVectorLength < maxVectorLength)
         {
             maxSpeed *= currentVectorLength / maxVectorLength;
-            movementVelocity = maxSpeed;
+            movementVelocity += maxSpeed;
         }
 
         //Debug.WriteLine("Speed: " + movementVelocity);

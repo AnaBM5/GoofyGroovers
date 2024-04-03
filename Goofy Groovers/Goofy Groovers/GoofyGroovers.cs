@@ -29,11 +29,16 @@ namespace Goofy_Groovers
             Globals._graphics = new GraphicsDeviceManager(this);
 
             //Not necessary for now but is going to be used later to have the game in full screen
+
+            //Comment this section to deactivate full screen
             /*
             Globals._graphics.IsFullScreen = true;
             Globals._graphics.PreferredBackBufferWidth = 1920;
             Globals._graphics.PreferredBackBufferHeight = 1080;
-            */
+            //-------------*/
+
+            Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
+            Globals.windowHeight = (ushort) Globals._graphics.PreferredBackBufferHeight;
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -60,6 +65,11 @@ namespace Goofy_Groovers
 
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
             _gameManager.squareTexture = squareSprite;
+
+            Texture2D platformSprite = Content.Load<Texture2D>("Sprites/foregroundSprite");
+            _gameManager.getLevelManager().setPlatformSprite(platformSprite);
+            Texture2D bgSprite = Content.Load<Texture2D>("Sprites/backgroundSprite");
+            _gameManager.getLevelManager().setBackgroundSprite(bgSprite);
         }
 
         public bool GetPlayerInitialsFromUser()
