@@ -30,6 +30,8 @@ namespace Goofy_Groovers.Managers
         private Texture2D platformTile;
         private Texture2D goalTile;
 
+        private int FinishLineX;
+
         private List<String[]> levelData;
 
         private List<Vector2> levelOutline;
@@ -129,26 +131,6 @@ namespace Goofy_Groovers.Managers
                             levelObstacles.Add(newObstacle);
                         }
                     }
-
-                    //Take corner positions for collision detection
-
-                    /*
-                    mapHeight = lines.Length;
-
-                    int lineCounter;
-                    for(lineCounter = 0; lineCounter < mapHeight; lineCounter++)
-                    {
-                        var line = lines.ElementAt(lineCounter).Split(' ');
-
-                        if (lineCounter == 0)
-                            mapWidth = line.Length;
-
-                        if (line.Length == mapWidth)
-                            levelMap.Add(line);
-                        else
-                            throw new Exception("Map line " +lineCounter+ " doesn't have right width");
-                    }
-                    */
                 }
             }
             catch (Exception ex)

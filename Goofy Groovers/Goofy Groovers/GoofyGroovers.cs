@@ -60,7 +60,7 @@ namespace Goofy_Groovers
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
             _gameManager.squareTexture = squareSprite;
             Globals._dotTexture = Content.Load<Texture2D>("dotSprite");
-            _gameManager.playerBlob.SetTexture(Globals._dotTexture);
+            //_gameManager.playerBlob.SetTexture(Globals._dotTexture);
 
             Texture2D platformSprite = Content.Load<Texture2D>("Sprites/foregroundSprite");
             _gameManager.getLevelManager().setPlatformSprite(platformSprite);

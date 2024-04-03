@@ -19,6 +19,7 @@ namespace Goofy_Groovers.Entity
         public Vector2 worldPosition { get; set; }
         private Vector2 cameraPosition;
 
+        private bool shortMovement = false;
         public bool isJumping { get; set; } = false;
         public float jumpTheta { get; set; }
         public Vector2 jumpStartPoint { get; set; }
@@ -98,20 +99,26 @@ namespace Goofy_Groovers.Entity
 
             elapsedSecondsSinceJumpStart += timeSinceLastUpdate;
 
-            //Here make it move if isJumping is true
-            //We got start, end, theta and velocity, just define current position base on deltaTime
-
             if (isJumping)
             {
-                worldPosition = jumpStartPoint + new Vector2(
+                if ( shortMovement)
+                {
+                    worldPosition = jumpStartPoint;
+                    isJumping = false;
+                }
+                else
+                {
+                    worldPosition = jumpStartPoint + new Vector2(
                         -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
                         -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-                if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0])
-                {
-                    worldPosition = jumpEndPoint;
-                    isJumping = false;
+                    if ((worldPosition.X <= jumpEndPoint.X) != jumpDirection[0])
+                    {
+                        worldPosition = jumpEndPoint;
+                        isJumping = false;
+                    }
                 }
+                
             }
         }
 
@@ -125,7 +132,7 @@ namespace Goofy_Groovers.Entity
             {
                 Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
             }
-            Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
+            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
         }
 
         public void DrawByWorldPosition(GameTime gameTime)
@@ -138,7 +145,7 @@ namespace Goofy_Groovers.Entity
             {
                 Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, worldPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
             }
-            Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)worldPosition.X - 12, (int)worldPosition.Y - 12, 25, 25), blobUserColor);
+            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)worldPosition.X - 12, (int)worldPosition.Y - 12, 25, 25), blobUserColor);
         }
 
         public void DefineJumpDirection()
@@ -150,10 +157,17 @@ namespace Goofy_Groovers.Entity
             else
                 jumpDirection[0] = false;
 
+            //Y is not used but I'll keep it here just in case
             if (jumpStartPoint.Y <= jumpEndPoint.Y)
                 jumpDirection[1] = true;
             else
                 jumpDirection[1] = false;
+
+            //if it moves less than 3 pixels, its considered a short movement
+            if (Math.Abs(jumpStartPoint.X - jumpEndPoint.X) < 3)
+                shortMovement = true;
+            else
+                shortMovement = false;
         }
 
         public void SetJumpEndPoint(Vector2 endpoint)
