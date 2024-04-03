@@ -225,30 +225,51 @@ namespace Goofy_Groovers.Managers
             //Depending on distance from camera is offset velocity/value
 
             Vector2 playerScreenPosition = new Vector2(playerWorldPosition.X - mapOffsetX, playerWorldPosition.Y - mapOffsetY);
+
+            int offsetMultiplier = 1;
+            int pixelRange = 20; //after how many pixels does the speed increases
             //Depending on the player's position on the screen, either adds or subtracts from the x and y offsets
             //Called every player update
 
+            float playerCameraDistance;
+
+
+
             if (playerScreenPosition.X < Globals.windowWidth / 3 && mapOffsetX > 0)
             {
-                mapOffsetX--;
-                playerScreenPosition.X++;
+                playerCameraDistance =Globals.windowWidth / 3 - playerScreenPosition.X;
+                offsetMultiplier = 1 + (int) (playerCameraDistance / pixelRange);
+
+                mapOffsetX -= offsetMultiplier;
+                playerScreenPosition.X+= offsetMultiplier;
             }
             else if (playerScreenPosition.X > Globals.windowWidth * 2 / 3 && mapOffsetX < mapWidth * tileSize - Globals.windowWidth) //not sure if should be mapWidth*64 -1 or -64 (maybe - screen length?)
             {
-                mapOffsetX++;
-                playerScreenPosition.X--;
+                playerCameraDistance = playerScreenPosition.X - (Globals.windowWidth * 2 / 3);
+                offsetMultiplier = 1 + (int) (playerCameraDistance / pixelRange);
+                
+
+                mapOffsetX+= offsetMultiplier;
+                playerScreenPosition.X-= offsetMultiplier;
             }
 
 
             if (playerScreenPosition.Y < Globals.windowHeight / 3 && mapOffsetY > 0)
             {
-                mapOffsetY--;
-                playerScreenPosition.Y++;
+                playerCameraDistance = Globals.windowHeight / 3 - playerScreenPosition.Y;
+                offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
+
+
+                mapOffsetY -= offsetMultiplier;
+                playerScreenPosition.Y += offsetMultiplier;
             }
             else if (playerScreenPosition.Y > Globals.windowHeight * 2 / 3 && mapOffsetY < mapHeight * tileSize - Globals.windowHeight)
             {
-                mapOffsetY++;
-                playerScreenPosition.Y--;
+                playerCameraDistance = playerScreenPosition.Y - (Globals.windowHeight * 2 / 3);
+                offsetMultiplier = 1 + (int) (playerCameraDistance / pixelRange);
+                
+                mapOffsetY += offsetMultiplier;
+                playerScreenPosition.Y -= offsetMultiplier;
             }
                 
 
