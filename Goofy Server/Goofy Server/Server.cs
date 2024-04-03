@@ -152,6 +152,7 @@ namespace Goofy_Server
                                 existingPlayerData.isJumping = true;
                                 existingPlayerData.jumpStartPoint = newPlayerData.jumpStartPoint;
                                 existingPlayerData.jumpEndPoint = newPlayerData.jumpEndPoint;
+                                existingPlayerData.velocity = newPlayerData.velocity;
                                 existingPlayerData.jumpTheta = newPlayerData.jumpTheta;
                             }
                             else

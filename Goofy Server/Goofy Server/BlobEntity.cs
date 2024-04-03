@@ -18,8 +18,6 @@ namespace Goofy_Server
         public int animationNumber{ get; set; }
         public float animationEndTime{ get; set; }
 
-        public bool isOwnedByUser{ get; set; }
-
         public float velocity{ get; set; }
 
         public float jumpTheta{ get; set; }
@@ -29,18 +27,11 @@ namespace Goofy_Server
             this.blobUserName = name;
             this.blobUserColor = color;
             this.position = position;
-            isOwnedByUser = false;
-
             Random random = new();
             blobUserId = random.Next(1000);
         }
 
-        public BlobEntity(string name, bool isOwnedByUser, Color blobUserColor, Vector2 position) : this(name, blobUserColor, position)
-        {
-            this.isOwnedByUser = isOwnedByUser;
-        }
-
-        public BlobEntity(string name, bool isOwnedByUser, int blobUserId, Color blobUserColor, Vector2 position) : this(name, isOwnedByUser, blobUserColor, position)
+        public BlobEntity(string name, bool isOwnedByUser, int blobUserId, Color blobUserColor, Vector2 position) : this(name, blobUserColor, position)
         {
             this.blobUserId = blobUserId;
         }

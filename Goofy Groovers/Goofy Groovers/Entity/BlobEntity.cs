@@ -54,7 +54,7 @@ namespace Goofy_Groovers.Entity
             }
         }
 
-        public void Draw(GameTime gameTime)
+        public void Draw(Texture2D texture, GameTime gameTime)
         {
             if (blobUserName.Length >= 13)
             {
@@ -64,7 +64,7 @@ namespace Goofy_Groovers.Entity
             {
                 Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, GetPosition() + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
             }
-            Globals._spriteBatch.Draw(dotTexture, new Rectangle((int)GetPosition().X - 12, (int)GetPosition().Y - 12, 25, 25), blobUserColor);
+            Globals._spriteBatch.Draw(texture, new Rectangle((int)GetPosition().X - 12, (int)GetPosition().Y - 12, 25, 25), blobUserColor);
         }
 
         public BlobEntity() { }

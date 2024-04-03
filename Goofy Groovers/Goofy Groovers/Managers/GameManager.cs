@@ -222,7 +222,11 @@ namespace PlatformGame.Managers
                 Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.Black);
             }
             Globals._spriteBatch.Draw(playerBlob.GetTexture(), new Rectangle((int)playerBlob.GetEndpoint().X - 12, (int)playerBlob.GetEndpoint().Y - 12, 25, 25), Color.BlueViolet);
-            playerBlob.Draw(gameTime);
+
+            foreach (var blob in blobEntities)
+            {
+                blob.Draw(this.dotTexture, gameTime);
+            }
         }
 
         public MouseManager getMouseManager()

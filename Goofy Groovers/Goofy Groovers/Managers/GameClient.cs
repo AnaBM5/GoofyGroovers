@@ -55,7 +55,7 @@ namespace Goofy_Groovers.Managers
             }
         }
 
-        public static bool TransmitToServer(BlobEntity player, List<BlobEntity> blobs)
+        public static bool TransmitToServer(BlobEntity playerBlob, List<BlobEntity> blobs)
         {
             try
             {
@@ -66,33 +66,33 @@ namespace Goofy_Groovers.Managers
                 reader = new StreamReader(stream);
                 writer = new StreamWriter(stream);
 
-                writer.WriteLine(JsonConvert.SerializeObject(player));
+                writer.WriteLine(JsonConvert.SerializeObject(playerBlob));
 
                 writer.Flush();   //We empty the buffer and make sure that all data is sent to the server
 
                 string jsonResponse = reader.ReadLine();
-                Console.WriteLine("The server says " + jsonResponse); //Display the server's jsonResponse on the console
+                
                 if (jsonResponse != null)
                 {
                     Response jsonData = JsonConvert.DeserializeObject<Response>(jsonResponse);
 
-                    foreach (BlobEntity playerData in jsonData.playerList)
+                    foreach (BlobEntity remotePlayerData in jsonData.playerList)
                     {
-                        if (blobs.Any(player => player.blobUserId == playerData.blobUserId))
+                        BlobEntity localPlayer = blobs.SingleOrDefault(player => player.blobUserId == remotePlayerData.blobUserId);
+                        if (localPlayer == null)
                         {
-                            if (!blobs.First(player => player.blobUserId == playerData.blobUserId).isJumping)
-                            {
-                                player.position = playerData.position;
-                                player.jumpStartPoint = playerData.jumpStartPoint;
-                                player.jumpEndPoint = playerData.jumpEndPoint;
-                                player.jumpTheta = playerData.jumpTheta;
-                                player.isJumping = playerData.isJumping;
-                            }
+                            Debug.WriteLine("New user!");
+                            blobs.Add(new BlobEntity(
+                                remotePlayerData.blobUserName, false, remotePlayerData.blobUserId, remotePlayerData.blobUserColor, remotePlayerData.position));
                         }
                         else
                         {
-                            blobs.Add(new BlobEntity(
-                                playerData.blobUserName, false, playerData.blobUserId, playerData.blobUserColor, playerData.position));
+                            Debug.WriteLine("Update...");
+                            localPlayer.position = remotePlayerData.position;
+                            localPlayer.jumpStartPoint = remotePlayerData.jumpStartPoint;
+                            localPlayer.jumpEndPoint = remotePlayerData.jumpEndPoint;
+                            localPlayer.jumpTheta = remotePlayerData.jumpTheta;
+                            localPlayer.isJumping = remotePlayerData.isJumping;
                         }
                     }
                     client.Close(); //We close the "socket"*
@@ -106,45 +106,6 @@ namespace Goofy_Groovers.Managers
                 Console.WriteLine(e.ToString());
                 return false;
             }
-        }
-
-        public static void _TransmitToServer(BlobEntity player)
-        {
-            Debug.WriteLine(JsonConvert.SerializeObject(player));
-
-            /* try
-             {
-                 client = new TcpClient(serverName, port);   //We create the socket
-                 stream = client.GetStream();  //get the network stream to send and receive data
-
-                 // Create objects reading and writing to the network stream
-                 reader = new StreamReader(stream);
-                 writer = new StreamWriter(stream);
-
-                 writer.WriteLine(jsonMessage);
-
-                 writer.Flush();   //We empty the buffer and make sure that all data is sent to the server
-
-                 string jsonResponse = reader.ReadLine();
-                 Console.WriteLine("The server says " + jsonResponse); //We display the server's jsonResponse on the console
-                 if (jsonResponse != null)
-                 {
-                     List<BlobEntity> blobEntities = new List<BlobEntity>();
-                     var jsonResponse = JsonSerializer.Deserialize<Response>(jsonResponse);
-
-                     foreach (Player playerData in jsonResponse.playerList)
-                     {
-                         blobEntities.Add(new BlobEntity(
-                             playerData.name, playerData.id, playerData.color, playerData.position, playerData.isJumping,
-                             playerData.jumpStart, playerData.jumpEnd));
-                     }
-                     client.Close(); //We close the "socket"
-                 }
-             }
-             catch (Exception e)
-             {
-                 Console.WriteLine(e.ToString());
-             }*/
         }
     }
 }
