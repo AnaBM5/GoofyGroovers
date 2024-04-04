@@ -106,6 +106,8 @@ public class Server
                     {
                         if (existingPlayerData.blobUserId == newPlayerData.blobUserId)
                         {
+                            existingPlayerData.blobUserName = newPlayerData.blobUserName;
+                            existingPlayerData.blobUserColor = newPlayerData.blobUserColor;
                             existingPlayerData.worldPosition = newPlayerData.worldPosition;
                             existingPlayerData.isJumping = newPlayerData.isJumping;
                             existingPlayerData.jumpStartPoint = newPlayerData.jumpStartPoint;

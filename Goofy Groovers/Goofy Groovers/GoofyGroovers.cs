@@ -212,12 +212,12 @@ namespace Goofy_Groovers
                            
                             int randomIndex = random.Next(availableColors.Count); 
                             Color randomColor = availableColors[randomIndex];
-                            _gameManager.playerBlob.SetUserColor(randomColor);  //We set a color to the player
+                            Globals._gameManager.playerBlob.SetUserColor(randomColor);  //We set a color to the player
                             assignedColors.Add(randomColor);                    //We add the selected color to the temporal array
                             availableColors.RemoveAt(randomIndex);                  //We remove that color from the original array
 
                             isKeyPressed = true;
-                            _gameManager.playerBlob.SetUserName(initials);
+                            Globals._gameManager.playerBlob.SetUserName(initials);
                             gameState = GameState.RaceScreen;                       //We change the game state if all the requirements are met                    
                         }
                     }
