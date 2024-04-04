@@ -21,7 +21,27 @@ namespace Goofy_Groovers
 
         private GameState gameState = GameState.LoginScreen;
         private bool isKeyPressed = false;
+        private bool isRectClicked = false;
+        private bool isIPRectClicked = false;
+
+        private string ipAddress = string.Empty;
         public string initials = string.Empty;
+
+        //We calculate the position and size of the rectangle 
+        private int rectWidth = 400;
+        private int rectHeight = 40;
+        private int positionX = 230;
+        private int positionY = 275;
+        private int rect2PositionY = 165;
+
+        //We draw the rectangle 3
+        int rect3Width = 140;
+        int rect3Height = 70;
+        int position3X = 330;
+        int position3Y = 360;
+
+        private Texture2D menuInterface;
+        private Texture2D _blankTexture;
 
         public GoofyGroovers()
         {
@@ -66,14 +86,18 @@ namespace Goofy_Groovers
             _gameManager.getLevelManager().setPlatformSprite(platformSprite);
             Texture2D bgSprite = Content.Load<Texture2D>("Sprites/backgroundSprite");
             _gameManager.getLevelManager().setBackgroundSprite(bgSprite);
+
+            menuInterface = Content.Load<Texture2D>("Interfaces/menu");
+            _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
+            _blankTexture.SetData(new[] { Color.White });
         }
 
-        public bool GetPlayerInitialsFromUser()
+        public bool GetPlayerKeyInputFromUser()
         {
             KeyboardState keyboardState = Keyboard.GetState();
             Keys[] pressedKeys = keyboardState.GetPressedKeys();
 
-            if (pressedKeys.Length > 0 && !isKeyPressed)
+            if (isRectClicked && pressedKeys.Length > 0 && !isKeyPressed)
             {
                 Keys firstKey = pressedKeys[0];
 
@@ -81,7 +105,7 @@ namespace Goofy_Groovers
                 {
                     if (firstKey == Keys.Space && initials.Length == 0)
                     {
-                        //We do nothing if the first key is space and there are no initials yet
+                        // We do nothing if the first key is a space key and there are no initials yet.
                     }
                     else
                     {
@@ -94,17 +118,36 @@ namespace Goofy_Groovers
                     initials = initials.Substring(0, initials.Length - 1);
                     isKeyPressed = true;
                 }
-                else if (gameState == GameState.LoginScreen && firstKey == Keys.Enter && initials.Length >= 3)
+            }
+            else if (isIPRectClicked && pressedKeys.Length > 0 && !isKeyPressed)
+            {
+                Keys firstKey = pressedKeys[0];
+                if ((char.IsDigit((char)firstKey) || firstKey == Keys.OemPeriod) && ipAddress.Length <= 13)
                 {
-                    int randomIndex = random.Next(availableColors.Count);
-                    Color randomColor = availableColors[randomIndex];
-                    _gameManager.playerBlob.SetUserColor(randomColor);
-                    assignedColors.Add(randomColor);
-                    availableColors.RemoveAt(randomIndex);
+                    if ((firstKey == Keys.Space || firstKey == Keys.OemPeriod) && ipAddress.Length == 0)
+                    {
+                        //We do nothing if the first key is a space or period and there is no IP address yet.
+                    }
+                    else
+                    {
+                        string keyToAdd = "";
 
+                        if (firstKey == Keys.OemPeriod)
+                        {
+                            keyToAdd = ".";
+                        }
+                        else
+                        {
+                            keyToAdd = ((char)firstKey).ToString();
+                        }
+                        ipAddress += keyToAdd;
+                        isKeyPressed = true;
+                    }
+                }
+                else if (firstKey == Keys.Back && ipAddress.Length > 0)
+                {
+                    ipAddress = ipAddress.Substring(0, ipAddress.Length - 1);
                     isKeyPressed = true;
-                    _gameManager.playerBlob.SetUserName(initials);
-                    return true;
                 }
             }
             else if (pressedKeys.Length == 0)
@@ -120,6 +163,9 @@ namespace Goofy_Groovers
             return initials.Length;
         }
 
+    
+
+
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -128,9 +174,40 @@ namespace Goofy_Groovers
             switch (gameState)
             {
                 case GameState.LoginScreen:
-                    if (GetPlayerInitialsFromUser())
+
+                    MouseState mouseState = Mouse.GetState();
+                    if (mouseState.LeftButton == ButtonState.Pressed)
                     {
-                        gameState = GameState.RaceScreen;  // Change game state to RaceScreen
+                        Rectangle rect1 = new Rectangle(positionX, positionY, rectWidth, rectHeight);
+                        Rectangle rect2 = new Rectangle(positionX, rect2PositionY, rectWidth, rectHeight);
+                        Rectangle rect3 = new Rectangle(position3X, position3Y, rect3Width, rect3Height);
+                        if (rect1.Contains(mouseState.Position))
+                        {
+                            isRectClicked = true;
+                            isIPRectClicked = false;
+                        }
+                        if (rect2.Contains(mouseState.Position))
+                        {
+                            isRectClicked = false;
+                            isIPRectClicked = true;
+                        }
+                        if ( rect3.Contains(mouseState.Position) && initials.Length >= 3 && ipAddress.Length >= 3)
+                        {
+                           
+                            int randomIndex = random.Next(availableColors.Count); 
+                            Color randomColor = availableColors[randomIndex];
+                            _gameManager.playerBlob.SetUserColor(randomColor);  //We set a color to the player
+                            assignedColors.Add(randomColor);                    //We add the selected color to the temporal array
+                            availableColors.RemoveAt(randomIndex);                  //We remove that color from the original array
+
+                            isKeyPressed = true;
+                            _gameManager.playerBlob.SetUserName(initials);
+                            gameState = GameState.RaceScreen;                       //We change the game state if all the requirements are met                    
+                        }
+                    }
+                    if (GetPlayerKeyInputFromUser())
+                    {
+                        gameState = GameState.RaceScreen;                       // Change game state to RaceScreen            
                     }
                     break;
 
@@ -144,30 +221,41 @@ namespace Goofy_Groovers
 
         protected override void Draw(GameTime gameTime)
         {
+            float scaleX = (float)GraphicsDevice.Viewport.Width / menuInterface.Width;
+            float scaleY = (float)GraphicsDevice.Viewport.Height / menuInterface.Height;
+
             // Add your drawing code here
             Globals._spriteBatch.Begin();
             switch (gameState)
             {
                 case GameState.LoginScreen:
                     {
+
                         GraphicsDevice.Clear(Color.RoyalBlue);
-                        string message = "PLEASE, ENTER YOUR INITIALS BELOW: ";
 
-                        // Calculate the position to center the message horizontally and vertically
-                        Vector2 messageSize = Globals._gameFont.MeasureString(message);
-                        Vector2 position = new Vector2(
-                            (GraphicsDevice.Viewport.Width - messageSize.X) / 2 - 25,
-                            (GraphicsDevice.Viewport.Height - messageSize.Y) / 2 - 30);
+                        Globals._spriteBatch.Draw(menuInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleX, scaleY), SpriteEffects.None, 0f);
 
-                        Vector2 initialsSize = Globals._gameFont.MeasureString(initials);                                        // FIX: Breaks on (unsupported) characters, such as ":" 
-                                                                                                                                 // FIX (UPDATE):  I made a few changes and the symbols are not allowed now,
-                                                                                                                                 // but I do not know why the only symbols that are causing problems are:
-                                                                                                                                 // ; // ' // [ , ] //  and // ` // but the other characters are not causing problems, as an example !,@,#,$,etc
+                        Globals._spriteBatch.DrawString(Globals._gameFont, initials, new Vector2(250, 290), Color.Black);
 
-                        Vector2 initialsPosition = new Vector2((GraphicsDevice.Viewport.Width - initialsSize.X - 30) / 2, 250); // Fixed vertical position for initials
+                        Vector2 centerPosition = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
 
-                        Globals._spriteBatch.DrawString(Globals._gameFont, message, position, Color.White);
-                        Globals._spriteBatch.DrawString(Globals._gameFont, initials, initialsPosition, Color.Black);
+                        //We draw the rectangle 1 
+                        Rectangle rect1 = new Rectangle(positionX, positionY, rectWidth, rectHeight);
+                        Globals._spriteBatch.Draw(_blankTexture, rect1, Color.White);
+
+                        //We draw the rectangle 2
+                        Rectangle rect2 = new Rectangle(positionX, rect2PositionY, rectWidth, rectHeight);
+                        Globals._spriteBatch.Draw(_blankTexture, rect2, Color.White);
+
+                        Rectangle rect3 = new Rectangle(position3X, position3Y, rect3Width, rect3Height);
+                        Globals._spriteBatch.Draw(_blankTexture, rect3, Color.Transparent);
+
+                        //We draw the player's initials
+                        Globals._spriteBatch.DrawString(Globals._gameFont, initials, new Vector2(250, 290), Color.Black);
+
+                        //We draw the Server's Ip
+                        Globals._spriteBatch.DrawString(Globals._gameFont, ipAddress, new Vector2(250, 180), Color.Black);
+
                     }
                     break;
 
