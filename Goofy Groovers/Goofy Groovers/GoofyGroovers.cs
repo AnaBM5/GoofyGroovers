@@ -11,7 +11,6 @@ namespace Goofy_Groovers
 {
     public class GoofyGroovers : Game
     {
-
         public enum GameState
         { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen };
 
@@ -27,18 +26,20 @@ namespace Goofy_Groovers
         private string ipAddress = string.Empty;
         public string initials = string.Empty;
 
-        //We calculate the position and size of the rectangle 
+        //We calculate the position and size of the rectangle
         private int rectWidth = 400;
+
         private int rectHeight = 40;
         private int positionX = 230;
         private int positionY = 275;
         private int rect2PositionY = 165;
 
         //We draw the rectangle 3
-        int rect3Width = 140;
-        int rect3Height = 70;
-        int position3X = 330;
-        int position3Y = 360;
+        private int rect3Width = 140;
+
+        private int rect3Height = 70;
+        private int position3X = 330;
+        private int position3Y = 360;
 
         private Texture2D menuInterface;
         private Texture2D _blankTexture;
@@ -69,10 +70,14 @@ namespace Goofy_Groovers
             // and load the information about the other blobs.
             Globals._gameManager = new GameManager(this);
             Globals._gameClient = new GameClient();
-            Task.Run(() =>
+            Thread thread = new Thread(() =>
             {
                 Globals._gameClient.ConnectAndCommunicate();
-                });
+            });
+            thread.Start();
+            
+            //_ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate());
+
             // Thread communicationThread = new Thread(GameClient.ConnectAndCommunicate());
             // communicationThread.Start();
             base.Initialize();
@@ -156,15 +161,14 @@ namespace Goofy_Groovers
                 {
                     ipAddress = ipAddress.Substring(0, ipAddress.Length - 1);
                     isKeyPressed = true;
-
                 }
                 int randomIndex = random.Next(availableColors.Count);
-                    Color randomColor = availableColors[randomIndex];
-                    Globals._gameManager.playerBlob.SetUserColor(randomColor);
-                    assignedColors.Add(randomColor);
-                    availableColors.RemoveAt(randomIndex);
-                    Globals._gameManager.playerBlob.SetUserName(initials);
-                    return true;
+                Color randomColor = availableColors[randomIndex];
+                Globals._gameManager.playerBlob.SetUserColor(randomColor);
+                assignedColors.Add(randomColor);
+                availableColors.RemoveAt(randomIndex);
+                Globals._gameManager.playerBlob.SetUserName(initials);
+                return true;
             }
             else if (pressedKeys.Length == 0)
             {
@@ -178,9 +182,6 @@ namespace Goofy_Groovers
         {
             return initials.Length;
         }
-
-    
-
 
         protected override void Update(GameTime gameTime)
         {
@@ -207,10 +208,9 @@ namespace Goofy_Groovers
                             isRectClicked = false;
                             isIPRectClicked = true;
                         }
-                        if ( rect3.Contains(mouseState.Position) && initials.Length >= 3 && ipAddress.Length >= 3)
+                        if (rect3.Contains(mouseState.Position) && initials.Length >= 3 && ipAddress.Length >= 3)
                         {
-                           
-                            int randomIndex = random.Next(availableColors.Count); 
+                            int randomIndex = random.Next(availableColors.Count);
                             Color randomColor = availableColors[randomIndex];
                             Globals._gameManager.playerBlob.SetUserColor(randomColor);  //We set a color to the player
                             assignedColors.Add(randomColor);                    //We add the selected color to the temporal array
@@ -218,12 +218,12 @@ namespace Goofy_Groovers
 
                             isKeyPressed = true;
                             Globals._gameManager.playerBlob.SetUserName(initials);
-                            gameState = GameState.RaceScreen;                       //We change the game state if all the requirements are met                    
+                            gameState = GameState.RaceScreen;                       //We change the game state if all the requirements are met
                         }
                     }
                     if (GetPlayerKeyInputFromUser())
                     {
-                        gameState = GameState.RaceScreen;                       // Change game state to RaceScreen            
+                        gameState = GameState.RaceScreen;                       // Change game state to RaceScreen
                     }
                     break;
 
@@ -246,7 +246,6 @@ namespace Goofy_Groovers
             {
                 case GameState.LoginScreen:
                     {
-
                         GraphicsDevice.Clear(Color.RoyalBlue);
 
                         Globals._spriteBatch.Draw(menuInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleX, scaleY), SpriteEffects.None, 0f);
@@ -255,7 +254,7 @@ namespace Goofy_Groovers
 
                         Vector2 centerPosition = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
 
-                        //We draw the rectangle 1 
+                        //We draw the rectangle 1
                         Rectangle rect1 = new Rectangle(positionX, positionY, rectWidth, rectHeight);
                         Globals._spriteBatch.Draw(_blankTexture, rect1, Color.White);
 
@@ -271,7 +270,6 @@ namespace Goofy_Groovers
 
                         //We draw the Server's Ip
                         Globals._spriteBatch.DrawString(Globals._gameFont, ipAddress, new Vector2(250, 180), Color.Black);
-
                     }
                     break;
 

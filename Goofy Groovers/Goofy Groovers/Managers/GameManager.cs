@@ -120,32 +120,6 @@ namespace Goofy_Groovers.Managers
                 }
             }
 
-            /*
-            if (elapsedSecondsSinceTransmissionToServer > 0.01)
-            {
-                elapsedSecondsSinceTransmissionToServer = 0;
-                try
-                {
-                    //Debug.WriteLine(hasFinishedTransmission.ToString());
-                    // We do not execute network operations in this thread, but in a task.
-                    // https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
-
-                    Task.Run(() => { GameClient.TransmitToServer(playerBlob, blobEntities); });
-                    /*                    serverTransmitterThread = new Thread(
-                                            () => GameClient.TransmitToServer(playerBlob, blobEntities));
-                                        serverTransmitterThread.Start();
-                    Task.Run(() =>
-                    {
-                        hasFinishedTransmission = GameClient.TransmitToServer(playerBlob, blobEntities);
-                    });
-                }
-                catch (Exception)
-                {
-                    Debug.WriteLine("Oopsie");
-                }
-            }*/
-
-
             if (elapsedSecondsSinceVisualisationShift > 1)
             {
                 elapsedSecondsSinceVisualisationShift = 0;

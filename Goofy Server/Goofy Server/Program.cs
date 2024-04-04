@@ -18,6 +18,37 @@ internal static class Program
     }
 }*/
 
-Server server = new Server();
-while (true)
-    server.RunServer();
+using System.Net.Sockets;
+using System.Net;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Goofy_Server;
+using System.Diagnostics;
+
+namespace Goofy_Server
+{
+    public class Program
+    {
+        private static async Task Main(string[] args)
+        {
+            Server server = new Server();
+            Server.lobbyList.Add(new Lobby("Test!"));
+            Server.listener.Start(); // start the listener
+            Debug.WriteLine("uh...");
+
+            while (true)
+            {
+                try
+                {
+                    TcpClient client = await Server.listener.AcceptTcpClientAsync(); // wait the user to connect
+                                                                                     // Console.WriteLine("Client connected form " + ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
+                    _ = Task.Run(() => Server.HandleClient(client));
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+    }
+}
