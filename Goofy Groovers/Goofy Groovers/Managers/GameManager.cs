@@ -11,14 +11,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PlatformGame.Managers
+namespace Goofy_Groovers.Managers
 {
     public class GameManager
     {
         private MouseManager _mouseManager;
         private TileMapManager _levelManager;
 
-        private List<BlobEntity> blobEntities;
+        public readonly Object toKeepEntitiesIntact = new Object();
+        public List<BlobEntity> blobEntities;
         private Thread serverTransmitterThread;
 
         private List<Vector2> map;
@@ -41,6 +42,7 @@ namespace PlatformGame.Managers
         public Texture2D squareTexture;
         private double elapsedSecondsSinceVisualisationShift;
         private double elapsedSecondsSinceTransmissionToServer;
+        private bool hasFinishedTransmission = true;
 
         public GameManager(GoofyGroovers game)
         {
@@ -106,31 +108,42 @@ namespace PlatformGame.Managers
                 playerBlob.worldPosition = lastValidPosition;
             
 
-            playerBlob.SetCameraPosition(_levelManager.ModifyOffset(playerBlob.GetWorldPosition()));
 
-            foreach (var blob in blobEntities)
+            _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
+
             {
-                blob.Update(elapsedSeconds);
+            lock (Globals._gameManager.toKeepEntitiesIntact)
+                foreach (var blob in blobEntities)
+                {
+                    blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
+                    blob.Update(elapsedSeconds);
+                }
             }
+
+            /*
             if (elapsedSecondsSinceTransmissionToServer > 0.01)
             {
                 elapsedSecondsSinceTransmissionToServer = 0;
                 try
                 {
+                    //Debug.WriteLine(hasFinishedTransmission.ToString());
                     // We do not execute network operations in this thread, but in a task.
                     // https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
 
                     Task.Run(() => { GameClient.TransmitToServer(playerBlob, blobEntities); });
                     /*                    serverTransmitterThread = new Thread(
                                             () => GameClient.TransmitToServer(playerBlob, blobEntities));
-                                        serverTransmitterThread.Start();*/
-            
+                                        serverTransmitterThread.Start();
+                    Task.Run(() =>
+                    {
+                        hasFinishedTransmission = GameClient.TransmitToServer(playerBlob, blobEntities);
+                    });
                 }
                 catch (Exception)
                 {
                     Debug.WriteLine("Oopsie");
                 }
-            }
+            }*/
 
 
             if (elapsedSecondsSinceVisualisationShift > 1)
@@ -223,11 +236,9 @@ namespace PlatformGame.Managers
             Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
             Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
 
-            playerBlob.Draw(gameTime);
             foreach (var blob in blobEntities)
             {
-                if (!blob.Equals(playerBlob))
-                    blob.Draw(gameTime);
+                blob.Draw(gameTime);
             }
         }
 

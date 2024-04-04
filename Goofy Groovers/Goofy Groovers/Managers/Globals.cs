@@ -12,6 +12,7 @@ namespace Goofy_Groovers.Managers
         public static SpriteBatch _spriteBatch;
         public static SpriteFont _gameFont;
         public static GameClient _gameClient;
+        public static GameManager _gameManager;
         public static Texture2D _dotTexture;
     }
 }

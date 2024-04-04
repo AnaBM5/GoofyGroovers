@@ -1,30 +1,29 @@
 ﻿using System.Collections.Generic;
 
-namespace Goofy_Server
+public enum LobbyMode
+{ Lobby = 1, RaceStarting, Race, RaceEnding }
+
+public class Lobby
 {
-    public enum LobbyMode
-    { Lobby = 1, RaceStarting, Race, RaceEnding }
+    public string lobbyName;
+    public List<BlobEntity> playerList;
+    public int controllingPlayerId;
+    public LobbyMode lobbyMode;
 
-    public class Lobby
+    public Lobby()
+    { }
+
+    public Lobby(string name)
     {
-        public string lobbyName;
-        public List<BlobEntity> playerList;
-        public int controllingPlayerId;
-        public LobbyMode lobbyMode;
+        lobbyName = name;
+        lobbyMode = LobbyMode.Lobby;
+        playerList = new List<BlobEntity>();
+        controllingPlayerId = -1;
+    }
 
-        public Lobby() { }
-        public Lobby(string name)
-        {
-            lobbyName = name;
-            lobbyMode = LobbyMode.Lobby;
-            playerList = new List<BlobEntity>();
-            controllingPlayerId = -1;
-        }
-
-        public Lobby(string lobbyName, BlobEntity controllingPlayer) : this(lobbyName)
-        {
-            playerList.Add(controllingPlayer);
-            controllingPlayerId = controllingPlayer.blobUserId;
-        }
+    public Lobby(string lobbyName, BlobEntity controllingPlayer) : this(lobbyName)
+    {
+        playerList.Add(controllingPlayer);
+        controllingPlayerId = controllingPlayer.blobUserId;
     }
 }

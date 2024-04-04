@@ -2,15 +2,15 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using PlatformGame.Managers;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Goofy_Groovers
 {
     public class GoofyGroovers : Game
     {
-        private GameManager _gameManager;
 
         public enum GameState
         { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen };
@@ -67,7 +67,14 @@ namespace Goofy_Groovers
         {
             // TODO: Communicate information to server as the name/color have been chosen
             // and load the information about the other blobs.
-            _gameManager = new GameManager(this);
+            Globals._gameManager = new GameManager(this);
+            Globals._gameClient = new GameClient();
+            Task.Run(() =>
+            {
+                Globals._gameClient.ConnectAndCommunicate();
+                });
+            // Thread communicationThread = new Thread(GameClient.ConnectAndCommunicate());
+            // communicationThread.Start();
             base.Initialize();
         }
 
@@ -78,14 +85,15 @@ namespace Goofy_Groovers
             Globals._gameFont = Content.Load<SpriteFont>("Fonts/Minecraft");
 
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
-            _gameManager.squareTexture = squareSprite;
+            Globals._gameManager.squareTexture = squareSprite;
             Globals._dotTexture = Content.Load<Texture2D>("dotSprite");
-            //_gameManager.playerBlob.SetTexture(Globals._dotTexture);
+
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotTexture);
 
             Texture2D platformSprite = Content.Load<Texture2D>("Sprites/foregroundSprite");
-            _gameManager.getLevelManager().setPlatformSprite(platformSprite);
+            Globals._gameManager.getLevelManager().setPlatformSprite(platformSprite);
             Texture2D bgSprite = Content.Load<Texture2D>("Sprites/backgroundSprite");
-            _gameManager.getLevelManager().setBackgroundSprite(bgSprite);
+            Globals._gameManager.getLevelManager().setBackgroundSprite(bgSprite);
 
             menuInterface = Content.Load<Texture2D>("Interfaces/menu");
             _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
@@ -148,7 +156,15 @@ namespace Goofy_Groovers
                 {
                     ipAddress = ipAddress.Substring(0, ipAddress.Length - 1);
                     isKeyPressed = true;
+
                 }
+                int randomIndex = random.Next(availableColors.Count);
+                    Color randomColor = availableColors[randomIndex];
+                    Globals._gameManager.playerBlob.SetUserColor(randomColor);
+                    assignedColors.Add(randomColor);
+                    availableColors.RemoveAt(randomIndex);
+                    Globals._gameManager.playerBlob.SetUserName(initials);
+                    return true;
             }
             else if (pressedKeys.Length == 0)
             {
@@ -212,7 +228,7 @@ namespace Goofy_Groovers
                     break;
 
                 case GameState.RaceScreen:
-                    _gameManager.Update(gameTime, this);
+                    Globals._gameManager.Update(gameTime, this);
                     break;
             }
 
@@ -263,8 +279,8 @@ namespace Goofy_Groovers
                     {
                         GraphicsDevice.Clear(Color.DarkSlateBlue);
                         // Draw game objects using _spriteBatch
-                        _gameManager.Draw(gameTime);
-                        _gameManager.getMouseManager().Draw();
+                        Globals._gameManager.Draw(gameTime);
+                        Globals._gameManager.getMouseManager().Draw();
                     }
                     break;
             }

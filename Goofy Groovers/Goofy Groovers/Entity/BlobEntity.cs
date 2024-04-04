@@ -43,7 +43,6 @@ namespace Goofy_Groovers.Entity
         public BlobEntity()
         {
             jumpDirection = new bool[2];
-            dotTexture = Globals._dotTexture;
             Random rnd = new Random();
             blobUserId = rnd.Next(1000);
         }
@@ -53,7 +52,6 @@ namespace Goofy_Groovers.Entity
             this.worldPosition = worldPosition;
             this.cameraPosition = cameraPosition;
             this.isOwnedByUser = isOwnedByUser;
-            dotTexture = Globals._dotTexture;
 
             Random rnd = new Random();
             blobUserId = rnd.Next(1000);
@@ -66,7 +64,6 @@ namespace Goofy_Groovers.Entity
         {
             this.worldPosition = worldPosition;
             this.isOwnedByUser = isOwnedByUser;
-            dotTexture = Globals._dotTexture;
 
             Random rnd = new Random();
             blobUserId = rnd.Next(1000);
@@ -126,26 +123,13 @@ namespace Goofy_Groovers.Entity
         {
             if (blobUserName.Length >= 13)
             {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-35, 20), Color.Black);
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-40, 20), Color.White);
             }
             else
             {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 4, 20), Color.White);
             }
             Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
-        }
-
-        public void DrawByWorldPosition(GameTime gameTime)
-        {
-            if (blobUserName.Length >= 13)
-            {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", worldPosition + new Vector2(-35, 20), Color.Black);
-            }
-            else
-            {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, worldPosition + new Vector2(-blobUserName.Length * 3, 20), Color.Black);
-            }
-            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)worldPosition.X - 12, (int)worldPosition.Y - 12, 25, 25), blobUserColor);
         }
 
         public void DefineJumpDirection()
@@ -265,7 +249,6 @@ namespace Goofy_Groovers.Entity
     {
         public string responseType;
         public List<BlobEntity> playerList;
-
         public Response()
         { }
     }
