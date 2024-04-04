@@ -71,7 +71,10 @@ namespace PlatformGame.Managers
 
             if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
             {
-                if (_mouseManager.IsNewJumpInitiated())
+                if (_mouseManager.IsJumpCancelled())
+                    parabolicMovementVisualisation.Clear();
+
+                else if (_mouseManager.IsNewJumpInitiated())
                 {
                     VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }

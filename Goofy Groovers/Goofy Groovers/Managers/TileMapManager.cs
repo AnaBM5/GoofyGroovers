@@ -189,6 +189,7 @@ namespace Goofy_Groovers.Managers
             Vector2 playerScreenPosition = new Vector2(playerWorldPosition.X - mapOffsetX, playerWorldPosition.Y - mapOffsetY);
 
             int offsetMultiplier = 1;
+            int offsetCorrection = 0;
             int pixelRange = 20; //after how many pixels does the speed increases
             //Depending on the player's position on the screen, either adds or subtracts from the x and y offsets
             //Called every player update
@@ -200,43 +201,52 @@ namespace Goofy_Groovers.Managers
                 playerCameraDistance = Globals.windowWidth / 3 - playerScreenPosition.X;
                 offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
 
-                mapOffsetX -= offsetMultiplier;
-                playerScreenPosition.X += offsetMultiplier;
-                finishLineX += offsetMultiplier;
+                if (mapOffsetX - offsetMultiplier < 0)
+                    offsetCorrection = offsetMultiplier - mapOffsetX;
+
+                mapOffsetX -= offsetMultiplier - offsetCorrection;
+                playerScreenPosition.X += offsetMultiplier - offsetCorrection;
+                finishLineX += offsetMultiplier - offsetCorrection;
             }
             else if (playerScreenPosition.X > Globals.windowWidth * 2 / 3 && mapOffsetX < mapWidth * tileSize - Globals.windowWidth) //not sure if should be mapWidth*64 -1 or -64 (maybe - screen length?)
             {
                 playerCameraDistance = playerScreenPosition.X - (Globals.windowWidth * 2 / 3);
                 offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
 
-                mapOffsetX += offsetMultiplier;
-                playerScreenPosition.X -= offsetMultiplier;
-                finishLineX -= offsetMultiplier;
+                if (mapOffsetX + offsetMultiplier > mapWidth * tileSize - Globals.windowWidth)
+                    offsetCorrection = (offsetMultiplier + mapOffsetX) - (mapWidth * tileSize - Globals.windowWidth);
+
+                mapOffsetX += offsetMultiplier - offsetCorrection;
+                playerScreenPosition.X -= offsetMultiplier - offsetCorrection;
+                finishLineX -= offsetMultiplier - offsetCorrection;
             }
+
+             offsetCorrection = 0;
 
             if (playerScreenPosition.Y < Globals.windowHeight / 3 && mapOffsetY > 0)
             {
                 playerCameraDistance = Globals.windowHeight / 3 - playerScreenPosition.Y;
                 offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
 
-                mapOffsetY -= offsetMultiplier;
-                playerScreenPosition.Y += offsetMultiplier;
+                if (mapOffsetY - offsetMultiplier < 0)
+                    offsetCorrection = offsetMultiplier - mapOffsetY;
+
+                mapOffsetY -= offsetMultiplier - offsetCorrection;
+                playerScreenPosition.Y += offsetMultiplier - offsetCorrection;
             }
             else if (playerScreenPosition.Y > Globals.windowHeight * 2 / 3 && mapOffsetY < mapHeight * tileSize - Globals.windowHeight)
             {
                 playerCameraDistance = playerScreenPosition.Y - (Globals.windowHeight * 2 / 3);
                 offsetMultiplier = 1 + (int)(playerCameraDistance / pixelRange);
 
-                mapOffsetY += offsetMultiplier;
-                playerScreenPosition.Y -= offsetMultiplier;
+                if (mapOffsetY + offsetMultiplier > mapHeight * tileSize - Globals.windowHeight)
+                    offsetCorrection = (offsetMultiplier + mapOffsetY) - (mapHeight * tileSize - Globals.windowHeight);
+
+
+                mapOffsetY += offsetMultiplier - offsetCorrection ;
+                playerScreenPosition.Y -= offsetMultiplier - offsetCorrection;
             }
-            //playerWorldPosition.X = playerScreenPosition.X + mapOffsetX;
-            //playerWorldPosition.Y = playerScreenPosition.Y + mapOffsetY;
 
-            //for x: 640 & 1280
-            //for y: 360 & 720
-
-            //Adjust the camera positions of the obstacles
             DetectMapLimits();
 
             //Return player screen position?
@@ -290,7 +300,7 @@ namespace Goofy_Groovers.Managers
                                 break;
 
                             case "2":
-                                Globals._spriteBatch.Draw(backgroundTile, new Rectangle(xPosition, yPosition, tileSize, tileSize), Color.Green);
+                                Globals._spriteBatch.Draw(goalTile, new Rectangle(xPosition, yPosition, tileSize, tileSize), Color.LightSeaGreen);
                                 break;
 
                             default:
@@ -326,6 +336,11 @@ namespace Goofy_Groovers.Managers
         public void setPlatformSprite(Texture2D platformTile)
         {
             this.platformTile = platformTile;
+        }
+
+        public void setGoalSprite(Texture2D goalTile)
+        {
+            this.goalTile = goalTile;
         }
 
         public List<Vector2> getLevelOutlinePixelCoordinates()
