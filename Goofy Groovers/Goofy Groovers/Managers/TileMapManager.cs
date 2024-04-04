@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
@@ -30,7 +31,7 @@ namespace Goofy_Groovers.Managers
         private Texture2D platformTile;
         private Texture2D goalTile;
 
-        private int FinishLineX;
+        private int finishLineX;
 
         private List<String[]> levelData;
 
@@ -54,6 +55,8 @@ namespace Goofy_Groovers.Managers
 
             levelOutlinePixelCoordinates = new List<Vector2>();
             levelObstaclesPixelCoordinates = new List<Vector2[]>();
+
+            finishLineX = -1;
 
             ReadFile();
             ModifyOffset(new Vector2(0, 0));
@@ -95,6 +98,9 @@ namespace Goofy_Groovers.Managers
                                 levelMap.Add(line);
                             else
                                 throw new Exception("Map line " + lineCounter + " doesn't have right width");
+
+                            if (finishLineX == -1 &&  line.Contains<string>("2"))
+                                DefineFinishLineCoordinate(line);
                         }
                         else if (lineCounter == mapHeight + 2)
                         {
@@ -196,6 +202,7 @@ namespace Goofy_Groovers.Managers
 
                 mapOffsetX -= offsetMultiplier;
                 playerScreenPosition.X += offsetMultiplier;
+                finishLineX += offsetMultiplier;
             }
             else if (playerScreenPosition.X > Globals.windowWidth * 2 / 3 && mapOffsetX < mapWidth * tileSize - Globals.windowWidth) //not sure if should be mapWidth*64 -1 or -64 (maybe - screen length?)
             {
@@ -204,6 +211,7 @@ namespace Goofy_Groovers.Managers
 
                 mapOffsetX += offsetMultiplier;
                 playerScreenPosition.X -= offsetMultiplier;
+                finishLineX -= offsetMultiplier;
             }
 
             if (playerScreenPosition.Y < Globals.windowHeight / 3 && mapOffsetY > 0)
@@ -222,17 +230,31 @@ namespace Goofy_Groovers.Managers
                 mapOffsetY += offsetMultiplier;
                 playerScreenPosition.Y -= offsetMultiplier;
             }
-
             //playerWorldPosition.X = playerScreenPosition.X + mapOffsetX;
             //playerWorldPosition.Y = playerScreenPosition.Y + mapOffsetY;
 
             //for x: 640 & 1280
             //for y: 360 & 720
 
+            //Adjust the camera positions of the obstacles
             DetectMapLimits();
 
             //Return player screen position?
             return playerScreenPosition;
+        }
+
+
+        private void DefineFinishLineCoordinate(String[] line)
+        {
+            int lineLength = line.Length;
+            for (int counter = 0; counter < lineLength; counter++)
+            {
+                if (line[counter].Equals("2"))
+                {
+                    finishLineX = counter * tileSize - mapOffsetX;
+                    return;
+                }
+            }
         }
 
         public void Draw()
@@ -295,6 +317,7 @@ namespace Goofy_Groovers.Managers
             return cameraPosition;
         }
 
+
         public void setBackgroundSprite(Texture2D backgroundTile)
         {
             this.backgroundTile = backgroundTile;
@@ -313,6 +336,11 @@ namespace Goofy_Groovers.Managers
         public List<Vector2[]> getObstaclesPixelCoordinates()
         {
             return levelObstaclesPixelCoordinates;
+        }
+
+        public int getFinishLineXCoordinate()
+        {
+            return this.finishLineX;
         }
     }
 }

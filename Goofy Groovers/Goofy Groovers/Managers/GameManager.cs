@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,8 +36,6 @@ namespace PlatformGame.Managers
         private double parabolicVisualisationTimeMax;
         private double parabolicVisualisationOffset;
 
-        private List<Vector2> tilePositions;
-
         public Texture2D dotTexture;
         public Texture2D squareTexture;
         private double elapsedSecondsSinceVisualisationShift;
@@ -61,16 +60,6 @@ namespace PlatformGame.Managers
             map = _levelManager.getLevelOutlinePixelCoordinates();
             obstacles = _levelManager.getObstaclesPixelCoordinates();
 
-            tilePositions = new List<Vector2>
-            {
-                new Vector2(128, 128),
-                new Vector2(128, 256),
-                new Vector2(256, 256),
-                new Vector2(384, 256),
-                new Vector2(384, 128),
-                new Vector2(512, 128),
-            };
-
             parabolicMovementVisualisation = new List<Vector2>();
         }
 
@@ -80,7 +69,7 @@ namespace PlatformGame.Managers
             elapsedSecondsSinceTransmissionToServer += elapsedSeconds.ElapsedGameTime.TotalSeconds;
             _mouseManager.Update(game);
 
-            if (!playerBlob.GetJumpingState())
+            if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
             {
                 if (_mouseManager.IsNewJumpInitiated())
                 {
@@ -104,6 +93,7 @@ namespace PlatformGame.Managers
                 lastValidPosition = playerBlob.GetWorldPosition();
             else
                 playerBlob.worldPosition = lastValidPosition;
+           
             
 
             playerBlob.SetCameraPosition(_levelManager.ModifyOffset(playerBlob.GetWorldPosition()));
@@ -111,7 +101,26 @@ namespace PlatformGame.Managers
             foreach (var blob in blobEntities)
             {
                 blob.Update(elapsedSeconds);
+                if (!blob.finishedRace && blob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
+                {
+                    blob.finishedRace = true;
+                    //change colour to know when the condition its true
+                    blob.blobUserColor = Color.White;
+                    //TODO: send message to get leaderboard position
+
+                }
+
             }
+
+            if (LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) && OutsideObstacles(playerBlob.GetCameraPosition()))
+                lastValidPosition = playerBlob.GetWorldPosition();
+            else
+            {
+                playerBlob.worldPosition = lastValidPosition;
+                playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
+            }
+
+            /*
             if (elapsedSecondsSinceTransmissionToServer > 0.01)
             {
                 elapsedSecondsSinceTransmissionToServer = 0;
@@ -124,7 +133,7 @@ namespace PlatformGame.Managers
                     /*                    serverTransmitterThread = new Thread(
                                             () => GameClient.TransmitToServer(playerBlob, blobEntities));
                                         serverTransmitterThread.Start();*/
-            
+            /*
                 }
                 catch (Exception)
                 {
@@ -137,7 +146,7 @@ namespace PlatformGame.Managers
             {
                 elapsedSecondsSinceVisualisationShift = 0;
                 parabolicVisualisationOffset += 0.01;
-            }
+            }*/
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)

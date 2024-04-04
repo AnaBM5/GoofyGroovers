@@ -20,6 +20,8 @@ namespace Goofy_Groovers.Entity
         private Vector2 cameraPosition;
 
         private bool shortMovement = false;
+
+        public bool finishedRace;
         public bool isJumping { get; set; } = false;
         public float jumpTheta { get; set; }
         public Vector2 jumpStartPoint { get; set; }
@@ -164,7 +166,7 @@ namespace Goofy_Groovers.Entity
                 jumpDirection[1] = false;
 
             //if it moves less than 3 pixels, its considered a short movement
-            if (Math.Abs(jumpStartPoint.X - jumpEndPoint.X) < 3)
+            if (Math.Abs(jumpStartPoint.X - jumpEndPoint.X) < 3 && Math.Abs(jumpStartPoint.Y - jumpEndPoint.Y) < 3)
                 shortMovement = true;
             else
                 shortMovement = false;
