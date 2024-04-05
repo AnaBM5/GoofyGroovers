@@ -138,7 +138,7 @@ namespace Goofy_Groovers
             else if (isIPRectClicked && pressedKeys.Length > 0 && !isKeyPressed)
             {
                 Keys firstKey = pressedKeys[0];
-                if ((char.IsDigit((char)firstKey) || firstKey == Keys.OemPeriod) && ipAddress.Length <= 13)
+                if ((char.IsLetterOrDigit((char)firstKey) || firstKey == Keys.OemPeriod) && ipAddress.Length <= 13)
                 {
                     if ((firstKey == Keys.Space || firstKey == Keys.OemPeriod) && ipAddress.Length == 0)
                     {
