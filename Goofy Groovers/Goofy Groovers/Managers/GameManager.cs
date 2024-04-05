@@ -93,6 +93,7 @@ namespace Goofy_Groovers.Managers
                     VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
             }
+            _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
             {
             lock (Globals._gameManager.toKeepEntitiesIntact)
