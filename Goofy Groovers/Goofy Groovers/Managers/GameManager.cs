@@ -153,7 +153,7 @@ namespace Goofy_Groovers.Managers
             {
                 elapsedSecondsSinceVisualisationShift = 0;
                 parabolicVisualisationOffset += 0.01;
-            }*/
+            }
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
