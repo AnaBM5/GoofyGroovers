@@ -20,11 +20,13 @@ namespace Goofy_Groovers.Entity
         private Vector2 cameraPosition;
 
         private bool shortMovement = false;
+
+        public bool finishedRace;
         public bool isJumping { get; set; } = false;
         public float jumpTheta { get; set; }
         public Vector2 jumpStartPoint { get; set; }
         public Vector2 jumpEndPoint { get; set; }
-        private bool[] jumpDirection;
+        public bool[] jumpDirection { get; set; }
 
         //private Sprite sprite;
         private Texture2D dotTexture;
@@ -98,23 +100,16 @@ namespace Goofy_Groovers.Entity
 
             if (isJumping)
             {
-                if ( shortMovement)
-                {
-                    worldPosition = jumpStartPoint;
-                    isJumping = false;
-                }
-                else
-                {
                     worldPosition = jumpStartPoint + new Vector2(
                         -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
                         -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-                    if ((worldPosition.X <= jumpEndPoint.X) != jumpDirection[0])
+                    if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0] || shortMovement)
                     {
                         worldPosition = jumpEndPoint;
                         isJumping = false;
                     }
-                }
+                
                 
             }
         }
@@ -148,7 +143,7 @@ namespace Goofy_Groovers.Entity
                 jumpDirection[1] = false;
 
             //if it moves less than 3 pixels, its considered a short movement
-            if (Math.Abs(jumpStartPoint.X - jumpEndPoint.X) < 3)
+            if (Math.Abs(jumpStartPoint.X - jumpEndPoint.X) < 3 && Math.Abs(jumpStartPoint.Y - jumpEndPoint.Y) < 3)
                 shortMovement = true;
             else
                 shortMovement = false;

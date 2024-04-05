@@ -88,7 +88,9 @@ namespace Goofy_Groovers
             Globals._gameFont = Content.Load<SpriteFont>("Fonts/Minecraft");
 
             Texture2D squareSprite = Content.Load<Texture2D>("squareSprite");
-            Globals._gameManager.squareTexture = squareSprite;
+
+            Globals_gameManager.squareTexture = squareSprite;
+            Globals_gameManager.getLevelManager().setGoalSprite(squareSprite);
             Globals._dotTexture = Content.Load<Texture2D>("dotSprite");
 
             Globals._gameManager.playerBlob.SetTexture(Globals._dotTexture);

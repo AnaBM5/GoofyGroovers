@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,8 +37,6 @@ namespace Goofy_Groovers.Managers
         private double parabolicVisualisationTimeMax;
         private double parabolicVisualisationOffset;
 
-        private List<Vector2> tilePositions;
-
         public Texture2D dotTexture;
         public Texture2D squareTexture;
         private double elapsedSecondsSinceVisualisationShift;
@@ -56,22 +55,14 @@ namespace Goofy_Groovers.Managers
             playerBlob.SetUserName("Player 1");
             playerBlob.SetUserColor(Color.Blue);
 
+            lastValidPosition = playerBlob.GetWorldPosition();
+
             parabolicVisualisationTimeDelta = 0.2;
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
             parabolicVisualisationTimeMax = 20;
 
             map = _levelManager.getLevelOutlinePixelCoordinates();
             obstacles = _levelManager.getObstaclesPixelCoordinates();
-
-            tilePositions = new List<Vector2>
-            {
-                new Vector2(128, 128),
-                new Vector2(128, 256),
-                new Vector2(256, 256),
-                new Vector2(384, 256),
-                new Vector2(384, 128),
-                new Vector2(512, 128),
-            };
 
             parabolicMovementVisualisation = new List<Vector2>();
         }
@@ -82,9 +73,12 @@ namespace Goofy_Groovers.Managers
             elapsedSecondsSinceTransmissionToServer += elapsedSeconds.ElapsedGameTime.TotalSeconds;
             _mouseManager.Update(game);
 
-            if (!playerBlob.GetJumpingState())
+            if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
             {
-                if (_mouseManager.IsNewJumpInitiated())
+                if (_mouseManager.IsJumpCancelled())
+                    parabolicMovementVisualisation.Clear();
+
+                else if (_mouseManager.IsNewJumpInitiated())
                 {
                     VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
@@ -100,25 +94,34 @@ namespace Goofy_Groovers.Managers
                 }
             }
 
-            //Adjust player pos if out of bounds?
-            //I dont like how its working tbh, still gets stuck sometimes
-            if (LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) && OutsideObstacles(playerBlob.GetCameraPosition()))
-                lastValidPosition = playerBlob.GetWorldPosition();
-            else
-                playerBlob.worldPosition = lastValidPosition;
-            
-
-
-            _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
-
             {
             lock (Globals._gameManager.toKeepEntitiesIntact)
                 foreach (var blob in blobEntities)
                 {
                     blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
                     blob.Update(elapsedSeconds);
+
+                    if (!blob.finishedRace && blob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
+                    {
+                        blob.finishedRace = true;
+                        //change colour to know when the condition its true
+                        blob.blobUserColor = Color.White;
+                        //TODO: send message to get leaderboard position
+
+                    }
+
                 }
             }
+
+
+            //Adjust player pos if out of bounds?
+            //I dont like how its working tbh, still gets stuck sometimes
+            if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
+            {
+                playerBlob.worldPosition = lastValidPosition;
+                playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
+            }
+
 
             /*
             if (elapsedSecondsSinceTransmissionToServer > 0.01)
@@ -150,13 +153,14 @@ namespace Goofy_Groovers.Managers
             {
                 elapsedSecondsSinceVisualisationShift = 0;
                 parabolicVisualisationOffset += 0.01;
-            }
+            }*/
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
         {
             intersectionTime = 0;
             parabolicMovementVisualisation.Clear();
+
             for (double time = 0; time <= parabolicVisualisationTimeMax; time += parabolicVisualisationTimeDelta)
             {
                 position = playerBlob.GetCameraPosition() + new Vector2(
@@ -169,6 +173,10 @@ namespace Goofy_Groovers.Managers
                 else
                 {
                     intersectionTime = time - parabolicVisualisationTimeDelta;
+
+                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
+                    playerBlob.DefineJumpDirection();
+
                     time = parabolicVisualisationTimeMax;
                 }
                 if (parabolicVisualisationOffset >= parabolicVisualisationTimeDelta)
@@ -180,21 +188,38 @@ namespace Goofy_Groovers.Managers
 
         public void VerifyIntersenction(BlobEntity playerBlob, float theta, float velocity)
         {
-            //resimulates the last half second and the consequent one
-            //to confirm where the blob should stick to
 
-            if(intersectionTime <= 0.2)
+            // depending on the direction of the jump, adds or subtracts half the player size to the position before checking if its inside bounds
+
+            bool[] jumpDirection = playerBlob.jumpDirection;
+            Vector2 blobArea = new Vector2();
+
+            if (jumpDirection[0])
+                blobArea.X = -12;
+            else
+                blobArea.X = 12;
+
+            if(jumpDirection[1])
+                blobArea.Y = -12;
+            else
+                blobArea.Y = 12;
+
+            if (intersectionTime <= 0.2)
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
 
             else
             {
-                for (double time = intersectionTime - 0.2; time <= intersectionTime + 0.2; time += 0.05)
+                //resimulates the last half second and the consequent one
+                //to confirm where the blob should stick to
+
+                for (double time = intersectionTime - 0.8; time <= intersectionTime; time += 0.02)
                 {
                     position = playerBlob.GetCameraPosition() + new Vector2(
                         -velocity * (float)(Math.Cos(theta) * (time)),
                         -velocity * (float)(Math.Sin(theta) * (time)) - 0.5f * -9.8f * (float)Math.Pow((time), 2));
-                    if (LineUtil.PointInPolygon(map, position) && OutsideObstacles(position))
+                    if (LineUtil.PointInPolygon(map, position + blobArea) && OutsideObstacles(position + blobArea))
                     {
+                        lastValidPosition = _levelManager.GetWorldPosition(position);
                         playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
                     }
                     else

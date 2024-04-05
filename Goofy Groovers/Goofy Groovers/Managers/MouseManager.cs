@@ -13,6 +13,7 @@ public class MouseManager
     private MouseState oldState;
     private Boolean newJumpInitiated = false;
     private Boolean newJumpAttempted = false;
+    private Boolean newJumpCancelled = false;
 
     private Point mouseClickStartPoint;
     private Point mouseClickEndPoint;
@@ -45,10 +46,19 @@ public class MouseManager
     public void Update(GoofyGroovers game)
     {
         mouseState = Mouse.GetState();
-        if (!newJumpInitiated)              //if the jump hasn't been initiated it checks for mouse click
-            CheckMousePressLeftButton(game);
-        else                                //else, checks if it has been released
-            CheckMouseReleaseLeftButton();
+
+        if (newJumpCancelled)
+            if (mouseState.LeftButton == ButtonState.Released) //if the jump has just been cancelled, waits for the left click to be released before starting a new jump
+                newJumpCancelled = false;
+            else
+                newJumpCancelled = true;
+        else
+        {
+            if (!newJumpInitiated)              //if the jump hasn't been initiated it checks for mouse click
+                CheckMousePressLeftButton(game);
+            else                                //else, checks if it has been released
+                CheckMouseReleaseLeftButton();
+        }
     }
 
     public void CheckMousePressLeftButton(GoofyGroovers game)
@@ -67,7 +77,15 @@ public class MouseManager
 
     public void CheckMouseReleaseLeftButton(/* here we'll put a reference to the blob*/)
     {
-        if (mouseState.LeftButton == ButtonState.Pressed)
+        if (mouseState.RightButton == ButtonState.Pressed) //right click to cancel jump
+        {
+            newJumpInitiated = false;
+            newJumpCancelled = true;
+
+            mouseClickStartPoint = new Point(-10, -10);  //give points position outside visible area
+            mouseClickEndPoint = mouseClickStartPoint;
+        } 
+        else if (mouseState.LeftButton == ButtonState.Pressed)
         {
             mouseClickEndPoint = new Point(mouseState.X, mouseState.Y);
             CalculateAngle();
@@ -78,10 +96,7 @@ public class MouseManager
             newJumpAttempted = true;
         }
 
-        if (mouseState.RightButton == ButtonState.Pressed)
-        {
-            newJumpInitiated = false;
-        }
+        
 
         //  Check if the distance is bigger than accidental click (>10px for example?)
     }
@@ -123,10 +138,10 @@ public class MouseManager
     public void Draw()
     {
         //draw the dots on the positions
-        Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y - 12, 25, 25), Color.White);
+        //Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle(mouseClickStartPoint.X - 12, mouseClickStartPoint.Y - 12, 25, 25), Color.White);
         //Globals._spriteBatch.Draw(dotTexture, new Rectangle(mouseClickEndPoint.X - 12, mouseClickEndPoint.Y - 12, 25, 25), Color.Green);
 
-        Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
+        //Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle(directionVector.X - 12, directionVector.Y - 12, 25, 25), Color.LightGreen);
         //Globals._spriteBatch.Draw(dotTexture, new Rectangle(horizontalVector.X - 12, horizontalVector.Y - 12, 25, 25), Color.Yellow);
     }
 
@@ -173,5 +188,10 @@ public class MouseManager
     public bool IsNewJumpInitiated()
     {
         return newJumpInitiated;
+    }
+
+    public bool IsJumpCancelled()
+    {
+        return newJumpCancelled;
     }
 }
