@@ -53,6 +53,8 @@ namespace PlatformGame.Managers
             playerBlob.SetUserName("Player 1");
             playerBlob.SetUserColor(Color.Blue);
 
+            lastValidPosition = playerBlob.GetWorldPosition();
+
             parabolicVisualisationTimeDelta = 0.2;
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
             parabolicVisualisationTimeMax = 20;
@@ -90,12 +92,7 @@ namespace PlatformGame.Managers
                 }
             }
 
-            //Adjust player pos if out of bounds?
-            //I dont like how its working tbh, still gets stuck sometimes
-            if (LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) && OutsideObstacles(playerBlob.GetCameraPosition()))
-                lastValidPosition = playerBlob.GetWorldPosition();
-            else
-                playerBlob.worldPosition = lastValidPosition;
+            
            
             
 
@@ -115,13 +112,14 @@ namespace PlatformGame.Managers
 
             }
 
-            if (LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) && OutsideObstacles(playerBlob.GetCameraPosition()))
-                lastValidPosition = playerBlob.GetWorldPosition();
-            else
+            //Adjust player pos if out of bounds?
+            //I dont like how its working tbh, still gets stuck sometimes
+            if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
             {
                 playerBlob.worldPosition = lastValidPosition;
                 playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
             }
+                
 
             /*
             if (elapsedSecondsSinceTransmissionToServer > 0.01)
@@ -156,6 +154,7 @@ namespace PlatformGame.Managers
         {
             intersectionTime = 0;
             parabolicMovementVisualisation.Clear();
+
             for (double time = 0; time <= parabolicVisualisationTimeMax; time += parabolicVisualisationTimeDelta)
             {
                 position = playerBlob.GetCameraPosition() + new Vector2(
@@ -168,6 +167,10 @@ namespace PlatformGame.Managers
                 else
                 {
                     intersectionTime = time - parabolicVisualisationTimeDelta;
+
+                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
+                    playerBlob.DefineJumpDirection();
+
                     time = parabolicVisualisationTimeMax;
                 }
                 if (parabolicVisualisationOffset >= parabolicVisualisationTimeDelta)
@@ -179,21 +182,38 @@ namespace PlatformGame.Managers
 
         public void VerifyIntersenction(BlobEntity playerBlob, float theta, float velocity)
         {
-            //resimulates the last half second and the consequent one
-            //to confirm where the blob should stick to
 
-            if(intersectionTime <= 0.2)
+            // depending on the direction of the jump, adds or subtracts half the player size to the position before checking if its inside bounds
+
+            bool[] jumpDirection = playerBlob.jumpDirection;
+            Vector2 blobArea = new Vector2();
+
+            if (jumpDirection[0])
+                blobArea.X = -12;
+            else
+                blobArea.X = 12;
+
+            if(jumpDirection[1])
+                blobArea.Y = -12;
+            else
+                blobArea.Y = 12;
+
+            if (intersectionTime <= 0.2)
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
 
             else
             {
-                for (double time = intersectionTime - 0.2; time <= intersectionTime + 0.2; time += 0.05)
+                //resimulates the last half second and the consequent one
+                //to confirm where the blob should stick to
+
+                for (double time = intersectionTime - 0.8; time <= intersectionTime; time += 0.02)
                 {
                     position = playerBlob.GetCameraPosition() + new Vector2(
                         -velocity * (float)(Math.Cos(theta) * (time)),
                         -velocity * (float)(Math.Sin(theta) * (time)) - 0.5f * -9.8f * (float)Math.Pow((time), 2));
-                    if (LineUtil.PointInPolygon(map, position) && OutsideObstacles(position))
+                    if (LineUtil.PointInPolygon(map, position + blobArea) && OutsideObstacles(position + blobArea))
                     {
+                        lastValidPosition = _levelManager.GetWorldPosition(position);
                         playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
                     }
                     else

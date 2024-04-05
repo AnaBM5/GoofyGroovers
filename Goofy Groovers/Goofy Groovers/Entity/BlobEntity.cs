@@ -26,7 +26,7 @@ namespace Goofy_Groovers.Entity
         public float jumpTheta { get; set; }
         public Vector2 jumpStartPoint { get; set; }
         public Vector2 jumpEndPoint { get; set; }
-        private bool[] jumpDirection;
+        public bool[] jumpDirection { get; set; }
 
         //private Sprite sprite;
         private Texture2D dotTexture;
@@ -103,23 +103,16 @@ namespace Goofy_Groovers.Entity
 
             if (isJumping)
             {
-                if ( shortMovement)
-                {
-                    worldPosition = jumpStartPoint;
-                    isJumping = false;
-                }
-                else
-                {
                     worldPosition = jumpStartPoint + new Vector2(
                         -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
                         -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-                    if ((worldPosition.X <= jumpEndPoint.X) != jumpDirection[0])
+                    if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0] || shortMovement)
                     {
                         worldPosition = jumpEndPoint;
                         isJumping = false;
                     }
-                }
+                
                 
             }
         }
