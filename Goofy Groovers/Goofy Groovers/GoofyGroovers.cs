@@ -13,13 +13,14 @@ namespace Goofy_Groovers
     {
 
         public enum GameState
-        { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen };
+        { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen,QuitScreen };
+        private GameState gameState = GameState.LoginScreen;
+        private GameState previousGameState;
 
         private List<Color> availableColors = new List<Color> { Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Purple, Color.Orange, Color.Pink, Color.Cyan };  //available colours
         private List<Color> assignedColors = new List<Color>();                                                                                                 //Colour that we already use
         private Random random = new Random();
 
-        private GameState gameState = GameState.LoginScreen;
         private bool isKeyPressed = false;
         private bool isRectClicked = false;
         private bool isIPRectClicked = false;
@@ -41,6 +42,8 @@ namespace Goofy_Groovers
         int position3Y = 360;
 
         private Texture2D menuInterface;
+        private Texture2D quitInterface;
+        private Texture2D leaderBoardInterface;
         private Texture2D _blankTexture;
 
         public GoofyGroovers()
@@ -96,6 +99,9 @@ namespace Goofy_Groovers
             Globals._gameManager.getLevelManager().setBackgroundSprite(bgSprite);
 
             menuInterface = Content.Load<Texture2D>("Interfaces/menu");
+            quitInterface = Content.Load<Texture2D>("Interfaces/Quit Interface");
+            leaderBoardInterface = Content.Load<Texture2D>("Interfaces/LeaderBoard");
+
             _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
             _blankTexture.SetData(new[] { Color.White });
         }
@@ -158,13 +164,6 @@ namespace Goofy_Groovers
                     isKeyPressed = true;
 
                 }
-                int randomIndex = random.Next(availableColors.Count);
-                    Color randomColor = availableColors[randomIndex];
-                    Globals._gameManager.playerBlob.SetUserColor(randomColor);
-                    assignedColors.Add(randomColor);
-                    availableColors.RemoveAt(randomIndex);
-                    Globals._gameManager.playerBlob.SetUserName(initials);
-                    return true;
             }
             else if (pressedKeys.Length == 0)
             {
@@ -184,14 +183,20 @@ namespace Goofy_Groovers
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            MouseState mouseState = Mouse.GetState();
+            KeyboardState keyboardState = Keyboard.GetState();
 
             switch (gameState)
             {
+             
                 case GameState.LoginScreen:
 
-                    MouseState mouseState = Mouse.GetState();
+                    if (keyboardState.IsKeyDown(Keys.Escape))
+                    {
+                        previousGameState = GameState.LoginScreen; // Almacena el estado anterior
+                        gameState = GameState.QuitScreen;
+                    }
+
                     if (mouseState.LeftButton == ButtonState.Pressed)
                     {
                         Rectangle rect1 = new Rectangle(positionX, positionY, rectWidth, rectHeight);
@@ -228,7 +233,43 @@ namespace Goofy_Groovers
                     break;
 
                 case GameState.RaceScreen:
+
+                    if (keyboardState.IsKeyDown(Keys.Escape))
+                    {
+                        previousGameState = GameState.RaceScreen; // Almacena el estado anterior
+                        gameState = GameState.QuitScreen;
+                    }
+
                     Globals._gameManager.Update(gameTime, this);
+                    break;
+
+                case GameState.QuitScreen:
+
+                    Rectangle rect1Q = new Rectangle(175, 370, 160, 60);
+                    Rectangle rect2Q = new Rectangle(475, 370, 160, 60);
+
+                    if (mouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        if (rect1Q.Contains(mouseState.Position))
+                        {
+                            Exit(); // Cerrar el programa
+                        }
+                        else if (rect2Q.Contains(mouseState.Position))
+                        {
+                            // Aquí determina a qué estado debe regresar según el estado anterior
+                            if (previousGameState == GameState.LoginScreen)
+                            {
+                                gameState = GameState.LoginScreen;
+                            }
+                            else if (previousGameState == GameState.RaceScreen)
+                            {
+                                gameState = GameState.RaceScreen;
+                            }
+                            // Puedes agregar más casos según tus necesidades
+                        }
+                    }
+
+
                     break;
             }
 
@@ -237,8 +278,10 @@ namespace Goofy_Groovers
 
         protected override void Draw(GameTime gameTime)
         {
-            float scaleX = (float)GraphicsDevice.Viewport.Width / menuInterface.Width;
-            float scaleY = (float)GraphicsDevice.Viewport.Height / menuInterface.Height;
+            float scaleXMenu = (float)GraphicsDevice.Viewport.Width / menuInterface.Width;
+            float scaleYMenu = (float)GraphicsDevice.Viewport.Height / menuInterface.Height;
+            float scaleXQuit = (float)GraphicsDevice.Viewport.Width / quitInterface.Width;
+            float scaleYQuit = (float)GraphicsDevice.Viewport.Height / quitInterface.Height;
 
             // Add your drawing code here
             Globals._spriteBatch.Begin();
@@ -249,7 +292,7 @@ namespace Goofy_Groovers
 
                         GraphicsDevice.Clear(Color.RoyalBlue);
 
-                        Globals._spriteBatch.Draw(menuInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleX, scaleY), SpriteEffects.None, 0f);
+                        Globals._spriteBatch.Draw(menuInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXMenu, scaleYMenu), SpriteEffects.None, 0f);
 
                         Globals._spriteBatch.DrawString(Globals._gameFont, initials, new Vector2(250, 290), Color.Black);
 
@@ -281,6 +324,26 @@ namespace Goofy_Groovers
                         // Draw game objects using _spriteBatch
                         Globals._gameManager.Draw(gameTime);
                         Globals._gameManager.getMouseManager().Draw();
+                    }
+                    break;
+
+                case GameState.QuitScreen:
+                    {
+                        Globals._spriteBatch.Draw(quitInterface,Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXQuit, scaleYQuit), SpriteEffects.None, 0f);
+
+                        // yes button
+                        Rectangle rect1Q = new Rectangle(175, 370, 160, 60);
+                        Globals._spriteBatch.Draw(_blankTexture, rect1Q, Color.Transparent);
+
+                        //no button
+                        Rectangle rect2Q = new Rectangle(475, 370, 160, 60);
+                        Globals._spriteBatch.Draw(_blankTexture, rect2Q, Color.Transparent);
+                    }
+                    break;
+
+                case GameState.LeaderBoardScreen: 
+                    {
+                    
                     }
                     break;
             }
