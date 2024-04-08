@@ -13,7 +13,7 @@ namespace Goofy_Groovers
     {
         public enum GameState
         { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen,QuitScreen };
-        private GameState gameState = GameState.LoginScreen;
+        public static GameState gameState = GameState.LoginScreen;
         private GameState previousGameState;
 
         private List<Color> availableColors = new List<Color> { Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Purple, Color.Orange, Color.Pink, Color.Cyan };  //available colours

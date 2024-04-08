@@ -160,18 +160,18 @@ namespace Goofy_Groovers.Managers
             }
 
 
-            /*
-            if (elapsedSecondsSinceTransmissionToServer > 0.016)
+           
+            if (elapsedSecondsSinceTransmissionToServer > 0.16)
             {
                 elapsedSecondsSinceTransmissionToServer = 0;
                 _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
             }
-
+             /*
             if (elapsedSecondsSinceVisualisationShift > 1)
             {
                 elapsedSecondsSinceVisualisationShift = 0;
                 parabolicVisualisationOffset += 0.01;
-            }
+            }*/
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
