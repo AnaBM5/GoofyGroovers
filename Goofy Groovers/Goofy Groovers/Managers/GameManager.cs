@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static Goofy_Groovers.GoofyGroovers;
 
 namespace Goofy_Groovers.Managers
 {
@@ -88,7 +89,6 @@ namespace Goofy_Groovers.Managers
                 {
                     VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
-
                 else if (_mouseManager.IsNewJumpAttempted())
                 {
                     // Calculate the force of the jump, pass it to the blob
@@ -106,18 +106,24 @@ namespace Goofy_Groovers.Managers
                 lastValidPosition = playerBlob.GetWorldPosition();
             else
                 playerBlob.worldPosition = lastValidPosition;
-            
-
 
             _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
             {
-            lock (Globals._gameManager.toKeepEntitiesIntact)
-                foreach (var blob in blobEntities)
+                lock (Globals._gameManager.toKeepEntitiesIntact)
                 {
-                    blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
-                    blob.Update(elapsedSeconds);
+                    foreach (var blob in blobEntities)
+                    {
+                        blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
+                        blob.Update(elapsedSeconds);
+                    }
                 }
+            }
+
+            if (elapsedSecondsSinceTransmissionToServer > 0.16)
+            {
+                elapsedSecondsSinceTransmissionToServer = 0;
+                _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
             }
 
             if (elapsedSecondsSinceVisualisationShift > 1)
@@ -157,9 +163,8 @@ namespace Goofy_Groovers.Managers
             //resimulates the last half second and the consequent one
             //to confirm where the blob should stick to
 
-            if(intersectionTime <= 0.2)
+            if (intersectionTime <= 0.2)
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
-
             else
             {
                 for (double time = intersectionTime - 0.2; time <= intersectionTime + 0.2; time += 0.05)
@@ -173,7 +178,6 @@ namespace Goofy_Groovers.Managers
                     }
                     else
                         break;
-
                 }
             }
 
@@ -184,9 +188,8 @@ namespace Goofy_Groovers.Managers
             playerBlob.SetSecondsSinceJumpStarted(0);
             playerBlob.SetJumpingState(true);
             _mouseManager.EndNewJumpAttempt();
-
         }
-        
+
         private bool OutsideObstacles(Vector2 position)
         {
             List<Vector2> coordList;
@@ -209,10 +212,12 @@ namespace Goofy_Groovers.Managers
 
             Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
             Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
-
-            foreach (var blob in blobEntities)
+            lock (Globals._gameManager.toKeepEntitiesIntact)
             {
-                blob.Draw(gameTime);
+                foreach (var blob in blobEntities)
+                {
+                    blob.Draw(gameTime);
+                }
             }
         }
 

@@ -18,7 +18,7 @@ namespace Goofy_Groovers
         private List<Color> assignedColors = new List<Color>();                                                                                                 //Colour that we already use
         private Random random = new Random();
 
-        private GameState gameState = GameState.LoginScreen;
+        public static GameState gameState = GameState.LoginScreen;
         private bool isKeyPressed = false;
         private bool isRectClicked = false;
         private bool isIPRectClicked = false;
@@ -70,16 +70,15 @@ namespace Goofy_Groovers
             // and load the information about the other blobs.
             Globals._gameManager = new GameManager(this);
             Globals._gameClient = new GameClient();
-            Thread thread = new Thread(() =>
-            {
-                Globals._gameClient.ConnectAndCommunicate();
-            });
-            thread.Start();
-            
-            //_ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate());
 
-            // Thread communicationThread = new Thread(GameClient.ConnectAndCommunicate());
-            // communicationThread.Start();
+            // Thread thread = new Thread(() =>
+            // {
+            //     Globals._gameClient.ConnectAndCommunicate();
+            // });
+            // thread.Start();
+            
+            // _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate());
+
             base.Initialize();
         }
 
@@ -213,8 +212,8 @@ namespace Goofy_Groovers
                             int randomIndex = random.Next(availableColors.Count);
                             Color randomColor = availableColors[randomIndex];
                             Globals._gameManager.playerBlob.SetUserColor(randomColor);  //We set a color to the player
-                            assignedColors.Add(randomColor);                    //We add the selected color to the temporal array
-                            availableColors.RemoveAt(randomIndex);                  //We remove that color from the original array
+                            assignedColors.Add(randomColor);                            //We add the selected color to the temporal array
+                            availableColors.RemoveAt(randomIndex);                      //We remove that color from the original array
 
                             isKeyPressed = true;
                             Globals._gameManager.playerBlob.SetUserName(initials);
@@ -228,7 +227,10 @@ namespace Goofy_Groovers
                     break;
 
                 case GameState.RaceScreen:
+                    {
                     Globals._gameManager.Update(gameTime, this);
+
+                    }
                     break;
             }
 

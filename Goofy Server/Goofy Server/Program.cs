@@ -37,11 +37,19 @@ namespace Goofy_Server
             Server.listener.Start(); // start the listener
             Debug.WriteLine("uh...");
 
+            // Create a Stopwatch instance
+            Stopwatch stopwatch = new Stopwatch();
             while (true)
             {
                 try
                 {
-                    TcpClient client = await Server.listener.AcceptTcpClientAsync(); // wait the user to connect
+                    
+                    TcpClient client = new TcpClient();
+                    stopwatch.Restart();
+                    client = await Server.listener.AcceptTcpClientAsync(); // wait the user to connect
+                    
+                    stopwatch.Stop(); // Stop the stopwatch
+                    Debug.WriteLine($"Connection time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
                                                                                      // Console.WriteLine("Client connected form " + ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
                     _ = Task.Run(() => Server.HandleClient(client));
                 }

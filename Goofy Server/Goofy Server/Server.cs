@@ -69,7 +69,7 @@ public class Server
             client.Close(); // We close the connection
 
             stopwatch.Stop(); // Stop the stopwatch
-            Debug.WriteLine($"Execution time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
+            //Debug.WriteLine($"Execution time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
         }
     }
 
