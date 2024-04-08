@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Goofy_Groovers.Managers
 {
@@ -28,6 +29,9 @@ namespace Goofy_Groovers.Managers
 
         public BlobEntity playerBlob;
 
+        private bool showEndScreen;
+        private float endScreenTimer; //Time that the game waits after the player finished the race to show the leaderboard
+
         private Vector2 position;
         private Vector2 lastValidPosition;
         private List<Vector2> parabolicMovementVisualisation;
@@ -39,6 +43,8 @@ namespace Goofy_Groovers.Managers
 
         public Texture2D dotTexture;
         public Texture2D squareTexture;
+        public Texture2D overlayScreen;
+
         private double elapsedSecondsSinceVisualisationShift;
         private double elapsedSecondsSinceTransmissionToServer;
         private bool hasFinishedTransmission = true;
@@ -58,13 +64,23 @@ namespace Goofy_Groovers.Managers
             lastValidPosition = playerBlob.GetWorldPosition();
 
             parabolicVisualisationTimeDelta = 0.2;
-            parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
             parabolicVisualisationTimeMax = 20;
+
+            //increased for full screen
+            /*
+            parabolicVisualisationTimeDelta = 0.27;
+            parabolicVisualisationTimeMax = 40;
+            */
+
+            parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
 
             map = _levelManager.getLevelOutlinePixelCoordinates();
             obstacles = _levelManager.getObstaclesPixelCoordinates();
 
             parabolicMovementVisualisation = new List<Vector2>();
+
+            endScreenTimer = 0.4f;
+            showEndScreen = false;
         }
 
         public void Update(GameTime elapsedSeconds, GoofyGroovers game)
@@ -101,17 +117,24 @@ namespace Goofy_Groovers.Managers
                 {
                     blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
                     blob.Update(elapsedSeconds);
-
-                    if (!blob.finishedRace && blob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
-                    {
-                        blob.finishedRace = true;
-                        //change colour to know when the condition its true
-                        blob.blobUserColor = Color.White;
-                        //TODO: send message to get leaderboard position
-
                     }
+            }
 
-                }
+            if (!playerBlob.finishedRace && playerBlob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
+            {
+                playerBlob.finishedRace = true;
+                //change colour to know when the condition its true
+                playerBlob.blobUserColor = Color.White;
+                //TODO: send message to get leaderboard position
+
+            }
+
+            //After the player crosses the finish line, waits for a determined amount of time before showing the end screen
+            if(playerBlob.finishedRace && !showEndScreen)
+            {
+                endScreenTimer -= (float) elapsedSeconds.ElapsedGameTime.TotalSeconds;
+                if (endScreenTimer < 0)
+                    showEndScreen = true;
             }
 
 
@@ -259,13 +282,17 @@ namespace Goofy_Groovers.Managers
                 Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.White);
             }
 
-            Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
-            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
+           // Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
+            //Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
 
             foreach (var blob in blobEntities)
             {
                 blob.Draw(gameTime);
             }
+
+            if(showEndScreen)
+                Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * 0.6f);
+
         }
 
         public MouseManager getMouseManager()
@@ -276,6 +303,11 @@ namespace Goofy_Groovers.Managers
         public TileMapManager getLevelManager()
         {
             return _levelManager;
+        }
+
+        public bool getShowEndScreen()
+        {
+            return showEndScreen;
         }
     }
 }

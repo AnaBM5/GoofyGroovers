@@ -99,6 +99,7 @@ namespace Goofy_Groovers
             Globals._gameManager.getLevelManager().setPlatformSprite(platformSprite);
             Texture2D bgSprite = Content.Load<Texture2D>("Sprites/backgroundSprite");
             Globals._gameManager.getLevelManager().setBackgroundSprite(bgSprite);
+            Globals._gameManager.overlayScreen = Content.Load<Texture2D>("Interfaces/OverlayScreen");
 
             menuInterface = Content.Load<Texture2D>("Interfaces/menu");
             quitInterface = Content.Load<Texture2D>("Interfaces/Quit Interface");
@@ -226,6 +227,17 @@ namespace Goofy_Groovers
                             isKeyPressed = true;
                             Globals._gameManager.playerBlob.SetUserName(initials);
                             gameState = GameState.RaceScreen;                                       //We change the game state if all the requirements are met                    
+
+                            //Changes to full screen when the game/lobby starts
+                            /*
+                            Globals._graphics.IsFullScreen = true;
+                            Globals._graphics.PreferredBackBufferWidth = 1920;
+                            Globals._graphics.PreferredBackBufferHeight = 1080;
+
+                            Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
+                            Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
+                            */
+                            Globals._graphics.ApplyChanges();
                         }
                     }
                     if (GetPlayerKeyInputFromUser())
@@ -244,7 +256,7 @@ namespace Goofy_Groovers
                         gameState = GameState.QuitScreen;
                     }      
 
-                    if (Globals._gameManager.playerBlob.finishedRace)                            //If the player finish the race, we change the game state 
+                    if (Globals._gameManager.getShowEndScreen())                            //If the player finish the race, we change the game state 
                     {
                         gameState = GameState.LeaderBoardScreen; 
                     }
@@ -363,7 +375,12 @@ namespace Goofy_Groovers
                 case GameState.LeaderBoardScreen: 
                     {
                         string spaces = ".........................................";
-                        GraphicsDevice.Clear(Color.RoyalBlue);
+
+                        GraphicsDevice.Clear(Color.DarkSlateBlue);
+                        // Draw game objects using _spriteBatch
+                        Globals._gameManager.Draw(gameTime);
+
+                        //GraphicsDevice.Clear(Color.RoyalBlue);
                         Globals._spriteBatch.Draw(leaderBoardInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
                         
                         //Testing
