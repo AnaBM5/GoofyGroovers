@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using static Goofy_Groovers.GoofyGroovers;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Goofy_Groovers.Managers
@@ -102,7 +103,6 @@ namespace Goofy_Groovers.Managers
                 {
                     VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
-
                 else if (_mouseManager.IsNewJumpAttempted())
                 {
                     // Calculate the force of the jump, pass it to the blob
@@ -113,6 +113,9 @@ namespace Goofy_Groovers.Managers
                     VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
             }
+
+
+
             _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
             {
@@ -158,30 +161,11 @@ namespace Goofy_Groovers.Managers
 
 
             /*
-            if (elapsedSecondsSinceTransmissionToServer > 0.01)
+            if (elapsedSecondsSinceTransmissionToServer > 0.016)
             {
                 elapsedSecondsSinceTransmissionToServer = 0;
-                try
-                {
-                    //Debug.WriteLine(hasFinishedTransmission.ToString());
-                    // We do not execute network operations in this thread, but in a task.
-                    // https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
-
-                    Task.Run(() => { GameClient.TransmitToServer(playerBlob, blobEntities); });
-                    /*                    serverTransmitterThread = new Thread(
-                                            () => GameClient.TransmitToServer(playerBlob, blobEntities));
-                                        serverTransmitterThread.Start();
-                    Task.Run(() =>
-                    {
-                        hasFinishedTransmission = GameClient.TransmitToServer(playerBlob, blobEntities);
-                    });
-                }
-                catch (Exception)
-                {
-                    Debug.WriteLine("Oopsie");
-                }
-            }*/
-
+                _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+            }
 
             if (elapsedSecondsSinceVisualisationShift > 1)
             {
@@ -240,7 +224,6 @@ namespace Goofy_Groovers.Managers
 
             if (intersectionTime <= 0.2)
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
-
             else
             {
                 //resimulates the last half second and the consequent one
@@ -258,7 +241,6 @@ namespace Goofy_Groovers.Managers
                     }
                     else
                         break;
-
                 }
             }
 
@@ -269,9 +251,8 @@ namespace Goofy_Groovers.Managers
             playerBlob.SetSecondsSinceJumpStarted(0);
             playerBlob.SetJumpingState(true);
             _mouseManager.EndNewJumpAttempt();
-
         }
-        
+
         private bool OutsideObstacles(Vector2 position)
         {
             List<Vector2> coordList;
