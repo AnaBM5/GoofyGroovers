@@ -31,6 +31,7 @@ namespace Goofy_Groovers.Managers
 
         private bool showEndScreen;
         private float endScreenTimer; //Time that the game waits after the player finished the race to show the leaderboard
+        private float overlayTransparency;
 
         private Vector2 position;
         private Vector2 lastValidPosition;
@@ -40,6 +41,7 @@ namespace Goofy_Groovers.Managers
         private double parabolicVisualisationTimeDelta;
         private double parabolicVisualisationTimeMax;
         private double parabolicVisualisationOffset;
+        private double elapsedTimeSeconds;
 
         public Texture2D dotTexture;
         public Texture2D squareTexture;
@@ -79,14 +81,16 @@ namespace Goofy_Groovers.Managers
 
             parabolicMovementVisualisation = new List<Vector2>();
 
-            endScreenTimer = 0.4f;
+            endScreenTimer = 0.5f;
+            overlayTransparency = 0f;
             showEndScreen = false;
         }
 
         public void Update(GameTime elapsedSeconds, GoofyGroovers game)
         {
-            elapsedSecondsSinceVisualisationShift += elapsedSeconds.ElapsedGameTime.TotalSeconds;
-            elapsedSecondsSinceTransmissionToServer += elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            elapsedTimeSeconds = elapsedSeconds.ElapsedGameTime.TotalSeconds;
+            elapsedSecondsSinceVisualisationShift += elapsedTimeSeconds;
+            elapsedSecondsSinceTransmissionToServer += elapsedTimeSeconds;
             _mouseManager.Update(game);
 
             if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
@@ -132,9 +136,15 @@ namespace Goofy_Groovers.Managers
             //After the player crosses the finish line, waits for a determined amount of time before showing the end screen
             if(playerBlob.finishedRace && !showEndScreen)
             {
-                endScreenTimer -= (float) elapsedSeconds.ElapsedGameTime.TotalSeconds;
+                endScreenTimer -= (float)elapsedTimeSeconds;
+                overlayTransparency += (float)elapsedTimeSeconds*1.2f; 
+
                 if (endScreenTimer < 0)
                     showEndScreen = true;
+
+                if (overlayTransparency > 0.8f)
+                    overlayTransparency = 0.8f;
+
             }
 
 
@@ -291,7 +301,7 @@ namespace Goofy_Groovers.Managers
             }
 
             if(showEndScreen)
-                Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * 0.6f);
+                Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * overlayTransparency);
 
         }
 

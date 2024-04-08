@@ -46,6 +46,8 @@ namespace Goofy_Groovers
         private Texture2D leaderBoardInterface;
         private Texture2D _blankTexture;
 
+        private int leaderBoardPosition;
+
         public GoofyGroovers()
         {
             Globals._graphics = new GraphicsDeviceManager(this);
@@ -228,6 +230,7 @@ namespace Goofy_Groovers
                             Globals._gameManager.playerBlob.SetUserName(initials);
                             gameState = GameState.RaceScreen;                                       //We change the game state if all the requirements are met                    
 
+                            leaderBoardPosition = Globals._graphics.PreferredBackBufferWidth;
                             //Changes to full screen when the game/lobby starts
                             /*
                             Globals._graphics.IsFullScreen = true;
@@ -236,8 +239,9 @@ namespace Goofy_Groovers
 
                             Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
                             Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
-                            */
+                            
                             Globals._graphics.ApplyChanges();
+                            */
                         }
                     }
                     if (GetPlayerKeyInputFromUser())
@@ -294,6 +298,14 @@ namespace Goofy_Groovers
                     break;
 
                 case GameState.LeaderBoardScreen:
+                    if (leaderBoardPosition > 0)
+                    {
+                        leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+                       
+                        if(leaderBoardPosition < 0)
+                            leaderBoardPosition = 0;
+                    }
+                        
 
                     if (keyboardState.IsKeyDown(Keys.Escape))
                     {
@@ -381,7 +393,7 @@ namespace Goofy_Groovers
                         Globals._gameManager.Draw(gameTime);
 
                         //GraphicsDevice.Clear(Color.RoyalBlue);
-                        Globals._spriteBatch.Draw(leaderBoardInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
+                        Globals._spriteBatch.Draw(leaderBoardInterface, new Vector2(leaderBoardPosition,0), null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
                         
                         //Testing
                         //Globals._spriteBatch.DrawString(Globals._gameFont,"POSITION" + spaces + initials + spaces + "TIME", new Vector2(50, 150), Color.Black, 0f,Vector2.Zero, (float) 1.5f, SpriteEffects.None,0f);
