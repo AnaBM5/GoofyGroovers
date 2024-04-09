@@ -15,6 +15,7 @@ namespace Goofy_Groovers.Entity
         public string blobUserName { get; set; }
         public int blobUserId { get; set; }
         public Color blobUserColor { get; set; }
+        public int blobRadius { get; set; }
 
         public Vector2 worldPosition { get; set; }
         private Vector2 cameraPosition;
@@ -47,6 +48,7 @@ namespace Goofy_Groovers.Entity
             jumpDirection = new bool[2];
             Random rnd = new Random();
             blobUserId = rnd.Next(1000);
+            blobRadius = 12;
         }
 
         public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
@@ -60,6 +62,8 @@ namespace Goofy_Groovers.Entity
 
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
+
+            blobRadius = 12;
         }
 
         public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
@@ -71,6 +75,8 @@ namespace Goofy_Groovers.Entity
             blobUserId = rnd.Next(1000);
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
+
+            blobRadius = 12;
         }
 
         //remotePlayerData.blobUserColor, remotePlayerData.worldPosition, false));
@@ -86,6 +92,8 @@ namespace Goofy_Groovers.Entity
 
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
+
+            blobRadius = 12;
         }
 
         public void Update(GameTime elapsedSeconds)
@@ -124,7 +132,7 @@ namespace Goofy_Groovers.Entity
             {
                 Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 4, 20), Color.White);
             }
-            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
+            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)cameraPosition.X - blobRadius, (int)cameraPosition.Y - blobRadius, 25, 25), blobUserColor);
         }
 
         public void DefineJumpDirection()
