@@ -6,12 +6,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using static Goofy_Groovers.GoofyGroovers;
 
 namespace Goofy_Groovers.Managers
 {
     public class GameClient
     {
-        private static string serverName = "localhost";
+        private static string serverName = "127.0.0.1";
         private static BlobEntity bufferEntity;
         private static int port = 6066;
         private static TcpClient client;
@@ -20,42 +21,98 @@ namespace Goofy_Groovers.Managers
         private static StreamWriter writer;
         private static int iterator;
 
+        private float timer = 0;
+
         static GameClient()
         {
         }
 
-        public async void ConnectAndCommunicate()
+        public async void ConnectAndCommunicate(GameState gameState)
         {
+            // Create a Stopwatch instance
+            Stopwatch stopwatch = new Stopwatch();
+
+            try
+            {
+                stopwatch.Restart();                // Start the stopwatch
+                client = AsyncConnect(client, serverName, port);
+                stopwatch.Stop();                   // Stop the stopwatch
+                Debug.WriteLine($"Connection: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
+
+                stopwatch.Restart();                // Start the stopwatch
+                stream = client.GetStream();
+                stopwatch.Stop();                   // Stop the stopwatch
+                Debug.WriteLine($"Stream access: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
+                switch (gameState)
+                {
+                    case GameState.RaceScreen:
+                        {
+                            stopwatch.Restart();    // Start the stopwatch
+                            MakeTransmission(client, Globals._gameManager.playerBlob);
+                            stopwatch.Stop();       // Stop the stopwatch
+                            Debug.WriteLine($"Transmission: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
+
+                            stopwatch.Restart();    // Start the stopwatch
+                            await ReceiveTransmission(Globals._gameManager.blobEntities);
+                            stopwatch.Stop();       // Stop the stopwatch
+                            Debug.WriteLine($"Feedback: {stopwatch.Elapsed.TotalMilliseconds} milliseconds\n\n"); // Display the elapsed time
+
+                            break;
+                        }
+                    case GameState.LobbyScreen:
+                        {
+                            break;
+                        }
+                    case GameState.LeaderBoardScreen:
+                        {
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("There was a problem connecting to server");
+            }
+            finally
+            {
+                client?.Close();
+            }
+        }
+
+        public async void ConnectAndCommunicateContiniously(GoofyGroovers game)
+        {
+            // Create a Stopwatch instance
+            Stopwatch stopwatch = new Stopwatch();
+
             while (true)
             {
-                client = null;
                 try
                 {
-                    client = await ConnectAsync();
-                    //switch (Globals._gameState)
-                    //{
-                    //    case GoofyGroovers.GameState.RaceScreen:
-                    //       {
-                    Task.Run(() =>
-                    {
-                        MakeTransmission(client, Globals._gameManager.playerBlob);
-                    });
-                    //           break;
-                    //       }
-                    //   case GoofyGroovers.GameState.LobbyScreen:
-                    //       {
-                    //           break;
-                    //       }
-                    //   case GoofyGroovers.GameState.LeaderBoardScreen:
-                    //       {
-                    //           break;
-                    //       }
-                    //   default:
-                    //       {
-                    //          break;
-                    //       }
-                    
+                    client = new TcpClient();
+                    stopwatch.Restart();
+                    await client.ConnectAsync(serverName, port);
+                    stopwatch.Stop(); // Stop the stopwatch
+                    Debug.WriteLine($"Connection time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
+
+                    stopwatch.Restart();
+                    stream = client.GetStream();
+                    stopwatch.Stop(); // Stop the stopwatch
+                    Debug.WriteLine($"Stream time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
+
+                    stopwatch.Restart();
+                    MakeTransmission(client, Globals._gameManager.playerBlob);
+                    stopwatch.Stop(); // Stop the stopwatch
+                    Debug.WriteLine($"Transmission time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
+
+                    stopwatch.Restart();
                     await ReceiveTransmission(Globals._gameManager.blobEntities);
+                    stopwatch.Stop(); // Stop the stopwatch
+                    Debug.WriteLine($"Feedback time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds\n\n"); // Display the elapsed time
+
                 }
                 catch (Exception ex)
                 {
@@ -63,22 +120,19 @@ namespace Goofy_Groovers.Managers
                 }
                 finally
                 {
-                    client?.Dispose();
+                    //    client?.Dispose();
                 }
             }
         }
 
-        public static async Task<TcpClient> ConnectAsync()
+        public static TcpClient AsyncConnect(TcpClient client, string serverName, int port)
         {
-            client = new TcpClient();
-            await client.ConnectAsync(serverName, port);   //We create the socket
+            client = new TcpClient(serverName, port);   //We create the socket
             return client;
         }
 
         public static void MakeTransmission(TcpClient connectedClient, BlobEntity playerBlob)
         {
-            stream = connectedClient.GetStream();
-
             // Create objects reading and writing to the network stream
             writer = new StreamWriter(stream);
 
@@ -88,10 +142,8 @@ namespace Goofy_Groovers.Managers
 
         public static async Task ReceiveTransmission(List<BlobEntity> blobs)
         {
-            stream = client.GetStream();  //get the network stream to send and receive data
             reader = new StreamReader(stream);
             string jsonResponse = await reader.ReadLineAsync();
-            Debug.WriteLine(jsonResponse);
 
             if (jsonResponse != null)
             {
@@ -119,15 +171,19 @@ namespace Goofy_Groovers.Managers
                                     {
                                         if (localPlayer != null)
                                         {
-                                            //if (!localPlayer.isJumping)
-                                            //{
+                                            if (!localPlayer.isJumping)
+                                            {
+                                                if (jsonData.playerList[iterator].isJumping)
+                                                {
+                                                    bufferEntity.SetSecondsSinceJumpStarted(0);
+                                                }
                                                 blobs.Remove(localPlayer);
                                                 blobs.Add(bufferEntity);
-                                            //}
-                                            //else
-                                            //{
-                                            //    Debug.WriteLine("Busy...");
-                                            //}
+                                            }
+                                            else
+                                            {
+                                                Debug.WriteLine("Busy...");
+                                            }
                                         }
                                         else
                                         {

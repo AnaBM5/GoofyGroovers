@@ -42,9 +42,18 @@ namespace Goofy_Groovers
         private int position3X = 330;
         private int position3Y = 360;
 
+        float rectQWidth;
+        float rectQHeight;
+        float rect1QX;
+        float rect1QY;
+        float rect2QX;
+        float rect2QY;
+
+        //Interfaces
         private Texture2D menuInterface;
         private Texture2D quitInterface;
         private Texture2D leaderBoardInterface;
+        private Texture2D lobbyInterface;
         private Texture2D _blankTexture;
 
         private int leaderBoardPosition;
@@ -60,7 +69,7 @@ namespace Goofy_Groovers
             Globals._graphics.IsFullScreen = true;
             Globals._graphics.PreferredBackBufferWidth = 1920;
             Globals._graphics.PreferredBackBufferHeight = 1080;
-            //-------------*/
+         */
 
             Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
             Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
@@ -110,6 +119,7 @@ namespace Goofy_Groovers
             menuInterface = Content.Load<Texture2D>("Interfaces/menu");
             quitInterface = Content.Load<Texture2D>("Interfaces/Quit Interface");
             leaderBoardInterface = Content.Load<Texture2D>("Interfaces/LeaderBoard");
+            lobbyInterface = Content.Load<Texture2D>("Interfaces/LobbyScreen");
 
             _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
             _blankTexture.SetData(new[] { Color.White });
@@ -227,11 +237,11 @@ namespace Goofy_Groovers
 
                             isKeyPressed = true;
                             Globals._gameManager.playerBlob.SetUserName(initials);
-                            gameState = GameState.RaceScreen;                                       //We change the game state if all the requirements are met                    
+                            gameState = GameState.LobbyScreen;                                       //We change the game state if all the requirements are met                    
 
-                            leaderBoardPosition = Globals._graphics.PreferredBackBufferWidth;
+                            
                             //Changes to full screen when the game/lobby starts
-                            /*
+                           
                             Globals._graphics.IsFullScreen = true;
                             Globals._graphics.PreferredBackBufferWidth = 1920;
                             Globals._graphics.PreferredBackBufferHeight = 1080;
@@ -240,12 +250,29 @@ namespace Goofy_Groovers
                             Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
                             
                             Globals._graphics.ApplyChanges();
-                            */
+
+                            leaderBoardPosition = Globals.windowWidth;
+
                         }
                     }
                     if (GetPlayerKeyInputFromUser())
                     {
-                        gameState = GameState.RaceScreen;                                           // Change game state to RaceScreen            
+                        //gameState = GameState.RaceScreen;                                           // Change game state to RaceScreen            
+                    }
+                    break;
+                
+                case GameState.LobbyScreen:
+                    {
+                        if (keyboardState.IsKeyDown(Keys.Enter))
+                        {
+                            gameState = GameState.RaceScreen;
+                        }
+
+                        if (keyboardState.IsKeyDown(Keys.Escape))
+                        {
+                            previousGameState = GameState.LobbyScreen;                  //We add the previous state
+                            gameState = GameState.QuitScreen;
+                        }
                     }
                     break;
 
@@ -270,8 +297,17 @@ namespace Goofy_Groovers
 
                 case GameState.QuitScreen:
 
-                    Rectangle rect1Q = new Rectangle(175, 370, 160, 60);
-                    Rectangle rect2Q = new Rectangle(475, 370, 160, 60);
+                    rectQWidth = GraphicsDevice.Viewport.Width * 0.2f;
+                    rectQHeight = GraphicsDevice.Viewport.Height * 0.12f;
+
+                    rect1QX = GraphicsDevice.Viewport.Width * 0.22f;
+                    rect1QY = GraphicsDevice.Viewport.Height * 0.77f;
+
+                    rect2QX = GraphicsDevice.Viewport.Width * 0.59f;
+                    rect2QY = GraphicsDevice.Viewport.Height * 0.77f;
+
+                    Rectangle rect1Q = new Rectangle((int)rect1QX, (int)rect1QY, (int)rectQWidth, (int)rectQHeight);
+                    Rectangle rect2Q = new Rectangle((int)rect2QX, (int)rect2QY, (int)rectQWidth, (int)rectQHeight);
 
                     if (mouseState.LeftButton == ButtonState.Pressed)
                     {
@@ -294,7 +330,11 @@ namespace Goofy_Groovers
                             {
                                 gameState = GameState.LeaderBoardScreen;
                             }
-                            
+                            else if (previousGameState == GameState.LobbyScreen)
+                            {
+                                gameState = GameState.LobbyScreen;
+                            }
+
                         }
                     }
                     break;
@@ -302,7 +342,7 @@ namespace Goofy_Groovers
                 case GameState.LeaderBoardScreen:
                     if (leaderBoardPosition > 0)
                     {
-                        leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+                        leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds * 2;
                        
                         if(leaderBoardPosition < 0)
                             leaderBoardPosition = 0;
@@ -329,6 +369,8 @@ namespace Goofy_Groovers
             float scaleYQuit = (float)GraphicsDevice.Viewport.Height / quitInterface.Height;
             float scaleXLeader = (float)GraphicsDevice.Viewport.Width / leaderBoardInterface.Width;
             float scaleYLeader = (float)GraphicsDevice.Viewport.Height / leaderBoardInterface.Height;
+            float scaleXLobby = (float)GraphicsDevice.Viewport.Width / lobbyInterface.Width;
+            float scaleYLobby = (float)GraphicsDevice.Viewport.Height/ lobbyInterface.Height;
 
             // Add your drawing code here
             Globals._spriteBatch.Begin();
@@ -362,6 +404,23 @@ namespace Goofy_Groovers
                     }
                     break;
 
+                case GameState.LobbyScreen:
+
+                   
+                    float scaleX = (float)GraphicsDevice.Viewport.Width / leaderBoardInterface.Width;
+                    float scaleY = (float)GraphicsDevice.Viewport.Height / leaderBoardInterface.Height;
+
+                    // Calcular la nueva posición y tamaño del texto
+                    Vector2 newPosition = new Vector2(400 * scaleX, 830 * scaleY);
+                    float newSize = 5.5f * scaleX; 
+                    
+                    GraphicsDevice.Clear(Color.DarkSlateBlue);
+                    Globals._spriteBatch.Draw(lobbyInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLobby, scaleYLobby), SpriteEffects.None, 0f);
+                    
+                    Globals._spriteBatch.DrawString(Globals._gameFont, "      Waiting for: \n          " + initials + "\n  to start the race.", newPosition, Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+
+                    break;
+
                 case GameState.RaceScreen:
                     {
                         GraphicsDevice.Clear(Color.DarkSlateBlue);
@@ -373,14 +432,23 @@ namespace Goofy_Groovers
 
                 case GameState.QuitScreen:
                     {
+                   
+                        rectQWidth = GraphicsDevice.Viewport.Width * 0.2f;
+                        rectQHeight = GraphicsDevice.Viewport.Height * 0.12f;
+
+                        rect1QX = GraphicsDevice.Viewport.Width * 0.22f;
+                        rect1QY = GraphicsDevice.Viewport.Height * 0.77f;
+
+                        rect2QX = GraphicsDevice.Viewport.Width * 0.59f;
+                        rect2QY = GraphicsDevice.Viewport.Height * 0.77f;
                         Globals._spriteBatch.Draw(quitInterface,Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXQuit, scaleYQuit), SpriteEffects.None, 0f);
 
                         // yes button
-                        Rectangle rect1Q = new Rectangle(175, 370, 160, 60);
+                        Rectangle rect1Q = new Rectangle((int)rect1QX, (int)rect1QY, (int)rectQWidth, (int)rectQHeight);
                         Globals._spriteBatch.Draw(_blankTexture, rect1Q, Color.Transparent);
 
                         //no button
-                        Rectangle rect2Q = new Rectangle(475, 370, 160, 60);
+                        Rectangle rect2Q = new Rectangle((int)rect2QX, (int)rect2QY, (int)rectQWidth, (int)rectQHeight);
                         Globals._spriteBatch.Draw(_blankTexture, rect2Q, Color.Transparent);
                     }
                     break;

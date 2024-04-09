@@ -33,45 +33,32 @@ public class Server
 {
     public GraphicsDeviceManager _graphics;
     public SpriteBatch _spriteBatch;
-    public int port;
-    public TcpListener server;
-    public List<Lobby> lobbyList;
+    public static TcpListener listener = new TcpListener(IPAddress.Any, 6066);
+    public static List<Lobby> lobbyList = new();
+
+    public static readonly Object toKeepEntitiesIntact = new Object();
 
     public Server()
     {
-        lobbyList = new();
-        port = 6066;
-        server = new TcpListener(IPAddress.Any, port);
-        server.Start(); // start the listener
-
-        lobbyList.Add(new Lobby("Test!"));
     }
 
-    public void RunServer()
+    public static void HandleClient(TcpClient client)
     {
-        try
-        {
-            TcpClient client = server.AcceptTcpClient(); // wait the user to connect
-                                                         // Console.WriteLine("Client connected form " + ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
-            HandleClient(client);
-        }
-        catch (Exception)
-        {
-        }
-    }
+        // Create a Stopwatch instance
+        Stopwatch stopwatch = new Stopwatch();
+        // Start the stopwatch
+        stopwatch.Start();
 
-    private void HandleClient(TcpClient client)
-    {
         NetworkStream stream = client.GetStream();
-        StreamReader reader = new StreamReader(stream);
-        StreamWriter writer = new StreamWriter(stream);
+        StreamReader reader = new(stream);
+        StreamWriter writer = new(stream);
 
         try
         {
             string message = reader.ReadLine(); //read the message from the client
             writer.WriteLine(HandleMessage(message));
             writer.Flush();
-            Debug.WriteLine("Server says: " + HandleMessage(message));
+            //Debug.WriteLine("Server says: " + HandleMessage(message));
         }
         catch (Exception e)
         {
@@ -80,50 +67,52 @@ public class Server
         finally
         {
             client.Close(); // We close the connection
+
+            stopwatch.Stop(); // Stop the stopwatch
+            //Debug.WriteLine($"Execution time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
         }
     }
 
-    private string HandleMessage(string jsonMessage)
+    private static string HandleMessage(string jsonMessage)
     {
         Response jsonResponse = new Response("Update", new List<BlobEntity>());
-
         if (jsonMessage != null)
         {
-            BlobEntity newPlayerData = JsonConvert.DeserializeObject<BlobEntity>(jsonMessage/*,
-                    new JsonSerializerSettings
-                    {
-                        Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
-                        {
-                            args.ErrorContext.Handled = true;
-                        }
-                    }*/);
+            BlobEntity newPlayerData = JsonConvert.DeserializeObject<BlobEntity>(jsonMessage);
+            Debug.WriteLine("update from:" + newPlayerData.blobUserName);
 
             if (newPlayerData != null)
             {
                 if (lobbyList.ElementAt(0).playerList.Any(it => it.blobUserId == newPlayerData.blobUserId))
                 {
-                    foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
+                    lock (toKeepEntitiesIntact)
                     {
-                        if (existingPlayerData.blobUserId == newPlayerData.blobUserId)
+                        foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
                         {
-                            existingPlayerData.blobUserName = newPlayerData.blobUserName;
-                            existingPlayerData.blobUserColor = newPlayerData.blobUserColor;
-                            existingPlayerData.worldPosition = newPlayerData.worldPosition;
-                            existingPlayerData.isJumping = newPlayerData.isJumping;
-                            existingPlayerData.jumpStartPoint = newPlayerData.jumpStartPoint;
-                            existingPlayerData.jumpEndPoint = newPlayerData.jumpEndPoint;
-                            existingPlayerData.velocity = newPlayerData.velocity;
-                            existingPlayerData.jumpTheta = newPlayerData.jumpTheta;
-                        }
-                        else
-                        {
-                            jsonResponse.playerList.Add(existingPlayerData);
+                            {
+                                if (existingPlayerData.blobUserId == newPlayerData.blobUserId)
+                                {
+                                    existingPlayerData.blobUserName = newPlayerData.blobUserName;
+                                    existingPlayerData.blobUserColor = newPlayerData.blobUserColor;
+                                    existingPlayerData.worldPosition = newPlayerData.worldPosition;
+                                    existingPlayerData.isJumping = newPlayerData.isJumping;
+                                    existingPlayerData.jumpStartPoint = newPlayerData.jumpStartPoint;
+                                    existingPlayerData.jumpEndPoint = newPlayerData.jumpEndPoint;
+                                    existingPlayerData.velocity = newPlayerData.velocity;
+                                    existingPlayerData.jumpTheta = newPlayerData.jumpTheta;
+                                }
+                                else
+                                {
+                                    jsonResponse.playerList.Add(existingPlayerData);
+                                }
+                            }
                         }
                     }
                 }
                 else
                 {
-                    lobbyList.ElementAt(0).playerList.Add(newPlayerData);
+                    lock (toKeepEntitiesIntact)
+                        lobbyList.ElementAt(0).playerList.Add(newPlayerData);
                 }
             }
         }

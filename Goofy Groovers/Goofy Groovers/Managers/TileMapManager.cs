@@ -45,7 +45,7 @@ namespace Goofy_Groovers.Managers
         {
             fileName = "Content\\tile_map.txt";
 
-            tileSize = 64;
+            tileSize = 128;
 
             mapOffsetX = 100;
             mapOffsetY = 0;

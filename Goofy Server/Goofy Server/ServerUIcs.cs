@@ -28,10 +28,7 @@ namespace Goofy_Server
 
         private void UpdateData()
         {
-            while (isRunning)
-            {
-                server.RunServer();
-            }
+
         }
 
         private void UpdateUI()
@@ -40,7 +37,7 @@ namespace Goofy_Server
             entityListView.Items.Clear();
 
             // Display current data of entities in the UI
-            foreach (BlobEntity entity in server.lobbyList.ElementAt(0).playerList)
+            foreach (BlobEntity entity in Server.lobbyList.ElementAt(0).playerList)
             {
                 ListViewItem item = new ListViewItem(new string[]
                 {
@@ -61,7 +58,7 @@ namespace Goofy_Server
         private void deleteAll(object sender, EventArgs e)
         {
             // Clear all data
-            server.lobbyList.ElementAt(0).playerList.Clear();
+            Server.lobbyList.ElementAt(0).playerList.Clear();
 
             // Update UI to reflect changes
             UpdateUI();

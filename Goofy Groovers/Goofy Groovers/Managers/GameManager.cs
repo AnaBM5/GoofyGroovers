@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using static Goofy_Groovers.GoofyGroovers;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Goofy_Groovers.Managers
@@ -74,14 +75,14 @@ namespace Goofy_Groovers.Managers
 
             lastValidPosition = playerBlob.GetWorldPosition();
 
+            /*
             parabolicVisualisationTimeDelta = 0.2;
             parabolicVisualisationTimeMax = 20;
-
+            */
             //increased for full screen
-            /*
             parabolicVisualisationTimeDelta = 0.27;
             parabolicVisualisationTimeMax = 40;
-            */
+            
 
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
 
@@ -158,18 +159,24 @@ namespace Goofy_Groovers.Managers
                     if (_mouseManager.IsJumpCancelled())
                         parabolicMovementVisualisation.Clear();
 
-                    else if (_mouseManager.IsNewJumpInitiated())
-                    {
-                        VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
-                    }
-
-                    else if (_mouseManager.IsNewJumpAttempted())
-                    {
-                        parabolicMovementVisualisation.Clear();
-                        VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
-                    }
+                else if (_mouseManager.IsNewJumpInitiated())
+                {
+                    VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                 }
-                _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
+                else if (_mouseManager.IsNewJumpAttempted())
+                {
+                    // Calculate the force of the jump, pass it to the blob
+                    // Calculate the new intersection point FIRST, pass it to the blob
+                    // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
+
+                    parabolicMovementVisualisation.Clear();
+                    VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                }
+            }
+
+
+
+            _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
                 {
                     lock (Globals._gameManager.toKeepEntitiesIntact)
@@ -213,39 +220,18 @@ namespace Goofy_Groovers.Managers
                 }
 
 
-                /*
-                if (elapsedSecondsSinceTransmissionToServer > 0.01)
-                {
-                    elapsedSecondsSinceTransmissionToServer = 0;
-                    try
-                    {
-                        //Debug.WriteLine(hasFinishedTransmission.ToString());
-                        // We do not execute network operations in this thread, but in a task.
-                        // https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-8.0
-
-                        Task.Run(() => { GameClient.TransmitToServer(playerBlob, blobEntities); });
-                        /*                    serverTransmitterThread = new Thread(
-                                                () => GameClient.TransmitToServer(playerBlob, blobEntities));
-                                            serverTransmitterThread.Start();
-                        Task.Run(() =>
-                        {
-                            hasFinishedTransmission = GameClient.TransmitToServer(playerBlob, blobEntities);
-                        });
-                    }
-                    catch (Exception)
-                    {
-                        Debug.WriteLine("Oopsie");
-                    }
-                }*/
-
-
-                if (elapsedSecondsSinceVisualisationShift > 1)
-                {
-                    elapsedSecondsSinceVisualisationShift = 0;
-                    parabolicVisualisationOffset += 0.01;
-                }
+           
+            if (elapsedSecondsSinceTransmissionToServer > 0.16)
+            {
+                elapsedSecondsSinceTransmissionToServer = 0;
+                _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
             }
-
+             /*
+            if (elapsedSecondsSinceVisualisationShift > 1)
+            {
+                elapsedSecondsSinceVisualisationShift = 0;
+                parabolicVisualisationOffset += 0.01;
+            }*/
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
@@ -301,7 +287,6 @@ namespace Goofy_Groovers.Managers
 
             if (intersectionTime <= 0.2)
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
-
             else
             {
                 //resimulates the last half second and the consequent one
@@ -320,7 +305,6 @@ namespace Goofy_Groovers.Managers
                     }
                     else
                         break;
-
                 }
             }
 
@@ -331,9 +315,8 @@ namespace Goofy_Groovers.Managers
             playerBlob.SetSecondsSinceJumpStarted(0);
             playerBlob.SetJumpingState(true);
             _mouseManager.EndNewJumpAttempt();
-
         }
-        
+
         private bool OutsideObstacles(Vector2 position)
         {
             List<Vector2> coordList;

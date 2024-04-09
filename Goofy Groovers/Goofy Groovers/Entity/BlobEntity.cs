@@ -79,8 +79,6 @@ namespace Goofy_Groovers.Entity
             blobRadius = 12;
         }
 
-        //remotePlayerData.blobUserColor, remotePlayerData.worldPosition, false));
-
         public BlobEntity(string userName, int userId, Color userColor, Vector2 worldPosition, bool isOwnedByUser)
         {
             blobUserName = userName;
