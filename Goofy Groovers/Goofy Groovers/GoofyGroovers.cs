@@ -238,7 +238,7 @@ namespace Goofy_Groovers
                             Globals._gameManager.playerBlob.SetUserName(initials);
                             gameState = GameState.LobbyScreen;                                       //We change the game state if all the requirements are met                    
 
-                            leaderBoardPosition = Globals._graphics.PreferredBackBufferWidth;
+                            
                             //Changes to full screen when the game/lobby starts
                            
                             Globals._graphics.IsFullScreen = true;
@@ -249,7 +249,9 @@ namespace Goofy_Groovers
                             Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
                             
                             Globals._graphics.ApplyChanges();
-                            
+
+                            leaderBoardPosition = Globals.windowWidth;
+
                         }
                     }
                     if (GetPlayerKeyInputFromUser())
@@ -339,7 +341,7 @@ namespace Goofy_Groovers
                 case GameState.LeaderBoardScreen:
                     if (leaderBoardPosition > 0)
                     {
-                        leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+                        leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds * 2;
                        
                         if(leaderBoardPosition < 0)
                             leaderBoardPosition = 0;
