@@ -67,7 +67,7 @@ namespace Goofy_Groovers.Managers
             _levelManager = new TileMapManager();
 
             blobEntities = new List<BlobEntity>();
-            blobEntities.Add(new BlobEntity(new Vector2(150, 440), _levelManager.GetCameraPosition(new Vector2(450, 440)), true));
+            blobEntities.Add(new BlobEntity(new Vector2(220, 880), _levelManager.GetCameraPosition(new Vector2(220, 880)), true));
             playerBlob = blobEntities.ElementAt(0);
 
             playerBlob.SetUserName("Player 1");
@@ -110,9 +110,9 @@ namespace Goofy_Groovers.Managers
                 countdownStarted = true;
                 return;
             }
-            
-            
-            if(!raceStarted)
+
+
+            if (!raceStarted)
             {
                 _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
                 {
@@ -124,32 +124,32 @@ namespace Goofy_Groovers.Managers
                         }
                 }
 
-                if(countdownStarted)
+                if (countdownStarted)
                 {
-                    if(countdownTimer < 0.8f)
+                    if (countdownTimer < 0.8f)
                     {
-                        countdownTimer += (float) elapsedTimeSeconds;
+                        countdownTimer += (float)elapsedTimeSeconds;
                         //modify transparency and position
 
                         if (countdownTimer > 0.8f)
                         {
                             countdownTimer = 0f;
                             countdownMessages--;
-                            if(countdownMessages > 3)
+                            if (countdownMessages > 3)
                             {
                                 countdownStarted = false;
                                 raceStarted = true;
                             }
-                                
+
                         }
-                        
+
                     }
                 }
             }
-                
+
             else
             {
-                
+
                 elapsedSecondsSinceVisualisationShift += elapsedTimeSeconds;
                 elapsedSecondsSinceTransmissionToServer += elapsedTimeSeconds;
                 _mouseManager.Update(game);
@@ -159,24 +159,24 @@ namespace Goofy_Groovers.Managers
                     if (_mouseManager.IsJumpCancelled())
                         parabolicMovementVisualisation.Clear();
 
-                else if (_mouseManager.IsNewJumpInitiated())
-                {
-                    VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                    else if (_mouseManager.IsNewJumpInitiated())
+                    {
+                        VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                    }
+                    else if (_mouseManager.IsNewJumpAttempted())
+                    {
+                        // Calculate the force of the jump, pass it to the blob
+                        // Calculate the new intersection point FIRST, pass it to the blob
+                        // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
+
+                        parabolicMovementVisualisation.Clear();
+                        VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                    }
                 }
-                else if (_mouseManager.IsNewJumpAttempted())
-                {
-                    // Calculate the force of the jump, pass it to the blob
-                    // Calculate the new intersection point FIRST, pass it to the blob
-                    // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
-
-                    parabolicMovementVisualisation.Clear();
-                    VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
-                }
-            }
 
 
 
-            _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
+                _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
                 {
                     lock (Globals._gameManager.toKeepEntitiesIntact)
@@ -220,18 +220,19 @@ namespace Goofy_Groovers.Managers
                 }
 
 
-           
-            if (elapsedSecondsSinceTransmissionToServer > 0.16)
-            {
-                elapsedSecondsSinceTransmissionToServer = 0;
-                _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+
+                if (elapsedSecondsSinceTransmissionToServer > 0.16)
+                {
+                    elapsedSecondsSinceTransmissionToServer = 0;
+                    _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+                }
+                /*
+               if (elapsedSecondsSinceVisualisationShift > 1)
+               {
+                   elapsedSecondsSinceVisualisationShift = 0;
+                   parabolicVisualisationOffset += 0.01;
+               }*/
             }
-             /*
-            if (elapsedSecondsSinceVisualisationShift > 1)
-            {
-                elapsedSecondsSinceVisualisationShift = 0;
-                parabolicVisualisationOffset += 0.01;
-            }*/
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
