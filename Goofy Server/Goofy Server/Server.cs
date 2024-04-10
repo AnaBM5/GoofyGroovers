@@ -242,6 +242,7 @@ public class Server
             }
         }
 
+        Debug.WriteLine(jsonResponse.messageType);
 
         // Response type:
         // Error, Confirmation, Update, Direction ?

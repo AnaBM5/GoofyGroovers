@@ -458,12 +458,7 @@ namespace Goofy_Groovers
                     {
                         GraphicsDevice.Clear(Color.DarkSlateBlue);
                         Globals._gameManager.Draw(gameTime);
-                        if (!Globals._gameManager.raceHasStarted)
-                        {
-                            // Draw game objects using _spriteBatch
-                            Globals._spriteBatch.DrawString(Globals._gameFont, Globals._gameManager.raceStartMessage, new Vector2((float)GraphicsDevice.Viewport.Width / 2, (float)GraphicsDevice.Viewport.Height / 2), Color.White, 0f, Vector2.Zero, (float)7.5f, SpriteEffects.None, 0f);
-                        }
-                        Globals._gameManager.getMouseManager().Draw();
+                        //Globals._gameManager.getMouseManager().Draw();
                     }
                     break;
 

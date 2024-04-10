@@ -40,7 +40,9 @@ namespace Goofy_Groovers.Managers
                 {
                     case GameState.RaceScreen:
                         {
-                            if (Globals._gameManager.playerBlob.isStartingTheRace && !Globals._gameManager.raceHasStarted)
+                            Debug.WriteLine("Blob starting race: "+Globals._gameManager.playerBlob.isStartingTheRace);
+                            
+                            if (Globals._gameManager.playerBlob.isStartingTheRace && !Globals._gameManager.raceStarted)
                             {
                                 MakeStartingTransmission();
                             }

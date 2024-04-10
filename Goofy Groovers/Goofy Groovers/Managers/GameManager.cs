@@ -31,7 +31,7 @@ namespace Goofy_Groovers.Managers
 
         private float countdownTimer;
         private byte countdownMessages;
-        private bool raceStarted;
+        public bool raceStarted;
         private bool showEndScreen;
 
         private float endScreenTimer; //Time that the game waits after the player finished the race to show the leaderboard
@@ -58,8 +58,6 @@ namespace Goofy_Groovers.Managers
 
         private double elapsedSecondsSinceVisualisationShift;
         public double elapsedSecondsSinceTransmissionToServer = 0;
-        public bool raceHasStarted = false;
-        public string raceStartMessage;
 
         public DateTime raceStartTime;
 
@@ -70,7 +68,7 @@ namespace Goofy_Groovers.Managers
 
             blobEntities = new List<BlobEntity>
             {
-                new BlobEntity(new Vector2(220, 880), _levelManager.GetCameraPosition(new Vector2(220, 880)), true)
+                new BlobEntity(new Vector2(110, 440), _levelManager.GetCameraPosition(new Vector2(110, 440)), true)
             };
 
             playerBlob = blobEntities.ElementAt(0);
@@ -114,7 +112,9 @@ namespace Goofy_Groovers.Managers
                 return;
             }
 
-            if (!raceStarted)
+            Debug.WriteLine("Race Started: "+ raceStarted);
+            Debug.WriteLine("Countdown Started: " + countdownStarted);
+            if (!raceStarted )
             {
                 _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
                 {
@@ -318,17 +318,18 @@ namespace Goofy_Groovers.Managers
 
             // Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
             //Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
-            if (Globals._gameManager.raceHasStarted)
-            {
+            
                 foreach (var blob in blobEntities)
                 {
                     blob.Draw(gameTime);
                 }
-            }
+            
 
             if (countdownStarted)
             {
-                if (countdownMessages > 0)
+                if (countdownMessages == 255)
+                    Debug.WriteLine("WTF");
+                else if (countdownMessages > 0)
                     Globals._spriteBatch.DrawString(countdownFont, countdownMessages.ToString(), new Vector2(Globals.windowWidth / 2 - 50, Globals.windowHeight / 2 - 50), Color.Yellow);
                 else
                     Globals._spriteBatch.DrawString(countdownFont, "GO!!!", new Vector2(Globals.windowWidth / 2 - 170, Globals.windowHeight / 2 - 50), Color.Yellow);
