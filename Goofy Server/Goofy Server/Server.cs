@@ -13,10 +13,11 @@ public class Response
 {
     public string messageType;
     public List<BlobEntity> playerList;
-    public int startTime;
+    public DateTime startTime;
     public int raceStarterId;
     public string raceStarter;
     public BlobEntity player;
+    public string message;
 
     public Response()
     { }
@@ -100,7 +101,7 @@ public class Server
                             lobbyList.ElementAt(0).controllingPlayerName = jsonInput.player.blobUserName;
                         }
 
-                        if (lobbyList.ElementAt(0).raceStartTime != -1)
+                        if (lobbyList.ElementAt(0).raceStartTime != DateTime.MinValue)
                         {
                             var responseMessage = new
                             {
@@ -129,11 +130,12 @@ public class Server
                         {
                             messageType = "OK",
                         };
-                        return JsonConvert.SerializeObject(responseMessage);
                     }
+                    break;
+
                 case "RaceUpdate":
                     {
-                        jsonResponse = new Response("Update", new List<BlobEntity>());
+                        jsonResponse = new Response("RaceUpdate", new List<BlobEntity>());
 
                         if (jsonInput.player != null)
                         {
@@ -167,41 +169,51 @@ public class Server
                                     lobbyList.ElementAt(0).playerList.Add(jsonInput.player);
                             }
                         }
-
-                        return JsonConvert.SerializeObject(jsonResponse);
                     }
+                    break;
 
                 case "FinishLineUpdate":
                     {
-                        jsonResponse = new Response("Update", new List<BlobEntity>());
+                        jsonResponse = new Response("FinishLineUpdate", new List<BlobEntity>());
 
                         if (jsonInput.player != null)
                         {
                             if (lobbyList.ElementAt(0).playerList.Any(it => it.blobUserId == jsonInput.player.blobUserId))
                             {
+                                if (jsonInput.player.finishTime == -1)
+                                {
+
                                 lock (toKeepEntitiesIntact)
                                 {
                                     foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
                                     {
                                         if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
                                         {
-                                            existingPlayerData.finishTime = jsonInput.player.finishTime;
+                                            TimeSpan timeDifference = DateTime.Now - lobbyList.ElementAt(0).raceStartTime;
+                                            existingPlayerData.finishTime = (int)timeDifference.TotalSeconds;
+                                            Debug.WriteLine(existingPlayerData.finishTime);
                                         }
-                                        else
-                                        {
+
                                             jsonResponse.playerList.Add(existingPlayerData);
                                         }
-                                    }
+                                }
+                                    Debug.WriteLine(JsonConvert.SerializeObject(jsonResponse));
                                 }
                             }
                         }
-                        return JsonConvert.SerializeObject(jsonResponse);
+                        else
+                        {
+                            jsonResponse = new Response("Error", new List<BlobEntity>());
+                            jsonResponse.message = "Player object is null";
+                        }
                     }
+                    break;
 
                 default:
                     {
 
                         jsonResponse = new Response("Error", new List<BlobEntity>());
+                        jsonResponse.message = "Unsupported type of update";
                     }
                     break;
             }

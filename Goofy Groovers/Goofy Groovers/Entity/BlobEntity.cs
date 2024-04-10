@@ -31,7 +31,7 @@ namespace Goofy_Groovers.Entity
         //private Sprite sprite;
         private Texture2D dotTexture;
 
-        public double finishTime { get; set; }
+        public int finishTime { get; set; } = -1;
         public int frameNumber { get; set; }
         public int animationNumber { get; set; }
         public float animationEndTime { get; set; }
@@ -246,7 +246,8 @@ namespace Goofy_Groovers.Entity
         public string messageType;
         public string raceStarter;
         public int raceStarterId = -1;
-        public int startTime = -1;
+        public DateTime startTime;
+        public string message;
 
         public List<BlobEntity> playerList;
         public Response()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public enum LobbyMode
 { Lobby = 1, RaceStarting, Race, RaceEnding }
@@ -7,7 +8,7 @@ public class Lobby
 {
     public string lobbyName;
     public List<BlobEntity> playerList;
-    public int raceStartTime = -1;
+    public DateTime raceStartTime;
     public int controllingPlayerId = -1;
     public string controllingPlayerName = "";
     public LobbyMode lobbyMode;

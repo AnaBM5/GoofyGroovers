@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using static Goofy_Groovers.GoofyGroovers;
@@ -43,10 +44,10 @@ namespace Goofy_Groovers.Managers
 
         private double elapsedSecondsSinceVisualisationShift;
         private double elapsedSecondsSinceTransmissionToServer;
-        internal bool raceHasStarted;
-        internal string raceStartMessage;
+        public bool raceHasStarted = false;
+        public string raceStartMessage;
 
-        public double raceStartTime;
+        public DateTime raceStartTime;
 
         public GameManager(GoofyGroovers game)
         {
@@ -116,22 +117,17 @@ namespace Goofy_Groovers.Managers
                 }
 
                 lock (Globals._gameManager.toKeepEntitiesIntact)
+                {
                     foreach (var blob in blobEntities)
                     {
-                        blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
                         blob.Update(elapsedSeconds);
+                        blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
                     }
+                }
 
                 if (!playerBlob.finishedRace && playerBlob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
                 {
                     playerBlob.finishedRace = true;
-
-                    DateTime referenceTime = new DateTime(1970, 1, 1); // Unix epoch
-                    DateTime currentTime = DateTime.Now;
-
-                    TimeSpan timeDifference = currentTime - referenceTime;
-                    double seconds = timeDifference.TotalSeconds;
-                    playerBlob.finishTime = raceStartTime - seconds;
                     //change colour to know when the condition its true
                     playerBlob.blobUserColor = Color.White;
                     //TODO: send message to get leaderboard position
@@ -164,15 +160,11 @@ namespace Goofy_Groovers.Managers
                 elapsedSecondsSinceTransmissionToServer = 0;
                 _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
             }
-            if (!raceHasStarted && raceStartTime != 0)
+
+            if (!raceHasStarted)
             {
-                DateTime referenceTime = new DateTime(1970, 1, 1); // Unix epoch
-                DateTime currentTime = DateTime.Now;
-
-                TimeSpan timeDifference = currentTime - referenceTime;
-                double seconds = timeDifference.TotalSeconds;
-
-                switch ((int)(raceStartTime - seconds))
+                TimeSpan timeDifference = raceStartTime - DateTime.Now;
+                switch ((int)timeDifference.TotalSeconds)
                 {
                     case 5:
                         {
@@ -193,13 +185,12 @@ namespace Goofy_Groovers.Managers
                         break;
 
                     case 2:
-                    case 1:
                         {
                             raceStartMessage = "GO!";
                         }
                         break;
 
-                    case 0:
+                    case 1:
                         {
                             raceHasStarted = true;
                         }
@@ -207,21 +198,11 @@ namespace Goofy_Groovers.Managers
 
                     default:
                         {
-                            if (raceStartTime < seconds)
-                            {
-                                raceHasStarted = true;
-                            }
                             raceStartMessage = "";
                         }
                         break;
                 }
             }
-            /*
-           if (elapsedSecondsSinceVisualisationShift > 1)
-           {
-               elapsedSecondsSinceVisualisationShift = 0;
-               parabolicVisualisationOffset += 0.01;
-           }*/
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)

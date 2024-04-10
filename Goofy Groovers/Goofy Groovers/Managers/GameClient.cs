@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using static Goofy_Groovers.GoofyGroovers;
@@ -69,6 +70,8 @@ namespace Goofy_Groovers.Managers
             catch (Exception ex)
             {
                 Debug.WriteLine("There was a problem connecting to server");
+                Debug.WriteLine(ex.Source.ToString());
+                Debug.WriteLine(ex.Message.ToString());
             }
             finally
             {
@@ -102,7 +105,7 @@ namespace Goofy_Groovers.Managers
             var jsonMessage = new
             {
                 messageType = "RaceStart",
-                startTime = (int) Globals._gameManager.raceStartTime,
+                startTime = Globals._gameManager.raceStartTime,
             };
             writer.WriteLine(JsonConvert.SerializeObject(jsonMessage));
             writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
@@ -132,7 +135,6 @@ namespace Goofy_Groovers.Managers
                 messageType = "FinishLineUpdate",
                 player = playerBlob,
             };
-
             writer.WriteLine(JsonConvert.SerializeObject(jsonMessage));
             writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
         }
@@ -177,7 +179,7 @@ namespace Goofy_Groovers.Managers
                             }
                             break;
 
-                        case "Update":
+                        case "RaceUpdate":
                             {
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
                                 {
@@ -208,9 +210,10 @@ namespace Goofy_Groovers.Managers
                                         }
                                     }
                                 }
-                                break;
                             }
-                        case "FinishLine":
+                            break;
+
+                        case "FinishLineUpdate":
                             {
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
                                 {
@@ -219,20 +222,24 @@ namespace Goofy_Groovers.Managers
                                     {
                                         if (localPlayer != null)
                                         {
-                                            localPlayer.finishTime = jsonData.playerList[iterator].finishTime;
-                                        }
-                                        else
-                                        {
-                                            blobs.Add(bufferEntity);
+                                            localPlayer.finishTime = jsonData.playerList.ElementAt(iterator).finishTime;
+                                            Debug.WriteLine(localPlayer.finishTime);
                                         }
                                     }
                                 }
-                                break;
                             }
+                            break;
+
+                        case "OK":
+                            break;
+
                         case "Error":
                             {
-                                break;
+                                Debug.WriteLine("Server encountered an error:");
+                                Debug.WriteLine(jsonData.message);
                             }
+                            break;
+
                         default:
                             {
                                 break;

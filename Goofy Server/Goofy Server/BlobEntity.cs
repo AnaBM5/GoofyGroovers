@@ -14,7 +14,7 @@ public class BlobEntity
     public Vector2 jumpStartPoint { get; set; }
     public Vector2 jumpEndPoint { get; set; }
 
-    public double finishTime { get; set; }
+    public int finishTime { get; set; } = -1;
 
 
     public float velocity { get; set; }

@@ -266,11 +266,7 @@ namespace Goofy_Groovers
                         {
                             if (Globals._gameManager.playerBlob.isStartingTheRace)
                             {
-                                DateTime referenceTime = new DateTime(1970, 1, 1); // Unix epoch
-                                DateTime currentTime = DateTime.Now;
-
-                                TimeSpan timeDifference = currentTime - referenceTime;
-                                Globals._gameManager.raceStartTime = timeDifference.TotalSeconds + 7;
+                                Globals._gameManager.raceStartTime = DateTime.Now.AddSeconds(7);
                                 gameState = GameState.RaceScreen;
                             }
                         }
@@ -340,6 +336,8 @@ namespace Goofy_Groovers
                     break;
 
                 case GameState.LeaderBoardScreen:
+
+                    Globals._gameManager.Update(gameTime, this);
                     if (leaderBoardPosition > 0)
                     {
                         leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds * 2;
