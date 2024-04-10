@@ -101,6 +101,7 @@ namespace Goofy_Groovers.Managers
 
         public void Update(GameTime elapsedSeconds, GoofyGroovers game)
         {
+            Debug.WriteLine("Countdown Started: " + countdownStarted);
             elapsedTimeSeconds = elapsedSeconds.ElapsedGameTime.TotalSeconds;
 
             KeyboardState state = Keyboard.GetState();
@@ -109,11 +110,9 @@ namespace Goofy_Groovers.Managers
             if (state.IsKeyDown(Keys.S) || (raceStartTime - DateTime.Now).TotalSeconds <= 3)
             {
                 countdownStarted = true;
-                return;
             }
-
-            Debug.WriteLine("Race Started: "+ raceStarted);
-            Debug.WriteLine("Countdown Started: " + countdownStarted);
+            
+            
             if (!raceStarted )
             {
                 _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
@@ -325,11 +324,9 @@ namespace Goofy_Groovers.Managers
                 }
             
 
-            if (countdownStarted)
+            if (countdownStarted && countdownMessages<=3)
             {
-                if (countdownMessages == 255)
-                    Debug.WriteLine("WTF");
-                else if (countdownMessages > 0)
+                if (countdownMessages > 0)
                     Globals._spriteBatch.DrawString(countdownFont, countdownMessages.ToString(), new Vector2(Globals.windowWidth / 2 - 50, Globals.windowHeight / 2 - 50), Color.Yellow);
                 else
                     Globals._spriteBatch.DrawString(countdownFont, "GO!!!", new Vector2(Globals.windowWidth / 2 - 170, Globals.windowHeight / 2 - 50), Color.Yellow);

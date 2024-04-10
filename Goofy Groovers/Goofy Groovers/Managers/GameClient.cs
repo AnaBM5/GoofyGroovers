@@ -31,7 +31,6 @@ namespace Goofy_Groovers.Managers
 
         public async void ConnectAndCommunicate(GameState gameState)
         {
-            Debug.WriteLine("update");
             try
             {
                 client = AsyncConnect(client, serverName, port);
