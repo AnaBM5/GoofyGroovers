@@ -144,7 +144,6 @@ namespace Goofy_Groovers.Managers
         {
             reader = new StreamReader(stream);
             string jsonResponse = await reader.ReadLineAsync();
-            Debug.WriteLine(jsonResponse + "\n");
 
             if (jsonResponse != null)
             {
@@ -235,12 +234,13 @@ namespace Goofy_Groovers.Managers
                                                         blobs.ElementAt(iteratorSecond).SetJumpEndPoint(jsonData.playerList[iterator].jumpEndPoint);
                                                         blobs.ElementAt(iteratorSecond).SetThetha(jsonData.playerList[iterator].jumpTheta);
                                                         blobs.ElementAt(iteratorSecond).SetVelocity(jsonData.playerList[iterator].velocity);
-                                                        blobs.ElementAt(iteratorSecond).SetSecondsSinceJumpStarted(0);
 
-                                                        blobs.ElementAt(iteratorSecond).SetJumpingState(jsonData.playerList[iterator].isJumping);
-                                                        Debug.WriteLine(blobs.ElementAt(iterator).ToString());
+                                                        blobs.ElementAt(iteratorSecond).SetSecondsSinceJumpStarted(0);
+                                                        blobs.ElementAt(iteratorSecond).DefineJumpDirection();
+                                                        blobs.ElementAt(iteratorSecond).SetJumpingState(true);
                                                     }
                                                 }
+
                                                 iteratorSecond = blobs.Count;
                                                 break;
                                             }
@@ -279,7 +279,6 @@ namespace Goofy_Groovers.Managers
                                             // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
                                             if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
                                             {
-                                                Debug.WriteLine(blobs[iteratorSecond].blobUserName + "Has been found");
                                                 Debug.WriteLine(blobs.ElementAt(iteratorSecond).finishTime + " / " + jsonData.playerList.ElementAt(iterator).finishTime + " / " + jsonData.playerList[iterator].finishTime);
                                                 objectFound = true;
                                                 if (jsonData.playerList.ElementAt(iterator).finishTime != -1)
