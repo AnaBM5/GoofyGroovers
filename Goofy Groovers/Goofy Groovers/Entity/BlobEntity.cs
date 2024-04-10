@@ -1,6 +1,7 @@
 ﻿using Goofy_Groovers.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 
@@ -43,15 +44,24 @@ namespace Goofy_Groovers.Entity
         public float velocity;
         public float elapsedSecondsSinceJumpStart;
         public bool isStartingTheRace;
+        public int blobRadius;
 
         // private float elapsedSecondsSinceLastSprite;
+
+
+        private MouseState mouseState1;
+        bool upsideDownSprite = false;
+        bool IsOnTheLeftSprite = false;
+        bool IsOnWalls = false;
+        private Vector2 previousPosition;
+
 
         public BlobEntity()
         {
             jumpDirection = new bool[2];
             Random rnd = new Random();
             blobUserId = rnd.Next(1000);
-            blobRadius = 12;
+            blobRadius = 32;
         }
 
         public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
@@ -65,8 +75,7 @@ namespace Goofy_Groovers.Entity
 
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
-
-            blobRadius = 12;
+            blobRadius = 32;
         }
 
         public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
@@ -78,8 +87,7 @@ namespace Goofy_Groovers.Entity
             blobUserId = rnd.Next(1000);
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
-
-            blobRadius = 12;
+            blobRadius = 32;
         }
 
         public BlobEntity(string userName, int userId, Color userColor, Vector2 worldPosition, bool isOwnedByUser)
@@ -94,7 +102,7 @@ namespace Goofy_Groovers.Entity
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
 
-            blobRadius = 12;
+            blobRadius = 32;
         }
 
         public void Update(GameTime elapsedSeconds)
@@ -109,9 +117,10 @@ namespace Goofy_Groovers.Entity
 
             if (isJumping)
             {
+                previousPosition = worldPosition;
                 worldPosition = jumpStartPoint + new Vector2(
-                    -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
-                    -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
+                        -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
+                        -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
                 if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0] || shortMovement)
                 {
@@ -125,13 +134,81 @@ namespace Goofy_Groovers.Entity
         {
             if (blobUserName.Length >= 13)
             {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-40, 20), Color.White);
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName.Substring(0, 10) + "...", cameraPosition + new Vector2(-40, 35), Color.White);
             }
             else
             {
-                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 4, 20), Color.White);
+                Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 4, 35), Color.White);
             }
-            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)cameraPosition.X - blobRadius, (int)cameraPosition.Y - blobRadius, 25, 25), blobUserColor);
+            Texture2D textureToDraw = SpriteDirection();
+
+            Globals._spriteBatch.Draw(textureToDraw, new Rectangle((int)cameraPosition.X - blobRadius, (int)cameraPosition.Y - blobRadius, 50, 50), blobUserColor);
+
+        }
+
+        public Texture2D SpriteDirection()
+        {
+            mouseState1 = Mouse.GetState();
+            if (isJumping)
+            {
+                return Globals._dotJumpTexture;
+            }
+            else if (IsOnWalls == false)
+            {
+                if (mouseState1.LeftButton == ButtonState.Pressed)
+                {
+
+                    return upsideDownSprite ? Globals._dotClickTextureUP : Globals._dotClickTexture;
+                }
+                if (mouseState1.LeftButton == ButtonState.Released)
+                {
+                    if (previousPosition.Y <= jumpEndPoint.Y)
+                    {
+                        return Globals._dotTexture;
+                        upsideDownSprite = false;
+                    }
+                    else if (previousPosition.Y > jumpEndPoint.Y)
+                    {
+                        return Globals._dotUpTexture;
+                        upsideDownSprite = true;
+                    }
+                }
+                if (mouseState1.LeftButton != ButtonState.Released && mouseState1.LeftButton != ButtonState.Pressed)
+                {
+                    return Globals._dotTexture;
+                    upsideDownSprite = false;
+                }
+
+
+            }
+            else
+            {
+                if (mouseState1.LeftButton == ButtonState.Pressed)
+                {
+
+                    return IsOnTheLeftSprite ? Globals._dotClickTextureRigth : Globals._dotClickTexturLeft;
+                }
+                if (mouseState1.LeftButton == ButtonState.Released)
+                {
+                    if (previousPosition.X <= jumpEndPoint.X)
+                    {
+                        return Globals._dotRighttTexture;
+                        IsOnTheLeftSprite = false;
+                    }
+                    else if (previousPosition.X > jumpEndPoint.X)
+                    {
+                        return Globals._dotLeftTexture;
+                        IsOnTheLeftSprite = true;
+                    }
+                }
+                if (mouseState1.LeftButton != ButtonState.Released && mouseState1.LeftButton != ButtonState.Pressed)
+                {
+                    return Globals._dotTexture;
+                    upsideDownSprite = false;
+                }
+
+            }
+            return Globals._dotJumpTexture;
         }
 
         public void DefineJumpDirection()
