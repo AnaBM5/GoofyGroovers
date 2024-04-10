@@ -101,35 +101,31 @@ namespace Goofy_Groovers.Managers
 
         public void Update(GameTime elapsedSeconds, GoofyGroovers game)
         {
-            Debug.WriteLine("Countdown Started: " + countdownStarted);
             elapsedTimeSeconds = elapsedSeconds.ElapsedGameTime.TotalSeconds;
 
-            KeyboardState state = Keyboard.GetState();
+            _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
-            // If they hit esc, exit
-            if (state.IsKeyDown(Keys.S) || (raceStartTime - DateTime.Now).TotalSeconds <= 3)
+            lock (Globals._gameManager.toKeepEntitiesIntact)
             {
-                countdownStarted = true;
+                foreach (var blob in blobEntities)
+                {
+                    blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
+                    blob.Update(elapsedSeconds);
+                }
             }
-            
-            
+
             if (!raceStarted )
             {
-                _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
+                if ((raceStartTime - DateTime.Now).TotalSeconds <= 3)
                 {
-                    lock (Globals._gameManager.toKeepEntitiesIntact)
-                        foreach (var blob in blobEntities)
-                        {
-                            blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
-                            blob.Update(elapsedSeconds);
-                        }
+                    countdownStarted = true;
                 }
 
                 if (countdownStarted)
                 {
                     if (countdownTimer < 0.8f)
                     {
-                        countdownTimer += (float)elapsedTimeSeconds;
+                        countdownTimer += (float) elapsedTimeSeconds;
                         //modify transparency and position
 
                         if (countdownTimer > 0.8f)
@@ -167,15 +163,6 @@ namespace Goofy_Groovers.Managers
                         VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                     }
                 }
-
-                _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
-
-                lock (Globals._gameManager.toKeepEntitiesIntact)
-                    foreach (var blob in blobEntities)
-                    {
-                        blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
-                        blob.Update(elapsedSeconds);
-                    }
 
                 if (!playerBlob.finishedRace && playerBlob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
                 {

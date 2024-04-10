@@ -89,6 +89,9 @@ public class Server
     {
         Response jsonInput = JsonConvert.DeserializeObject<Response>(jsonMessage);
         Response jsonResponse = new Response();
+
+        Debug.WriteLine(jsonMessage + "\n");
+
         if (jsonMessage != null)
         {
             switch (jsonInput.messageType)
@@ -103,13 +106,12 @@ public class Server
 
                         if (!lobbyList.ElementAt(0).playerList.Exists(player => player.blobUserId == jsonInput.player.blobUserId))
                         {
-
                             lobbyList.ElementAt(0).playerList.Add(jsonInput.player);
-                        }    
-
+                        }
 
                         if (lobbyList.ElementAt(0).raceStartTime != DateTime.MinValue)
                         {
+                            Debug.WriteLine("Why?" + lobbyList.ElementAt(0).raceStartTime);
                             var responseMessage = new
                             {
                                 messageType = "RaceStart",
@@ -132,9 +134,7 @@ public class Server
                                 {
                                     jsonResponse.playerList.Add(existingPlayerData);
                                 }
-                                Debug.WriteLine(existingPlayerData.blobUserName);
                             }
-                                Debug.WriteLine("\n");
 
                             return JsonConvert.SerializeObject(jsonResponse);
                         }
@@ -200,27 +200,20 @@ public class Server
                             {
                                 if (jsonInput.player.finishTime == -1)
                                 {
-
-                                lock (toKeepEntitiesIntact)
-                                {
-                                    foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
+                                    lock (toKeepEntitiesIntact)
                                     {
-                                        if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
+                                        foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
                                         {
-                                            TimeSpan timeDifference = DateTime.Now - lobbyList.ElementAt(0).raceStartTime;
-                                            existingPlayerData.finishTime = (int)timeDifference.TotalSeconds;
-                                            Debug.WriteLine(existingPlayerData.finishTime);
-                                        }
+                                            if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
+                                            {
+                                                TimeSpan timeDifference = DateTime.Now - lobbyList.ElementAt(0).raceStartTime;
+                                                existingPlayerData.finishTime = (int) timeDifference.TotalSeconds;
+                                                Debug.WriteLine(existingPlayerData.finishTime);
+                                            }
 
                                             jsonResponse.playerList.Add(existingPlayerData);
                                         }
-                                }
-                                    Debug.WriteLine(JsonConvert.SerializeObject(jsonResponse));
-                                }
-                                else
-                                {
-                                    lock (toKeepEntitiesIntact)
-                                        lobbyList.ElementAt(0).playerList.Add(jsonInput.player);
+                                    }
                                 }
                             }
                         }
@@ -234,15 +227,12 @@ public class Server
 
                 default:
                     {
-
                         jsonResponse = new Response("Error", new List<BlobEntity>());
                         jsonResponse.message = "Unsupported type of update";
                     }
                     break;
             }
         }
-
-        Debug.WriteLine(jsonResponse.messageType);
 
         // Response type:
         // Error, Confirmation, Update, Direction ?

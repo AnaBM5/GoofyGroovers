@@ -51,6 +51,7 @@ namespace Goofy_Groovers
         private float rect1QY;
         private float rect2QX;
         private float rect2QY;
+        private readonly GameManager gm = Globals._gameManager;
 
         //Interfaces
         private Texture2D menuInterface;
@@ -266,10 +267,8 @@ namespace Goofy_Groovers
 
                 case GameState.LobbyScreen:
                     {
-                        Globals._gameManager.Update(gameTime, this);
-
-                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.Milliseconds;
-                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 16)
+                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.TotalSeconds;
+                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 0.16)
                         {
                             Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
                             _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
@@ -279,7 +278,7 @@ namespace Goofy_Groovers
                         {
                             if (Globals._gameManager.playerBlob.isStartingTheRace)
                             {
-                                Globals._gameManager.raceStartTime = DateTime.Now.AddSeconds(7);
+                                Globals._gameManager.raceStartTime = DateTime.Now.AddSeconds(5);
                                 gameState = GameState.RaceScreen;
                             }
                         }
@@ -296,8 +295,8 @@ namespace Goofy_Groovers
                     {
                         Globals._gameManager.Update(gameTime, this);
 
-                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.Milliseconds;
-                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 16)
+                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.TotalSeconds;
+                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 0.16)
                         {
                             Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
                             _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));

@@ -39,10 +39,9 @@ namespace Goofy_Groovers.Managers
                 {
                     case GameState.RaceScreen:
                         {
-                            Debug.WriteLine("Blob starting race: "+Globals._gameManager.playerBlob.isStartingTheRace);
-                            
                             if (Globals._gameManager.playerBlob.isStartingTheRace && !Globals._gameManager.raceStarted)
                             {
+                                Debug.WriteLine("RaceStarted" + Globals._gameManager.raceStarted);
                                 MakeStartingTransmission();
                             }
                             else
@@ -72,9 +71,7 @@ namespace Goofy_Groovers.Managers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("There was a problem connecting to server");
-                Debug.WriteLine(ex.Source.ToString());
-                Debug.WriteLine(ex.Message.ToString());
+                Debug.WriteLine(ex.Data.ToString());
             }
             finally
             {
@@ -146,6 +143,7 @@ namespace Goofy_Groovers.Managers
         {
             reader = new StreamReader(stream);
             string jsonResponse = await reader.ReadLineAsync();
+            Debug.WriteLine(jsonResponse + "\n");
 
             if (jsonResponse != null)
             {
@@ -267,6 +265,7 @@ namespace Goofy_Groovers.Managers
 
                         case "FinishLineUpdate":
                             {
+                                Debug.WriteLine(jsonResponse);
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
                                 {
                                     lock (Globals._gameManager.toKeepEntitiesIntact)
