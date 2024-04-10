@@ -73,8 +73,6 @@
 /processorParam:TextureFormat=Color
 /build:dotSprite.png
 
-<<<<<<< Updated upstream
-=======
 #begin dotSpriteJump.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -130,7 +128,6 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/CountdownFont.spritefont
 
->>>>>>> Stashed changes
 #begin Fonts/Minecraft.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor

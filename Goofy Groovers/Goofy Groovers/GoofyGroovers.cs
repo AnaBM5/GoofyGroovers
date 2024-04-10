@@ -109,10 +109,7 @@ namespace Goofy_Groovers
             Globals._gameManager.squareTexture = squareSprite;
             Globals._gameManager.getLevelManager().setGoalSprite(squareSprite);
             Globals._dotTexture = Content.Load<Texture2D>("dotSprite");
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
             Globals._gameManager.playerBlob.SetTexture(Globals._dotTexture);
 
             Globals._dotJumpTexture = Content.Load<Texture2D>("dotSpriteJump");

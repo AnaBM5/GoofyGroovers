@@ -43,6 +43,7 @@ namespace Goofy_Groovers.Entity
         public float velocity;
         private float elapsedSecondsSinceJumpStart;
         public bool isStartingTheRace;
+        public int blobRadius;
 
         // private float elapsedSecondsSinceLastSprite;
 
@@ -59,10 +60,7 @@ namespace Goofy_Groovers.Entity
             jumpDirection = new bool[2];
             Random rnd = new Random();
             blobUserId = rnd.Next(1000);
-<<<<<<< Updated upstream
-=======
             blobRadius = 25;
->>>>>>> Stashed changes
         }
 
         public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
@@ -76,11 +74,7 @@ namespace Goofy_Groovers.Entity
 
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
-<<<<<<< Updated upstream
-=======
-
             blobRadius = 25;
->>>>>>> Stashed changes
         }
 
         public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
@@ -92,11 +86,7 @@ namespace Goofy_Groovers.Entity
             blobUserId = rnd.Next(1000);
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
-<<<<<<< Updated upstream
-=======
-
             blobRadius = 25;
->>>>>>> Stashed changes
         }
 
         public BlobEntity(string userName, int userId, Color userColor, Vector2 worldPosition, bool isOwnedByUser)
@@ -110,11 +100,8 @@ namespace Goofy_Groovers.Entity
 
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
-<<<<<<< Updated upstream
-=======
 
             blobRadius = 25;
->>>>>>> Stashed changes
         }
 
         public void Update(GameTime elapsedSeconds)
@@ -154,16 +141,11 @@ namespace Goofy_Groovers.Entity
             {
                 Globals._spriteBatch.DrawString(Globals._gameFont, blobUserName, cameraPosition + new Vector2(-blobUserName.Length * 4, 35), Color.White);
             }
-<<<<<<< Updated upstream
-            Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)cameraPosition.X - 12, (int)cameraPosition.Y - 12, 25, 25), blobUserColor);
-=======
-
             Texture2D textureToDraw = SpriteDirection();
 
             Globals._spriteBatch.Draw(textureToDraw, new Rectangle((int)cameraPosition.X - blobRadius, (int)cameraPosition.Y - blobRadius, 50, 50), blobUserColor);
 
         }
-
 
         public Texture2D SpriteDirection()
         {
@@ -228,7 +210,6 @@ namespace Goofy_Groovers.Entity
 
             }
             return Globals._dotJumpTexture;
->>>>>>> Stashed changes
         }
 
         public void DefineJumpDirection()
