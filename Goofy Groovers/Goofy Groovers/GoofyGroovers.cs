@@ -446,6 +446,12 @@ namespace Goofy_Groovers
                             + "\n  to start the race.", newPosition, Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
                     }
 
+                    for (int iterator = 0; iterator < Globals._gameManager.blobEntities.Count; iterator++)
+                    {
+                        Globals._spriteBatch.DrawString(Globals._gameFont, Globals._gameManager.blobEntities.ElementAt(iterator).blobUserName,
+                            new Vector2(1390 * scaleX, (340 + iterator * 90) * scaleY), Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+                    }
+
                     break;
 
                 case GameState.RaceScreen:

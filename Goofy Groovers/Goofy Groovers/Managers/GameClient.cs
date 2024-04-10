@@ -21,6 +21,7 @@ namespace Goofy_Groovers.Managers
         private static StreamReader reader;
         private static StreamWriter writer;
         private static int iterator;
+        private static bool objectFound;
 
         private float timer = 0;
 
@@ -158,9 +159,39 @@ namespace Goofy_Groovers.Managers
                                 try
                                 {
                                     Globals._gameManager.raceStarter = jsonData.raceStarter;
+
                                     if (Globals._gameManager.playerBlob.blobUserId == jsonData.raceStarterId)
                                     {
                                         Globals._gameManager.playerBlob.isStartingTheRace = true;
+                                    }
+
+                                    for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
+                                    {
+                                        lock (Globals._gameManager.toKeepEntitiesIntact)
+                                        {
+                                            BlobEntity localPlayer = blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
+                                            if (localPlayer == null)
+                                            {
+                                                bufferEntity = new BlobEntity();
+
+                                                bufferEntity.SetUserId(jsonData.playerList[iterator].blobUserId);
+                                                bufferEntity.SetUserName(jsonData.playerList[iterator].blobUserName);
+                                                bufferEntity.SetTexture(Globals._dotTexture);
+                                                bufferEntity.SetUserColor(jsonData.playerList[iterator].blobUserColor);
+                                                bufferEntity.SetSecondsSinceJumpStarted(jsonData.playerList[iterator].elapsedSecondsSinceJumpStart);
+
+                                                blobs.Add(bufferEntity);
+                                            }
+
+                                            if (localPlayer != null)
+                                            {
+                                                Debug.WriteLine("localPlayer: " + localPlayer.blobUserId + "/" + localPlayer.blobUserName);
+                                            }
+                                            else
+                                            {
+                                                Debug.WriteLine("Nothing");
+                                            }
+                                        }
                                     }
                                 }
                                 catch (Exception)
@@ -184,29 +215,48 @@ namespace Goofy_Groovers.Managers
                             {
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
                                 {
-                                    bufferEntity = new BlobEntity(
-                                            jsonData.playerList[iterator].blobUserName, jsonData.playerList[iterator].blobUserId, jsonData.playerList[iterator].blobUserColor, jsonData.playerList[iterator].worldPosition, false);
-                                    bufferEntity.SetTexture(Globals._dotTexture);
-                                    bufferEntity.SetUserColor(jsonData.playerList[iterator].blobUserColor);
-                                    bufferEntity.SetUserName(jsonData.playerList[iterator].blobUserName);
-
-                                    BlobEntity localPlayer = blobs.Find(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
                                     lock (Globals._gameManager.toKeepEntitiesIntact)
                                     {
-                                        if (localPlayer != null)
+                                        objectFound = false;
+                                        for (iterator = 0; iterator < blobs.Count; iterator++)
                                         {
-                                            if (!localPlayer.isJumping)
+                                            // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
+                                            if (blobs.ElementAt(iterator).blobUserId == jsonData.playerList[iterator].blobUserId)
                                             {
-                                                if (jsonData.playerList[iterator].isJumping)
+                                                objectFound = true;
+
+                                                if (!blobs.ElementAt(iterator).isJumping)
                                                 {
-                                                    bufferEntity.SetSecondsSinceJumpStarted(0);
+                                                    if (jsonData.playerList[iterator].isJumping)
+                                                    {
+                                                        blobs.ElementAt(iterator).SetJumpStartPoint(jsonData.playerList[iterator].jumpStartPoint);
+                                                        blobs.ElementAt(iterator).SetJumpEndPoint(jsonData.playerList[iterator].jumpEndPoint);
+                                                        blobs.ElementAt(iterator).SetThetha(jsonData.playerList[iterator].jumpTheta);
+                                                        blobs.ElementAt(iterator).SetVelocity(jsonData.playerList[iterator].velocity);
+                                                        blobs.ElementAt(iterator).SetSecondsSinceJumpStarted(0);
+
+                                                        blobs.ElementAt(iterator).SetJumpingState(jsonData.playerList[iterator].isJumping);
+                                                    }
                                                 }
-                                                blobs.Remove(localPlayer);
-                                                blobs.Add(bufferEntity);
+                                                iterator = blobs.Count;
+                                                break;
                                             }
                                         }
-                                        else
+
+                                        if (!objectFound)
                                         {
+                                            bufferEntity = new BlobEntity();
+                                            bufferEntity.SetUserId(jsonData.playerList[iterator].blobUserId);
+                                            bufferEntity.SetUserName(jsonData.playerList[iterator].blobUserName);
+                                            bufferEntity.SetTexture(Globals._dotTexture);
+                                            bufferEntity.SetUserColor(jsonData.playerList[iterator].blobUserColor);
+                                            bufferEntity.SetSecondsSinceJumpStarted(jsonData.playerList[iterator].elapsedSecondsSinceJumpStart);
+
+                                            bufferEntity.SetJumpStartPoint(jsonData.playerList[iterator].jumpStartPoint);
+                                            bufferEntity.SetJumpEndPoint(jsonData.playerList[iterator].jumpEndPoint);
+                                            bufferEntity.SetJumpingState(jsonData.playerList[iterator].isJumping);
+                                            bufferEntity.SetThetha(jsonData.playerList[iterator].jumpTheta);
+                                            bufferEntity.SetVelocity(jsonData.playerList[iterator].velocity);
                                             blobs.Add(bufferEntity);
                                         }
                                     }
@@ -218,13 +268,22 @@ namespace Goofy_Groovers.Managers
                             {
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
                                 {
-                                    BlobEntity localPlayer = blobs.Find(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
                                     lock (Globals._gameManager.toKeepEntitiesIntact)
                                     {
-                                        if (localPlayer != null)
+                                        objectFound = false;
+                                        for (iterator = 0; iterator < blobs.Count; iterator++)
                                         {
-                                            localPlayer.finishTime = jsonData.playerList.ElementAt(iterator).finishTime;
-                                            Debug.WriteLine(localPlayer.finishTime);
+                                            // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
+                                            if (blobs.ElementAt(iterator).blobUserId == jsonData.playerList[iterator].blobUserId)
+                                            {
+                                                objectFound = true;
+
+                                                blobs.ElementAt(iterator).finishTime = jsonData.playerList.ElementAt(iterator).finishTime;
+                                                Debug.WriteLine(blobs.ElementAt(iterator).finishTime);
+
+                                                iterator = blobs.Count;
+                                                break;
+                                            }
                                         }
                                     }
                                 }

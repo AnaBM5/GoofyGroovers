@@ -97,10 +97,16 @@ public class Server
                     {
                         if (lobbyList.ElementAt(0).playerList.Count == 0)
                         {
-                            lobbyList.ElementAt(0).playerList.Add(jsonInput.player);
                             lobbyList.ElementAt(0).controllingPlayerId = jsonInput.player.blobUserId;
                             lobbyList.ElementAt(0).controllingPlayerName = jsonInput.player.blobUserName;
                         }
+
+                        if (!lobbyList.ElementAt(0).playerList.Exists(player => player.blobUserId == jsonInput.player.blobUserId))
+                        {
+
+                            lobbyList.ElementAt(0).playerList.Add(jsonInput.player);
+                        }    
+
 
                         if (lobbyList.ElementAt(0).raceStartTime != DateTime.MinValue)
                         {
@@ -113,13 +119,24 @@ public class Server
                         }
                         else
                         {
-                            var responseMessage = new
+                            jsonResponse = new Response("SetRaceStarter", new List<BlobEntity>())
                             {
                                 messageType = "SetRaceStarter",
                                 raceStarterId = lobbyList.ElementAt(0).controllingPlayerId,
                                 raceStarter = lobbyList.ElementAt(0).controllingPlayerName,
                             };
-                            return JsonConvert.SerializeObject(responseMessage);
+
+                            foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
+                            {
+                                if (existingPlayerData.blobUserId != jsonInput.player.blobUserId)
+                                {
+                                    jsonResponse.playerList.Add(existingPlayerData);
+                                }
+                                Debug.WriteLine(existingPlayerData.blobUserName);
+                            }
+                                Debug.WriteLine("\n");
+
+                            return JsonConvert.SerializeObject(jsonResponse);
                         }
                     }
 

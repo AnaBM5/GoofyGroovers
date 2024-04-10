@@ -41,7 +41,7 @@ namespace Goofy_Groovers.Entity
         private float timeSinceLastUpdate = 0;
 
         public float velocity;
-        private float elapsedSecondsSinceJumpStart;
+        public float elapsedSecondsSinceJumpStart;
         public bool isStartingTheRace;
 
         // private float elapsedSecondsSinceLastSprite;
@@ -246,6 +246,11 @@ namespace Goofy_Groovers.Entity
         public void SetUserColor(Color color)
         {
             this.blobUserColor = color;
+        }
+
+        internal void SetUserId(int blobUserId)
+        {
+            this.blobUserId = blobUserId;
         }
     }
 
