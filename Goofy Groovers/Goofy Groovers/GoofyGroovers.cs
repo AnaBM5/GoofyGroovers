@@ -109,8 +109,37 @@ namespace Goofy_Groovers
             Globals._gameManager.squareTexture = squareSprite;
             Globals._gameManager.getLevelManager().setGoalSprite(squareSprite);
             Globals._dotTexture = Content.Load<Texture2D>("dotSprite");
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
             Globals._gameManager.playerBlob.SetTexture(Globals._dotTexture);
+
+            Globals._dotJumpTexture = Content.Load<Texture2D>("dotSpriteJump");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotJumpTexture);
+
+            Globals._dotClickTexture = Content.Load<Texture2D>("dotClickSprite");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTexture);
+            Globals._dotClickTextureUP = Content.Load<Texture2D>("dotClickSpriteUP");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTextureUP);
+            Globals._dotClickTextureRigth = Content.Load<Texture2D>("dotClickSpriteRigth");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTextureRigth);
+            Globals._dotClickTexturLeft = Content.Load<Texture2D>("dotClickSpriteLeft");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTexturLeft);
+
+
+            Globals._dotLeftTexture = Content.Load<Texture2D>("dotSpriteLeft");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotLeftTexture);
+            Globals._dotRighttTexture = Content.Load<Texture2D>("dotSpriteRight");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotRighttTexture);
+            Globals._dotUpTexture = Content.Load<Texture2D>("dotSpriteUp");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotUpTexture);
+
+
+
+
+            Globals._gameManager.countdownFont = Content.Load<SpriteFont>("Fonts/CountdownFont");
+          
 
             Texture2D platformSprite = Content.Load<Texture2D>("Sprites/foregroundSprite");
             Globals._gameManager.getLevelManager().setPlatformSprite(platformSprite);
