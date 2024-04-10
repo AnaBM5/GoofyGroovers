@@ -109,17 +109,15 @@ namespace Goofy_Groovers.Entity
 
             if (isJumping)
             {
-                    worldPosition = jumpStartPoint + new Vector2(
-                        -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
-                        -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
+                worldPosition = jumpStartPoint + new Vector2(
+                    -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
+                    -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-                    if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0] || shortMovement)
-                    {
-                        worldPosition = jumpEndPoint;
-                        isJumping = false;
-                    }
-                
-                
+                if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0] || shortMovement)
+                {
+                    worldPosition = jumpEndPoint;
+                    isJumping = false;
+                }
             }
         }
 
@@ -263,6 +261,7 @@ namespace Goofy_Groovers.Entity
         public string message;
 
         public List<BlobEntity> playerList;
+
         public Response()
         { }
 

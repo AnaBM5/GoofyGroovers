@@ -145,7 +145,7 @@ namespace Goofy_Groovers.Managers
             {
                 _mouseManager.Update(game);
 
-                if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
+                if (!playerBlob.isJumping && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
                 {
                     if (_mouseManager.IsJumpCancelled())
                         parabolicMovementVisualisation.Clear();
@@ -263,6 +263,7 @@ namespace Goofy_Groovers.Managers
                     {
                         lastValidPosition = _levelManager.GetWorldPosition(position);
                         playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
+                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0.15;
                     }
                     else
                         break;
@@ -275,7 +276,9 @@ namespace Goofy_Groovers.Managers
             playerBlob.DefineJumpDirection();
             playerBlob.SetSecondsSinceJumpStarted(0);
             playerBlob.SetJumpingState(true);
+
             _mouseManager.EndNewJumpAttempt();
+            Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0.15;
         }
 
         private bool OutsideObstacles(Vector2 position)

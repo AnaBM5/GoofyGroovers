@@ -21,6 +21,7 @@ namespace Goofy_Groovers.Managers
         private static StreamReader reader;
         private static StreamWriter writer;
         private static int iterator;
+        private static int iteratorSecond;
         private static bool objectFound;
 
         private float timer = 0;
@@ -179,6 +180,8 @@ namespace Goofy_Groovers.Managers
                                                 bufferEntity.SetUserColor(jsonData.playerList[iterator].blobUserColor);
                                                 bufferEntity.SetSecondsSinceJumpStarted(jsonData.playerList[iterator].elapsedSecondsSinceJumpStart);
 
+                                                Debug.WriteLine("Added new user");
+
                                                 blobs.Add(bufferEntity);
                                             }
 
@@ -217,27 +220,32 @@ namespace Goofy_Groovers.Managers
                                     lock (Globals._gameManager.toKeepEntitiesIntact)
                                     {
                                         objectFound = false;
-                                        for (iterator = 0; iterator < blobs.Count; iterator++)
+                                        for (iteratorSecond = 0; iteratorSecond < blobs.Count; iteratorSecond++)
                                         {
                                             // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
-                                            if (blobs.ElementAt(iterator).blobUserId == jsonData.playerList[iterator].blobUserId)
+                                            if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
                                             {
+                                                Debug.WriteLine(blobs.ElementAt(iteratorSecond).blobUserName + " is found");
+                                                Debug.WriteLine("It is now... Jumping = " + jsonData.playerList.ElementAt(iterator).isJumping);
+
                                                 objectFound = true;
 
-                                                if (!blobs.ElementAt(iterator).isJumping)
+                                                if (!blobs.ElementAt(iteratorSecond).isJumping)
                                                 {
-                                                    if (jsonData.playerList[iterator].isJumping)
+                                                    if (jsonData.playerList.ElementAt(iterator).isJumping)
                                                     {
-                                                        blobs.ElementAt(iterator).SetJumpStartPoint(jsonData.playerList[iterator].jumpStartPoint);
-                                                        blobs.ElementAt(iterator).SetJumpEndPoint(jsonData.playerList[iterator].jumpEndPoint);
-                                                        blobs.ElementAt(iterator).SetThetha(jsonData.playerList[iterator].jumpTheta);
-                                                        blobs.ElementAt(iterator).SetVelocity(jsonData.playerList[iterator].velocity);
-                                                        blobs.ElementAt(iterator).SetSecondsSinceJumpStarted(0);
+                                                        blobs.ElementAt(iteratorSecond).SetJumpStartPoint(jsonData.playerList[iterator].jumpStartPoint);
+                                                        blobs.ElementAt(iteratorSecond).SetJumpEndPoint(jsonData.playerList[iterator].jumpEndPoint);
+                                                        blobs.ElementAt(iteratorSecond).SetThetha(jsonData.playerList[iterator].jumpTheta);
+                                                        blobs.ElementAt(iteratorSecond).SetVelocity(jsonData.playerList[iterator].velocity);
+                                                        blobs.ElementAt(iteratorSecond).SetSecondsSinceJumpStarted(0);
 
-                                                        blobs.ElementAt(iterator).SetJumpingState(jsonData.playerList[iterator].isJumping);
+                                                        blobs.ElementAt(iteratorSecond).SetJumpingState(jsonData.playerList[iterator].isJumping);
+                                                        Debug.WriteLine(blobs.ElementAt(iterator).ToString());
+                                                        Debug.WriteLine(blobs.ElementAt(iterator).blobUserName + " is supposed to Jump.");
                                                     }
                                                 }
-                                                iterator = blobs.Count;
+                                                iteratorSecond = blobs.Count;
                                                 break;
                                             }
                                         }
@@ -257,6 +265,7 @@ namespace Goofy_Groovers.Managers
                                             bufferEntity.SetThetha(jsonData.playerList[iterator].jumpTheta);
                                             bufferEntity.SetVelocity(jsonData.playerList[iterator].velocity);
                                             blobs.Add(bufferEntity);
+                                            Debug.WriteLine("Added new user");
                                         }
                                     }
                                 }

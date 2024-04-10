@@ -268,7 +268,7 @@ namespace Goofy_Groovers
                 case GameState.LobbyScreen:
                     {
                         Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.TotalSeconds;
-                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 0.16)
+                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer >= 0.15)
                         {
                             Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
                             _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
@@ -296,7 +296,7 @@ namespace Goofy_Groovers
                         Globals._gameManager.Update(gameTime, this);
 
                         Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.TotalSeconds;
-                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 0.16)
+                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer >= 0.15)
                         {
                             Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
                             _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
