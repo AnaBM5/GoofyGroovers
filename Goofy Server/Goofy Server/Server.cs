@@ -47,13 +47,14 @@ public class Server
     {
     }
 
-    private string GetLocalIP()
+    public string GetLocalIP()
     {
         Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
         socket.Connect("8.8.8.8", 65530);
         IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
         try
         {
+            Debug.WriteLine(endPoint.Address.ToString());
             return endPoint.Address.ToString();
         }
         catch

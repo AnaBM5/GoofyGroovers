@@ -35,6 +35,7 @@ namespace Goofy_Server
             Server server = new Server();
             Server.lobbyList.Add(new Lobby("Default"));
             Server.listener.Start(); // start the listener
+            server.GetLocalIP();
 
             // Create a Stopwatch instance
             while (true)

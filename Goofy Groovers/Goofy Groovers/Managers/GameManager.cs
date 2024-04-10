@@ -28,16 +28,18 @@ namespace Goofy_Groovers.Managers
 
         //Variables for controlling the timing of the start and end of the race
         private bool countdownStarted;
+
         private float countdownTimer;
         private byte countdownMessages;
         private bool raceStarted;
         private bool showEndScreen;
-      
+
         private float endScreenTimer; //Time that the game waits after the player finished the race to show the leaderboard
         private float overlayTransparency;
 
         //Variables for position control and collision detection
         private Vector2 position;
+
         private Vector2 lastValidPosition;
         private List<Vector2> parabolicMovementVisualisation;
         private double intersectionTime;
@@ -49,12 +51,13 @@ namespace Goofy_Groovers.Managers
 
         //Sprite textures
         public Texture2D dotTexture;
+
         public Texture2D squareTexture;
         public Texture2D overlayScreen;
-        public  SpriteFont countdownFont;
+        public SpriteFont countdownFont;
 
         private double elapsedSecondsSinceVisualisationShift;
-        private double elapsedSecondsSinceTransmissionToServer;
+        public double elapsedSecondsSinceTransmissionToServer = 0;
         public bool raceHasStarted = false;
         public string raceStartMessage;
 
@@ -64,7 +67,6 @@ namespace Goofy_Groovers.Managers
         {
             _mouseManager = new MouseManager();
             _levelManager = new TileMapManager();
-
 
             blobEntities = new List<BlobEntity>
             {
@@ -77,10 +79,9 @@ namespace Goofy_Groovers.Managers
 
             lastValidPosition = playerBlob.GetWorldPosition();
 
-            
             parabolicVisualisationTimeDelta = 0.2;
             parabolicVisualisationTimeMax = 20;
-           
+
             //increased for full screen
             /*
             parabolicVisualisationTimeDelta = 0.27;
@@ -147,16 +148,12 @@ namespace Goofy_Groovers.Managers
             }
             else
             {
-
-                elapsedSecondsSinceVisualisationShift += elapsedTimeSeconds;
-                elapsedSecondsSinceTransmissionToServer += elapsedTimeSeconds;
                 _mouseManager.Update(game);
 
                 if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
                 {
                     if (_mouseManager.IsJumpCancelled())
                         parabolicMovementVisualisation.Clear();
-
                     else if (_mouseManager.IsNewJumpInitiated())
                     {
                         VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
@@ -172,18 +169,14 @@ namespace Goofy_Groovers.Managers
                     }
                 }
 
-
-
                 _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
-                {
-                    lock (Globals._gameManager.toKeepEntitiesIntact)
-                        foreach (var blob in blobEntities)
-                        {
-                            blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
-                            blob.Update(elapsedSeconds);
-                        }
-                }
+                lock (Globals._gameManager.toKeepEntitiesIntact)
+                    foreach (var blob in blobEntities)
+                    {
+                        blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
+                        blob.Update(elapsedSeconds);
+                    }
 
                 if (!playerBlob.finishedRace && playerBlob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
                 {
@@ -191,7 +184,6 @@ namespace Goofy_Groovers.Managers
                     //change colour to know when the condition its true
                     playerBlob.blobUserColor = Color.White;
                     //TODO: send message to get leaderboard position
-
                 }
 
                 //After the player crosses the finish line, waits for a determined amount of time before showing the end screen
@@ -201,13 +193,12 @@ namespace Goofy_Groovers.Managers
                     overlayTransparency += (float)elapsedTimeSeconds * 1.2f;
 
                     if (endScreenTimer < 0)
-                      gameState = GameState.LeaderBoardScreen;
-                        // showEndScreen = true;
+                        gameState = GameState.LeaderBoardScreen;
+                    // showEndScreen = true;
 
                     if (overlayTransparency > 0.8f)
                         overlayTransparency = 0.8f;
                 }
-
 
                 //Adjust player pos if out of bounds?
                 //I dont like how its working tbh, still gets stuck sometimes
@@ -215,12 +206,6 @@ namespace Goofy_Groovers.Managers
                 {
                     playerBlob.worldPosition = lastValidPosition;
                     playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
-                }
-
-                if (elapsedSecondsSinceTransmissionToServer > 0.16)
-                {
-                    elapsedSecondsSinceTransmissionToServer = 0;
-                    _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
                 }
             }
         }
@@ -321,7 +306,6 @@ namespace Goofy_Groovers.Managers
 
         private void StartRace()
         {
-
         }
 
         public void Draw(GameTime gameTime)
@@ -342,18 +326,17 @@ namespace Goofy_Groovers.Managers
                 }
             }
 
-            if(countdownStarted)
+            if (countdownStarted)
             {
                 if (countdownMessages > 0)
                     Globals._spriteBatch.DrawString(countdownFont, countdownMessages.ToString(), new Vector2(Globals.windowWidth / 2 - 50, Globals.windowHeight / 2 - 50), Color.Yellow);
-               
                 else
                     Globals._spriteBatch.DrawString(countdownFont, "GO!!!", new Vector2(Globals.windowWidth / 2 - 170, Globals.windowHeight / 2 - 50), Color.Yellow);
             }
 
             if (gameState.Equals(GameState.LeaderBoardScreen))
             {
-              Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * overlayTransparency);
+                Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * overlayTransparency);
             }
         }
 

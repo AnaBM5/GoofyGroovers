@@ -5,7 +5,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Goofy_Groovers
 {
@@ -264,6 +266,15 @@ namespace Goofy_Groovers
 
                 case GameState.LobbyScreen:
                     {
+                        Globals._gameManager.Update(gameTime, this);
+
+                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.Milliseconds;
+                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 16)
+                        {
+                            Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
+                            _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+                        }
+
                         if (keyboardState.IsKeyDown(Keys.Enter))
                         {
                             if (Globals._gameManager.playerBlob.isStartingTheRace)
@@ -278,14 +289,19 @@ namespace Goofy_Groovers
                             previousGameState = GameState.LobbyScreen;                  //We add the previous state
                             gameState = GameState.QuitScreen;
                         }
-
-                        Globals._gameManager.Update(gameTime, this);
                     }
                     break;
 
                 case GameState.RaceScreen:
                     {
                         Globals._gameManager.Update(gameTime, this);
+
+                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.Milliseconds;
+                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 16)
+                        {
+                            Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
+                            _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+                        }
 
                         if (keyboardState.IsKeyDown(Keys.Escape))
                         {
@@ -340,6 +356,14 @@ namespace Goofy_Groovers
                 case GameState.LeaderBoardScreen:
 
                     Globals._gameManager.Update(gameTime, this);
+
+                    Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.Milliseconds;
+                    if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 16)
+                    {
+                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
+                        _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+                    }
+
                     if (leaderBoardPosition > 0)
                     {
                         leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds * 2;
@@ -356,8 +380,8 @@ namespace Goofy_Groovers
 
                     break;
             }
-
             base.Update(gameTime);
+
         }
 
         protected override void Draw(GameTime gameTime)
