@@ -47,7 +47,7 @@ namespace Goofy_Groovers.Managers
 
             tileSize = 64;
 
-            mapOffsetX = 100;
+            mapOffsetX = 1000;
             mapOffsetY = 0;
 
             levelOutline = new List<Vector2>();

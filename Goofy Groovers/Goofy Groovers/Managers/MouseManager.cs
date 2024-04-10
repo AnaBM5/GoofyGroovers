@@ -48,8 +48,8 @@ public class MouseManager
         mouseState = Mouse.GetState();
 
         if (newJumpCancelled)
-            if (mouseState.LeftButton == ButtonState.Released) //if the jump has just been cancelled, waits for the left click to be released before starting a new jump
-                newJumpCancelled = false;
+            if (mouseState.LeftButton == ButtonState.Released) //if the jump has just been cancelled, waits for the left click to be released 
+                newJumpCancelled = false;                       //before starting a new jump
             else
                 newJumpCancelled = true;
         else
@@ -75,7 +75,7 @@ public class MouseManager
         // TODO: Show visual cues on p-p-p-power-meter!
     }
 
-    public void CheckMouseReleaseLeftButton(/* here we'll put a reference to the blob*/)
+    public void CheckMouseReleaseLeftButton()
     {
         if (mouseState.RightButton == ButtonState.Pressed) //right click to cancel jump
         {
@@ -150,10 +150,7 @@ public class MouseManager
         float maxSpeed = 110;
 
         movementVelocity = 20;
-        /*
-                if (currentVectorLength == 0)
-                    movementVelocity = 50;
-                else */
+
         if (currentVectorLength >= maxVectorLength)
             movementVelocity += maxSpeed;
         if (currentVectorLength < maxVectorLength)
