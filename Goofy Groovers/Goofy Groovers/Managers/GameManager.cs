@@ -65,14 +65,15 @@ namespace Goofy_Groovers.Managers
 
             lastValidPosition = playerBlob.GetWorldPosition();
 
-            /*
+            
             parabolicVisualisationTimeDelta = 0.2;
             parabolicVisualisationTimeMax = 20;
-            */
+           
             //increased for full screen
+            /*
             parabolicVisualisationTimeDelta = 0.27;
             parabolicVisualisationTimeMax = 40;
-
+            */
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
 
             map = _levelManager.getLevelOutlinePixelCoordinates();

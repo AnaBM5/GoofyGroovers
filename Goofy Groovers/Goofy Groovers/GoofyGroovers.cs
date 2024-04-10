@@ -238,10 +238,12 @@ namespace Goofy_Groovers
 
                             isKeyPressed = true;
                             Globals._gameManager.playerBlob.SetUserName(initials);
+                            Globals._gameClient.SetServerName(ipAddress);
+
                             gameState = GameState.LobbyScreen;                                       //We change the game state if all the requirements are met
 
                             //Changes to full screen when the game/lobby starts
-
+                            /*
                             Globals._graphics.IsFullScreen = true;
                             Globals._graphics.PreferredBackBufferWidth = 1920;
                             Globals._graphics.PreferredBackBufferHeight = 1080;
@@ -250,7 +252,7 @@ namespace Goofy_Groovers
                             Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
 
                             Globals._graphics.ApplyChanges();
-
+                            */
                             leaderBoardPosition = Globals.windowWidth;
                         }
                     }

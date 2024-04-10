@@ -13,7 +13,7 @@ namespace Goofy_Groovers.Managers
 {
     public class GameClient
     {
-        private static string serverName = "127.0.0.1";
+        private string serverName = "127.0.0.1";
         private static BlobEntity bufferEntity;
         private static int port = 6066;
         private static TcpClient client;
@@ -247,6 +247,11 @@ namespace Goofy_Groovers.Managers
                     }
                 }
             }
+        }
+
+        public void SetServerName(string serverName)
+        {
+            this.serverName = serverName;
         }
     }
 }
