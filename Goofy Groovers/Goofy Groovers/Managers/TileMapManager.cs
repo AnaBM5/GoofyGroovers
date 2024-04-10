@@ -65,7 +65,6 @@ namespace Goofy_Groovers.Managers
         private void ReadFile()
         {
             String path = Path.Combine(Environment.CurrentDirectory, fileName);
-            Debug.WriteLine("PATH: " + path);
 
             //Search how can we avoid using strings for this, too expensive
             List<String[]> levelMap = new List<String[]>();
@@ -308,8 +307,6 @@ namespace Goofy_Groovers.Managers
                                 break;
                         }
                     }
-                    //else
-                    //Debug.WriteLine("DON'T show tile in position" + xCounter + " , " + yCounter);
                 }
             }
         }

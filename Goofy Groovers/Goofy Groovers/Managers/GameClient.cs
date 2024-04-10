@@ -29,42 +29,35 @@ namespace Goofy_Groovers.Managers
 
         public async void ConnectAndCommunicate(GameState gameState)
         {
-            // Create a Stopwatch instance
-            Stopwatch stopwatch = new Stopwatch();
-
             try
             {
-                stopwatch.Restart();                // Start the stopwatch
                 client = AsyncConnect(client, serverName, port);
-                stopwatch.Stop();                   // Stop the stopwatch
-                Debug.WriteLine($"Connection: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
-
-                stopwatch.Restart();                // Start the stopwatch
                 stream = client.GetStream();
-                stopwatch.Stop();                   // Stop the stopwatch
-                Debug.WriteLine($"Stream access: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
                 switch (gameState)
                 {
                     case GameState.RaceScreen:
                         {
-                            stopwatch.Restart();    // Start the stopwatch
-                            MakeTransmission(client, Globals._gameManager.playerBlob);
-                            stopwatch.Stop();       // Stop the stopwatch
-                            Debug.WriteLine($"Transmission: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
-
-                            stopwatch.Restart();    // Start the stopwatch
+                            if (Globals._gameManager.playerBlob.isStartingTheRace && !Globals._gameManager.raceHasStarted)
+                            {
+                                MakeStartingTransmission();
+                            }
+                            else
+                            {
+                                MakeRaceTransmission(Globals._gameManager.playerBlob);
+                            }
                             await ReceiveTransmission(Globals._gameManager.blobEntities);
-                            stopwatch.Stop();       // Stop the stopwatch
-                            Debug.WriteLine($"Feedback: {stopwatch.Elapsed.TotalMilliseconds} milliseconds\n\n"); // Display the elapsed time
-
                             break;
                         }
                     case GameState.LobbyScreen:
                         {
+                            MakeLobbyTransmission(Globals._gameManager.playerBlob);
+                            await ReceiveTransmission(Globals._gameManager.blobEntities);
                             break;
                         }
                     case GameState.LeaderBoardScreen:
                         {
+                            MakeFinishLineTransmission(Globals._gameManager.playerBlob);
+                            await ReceiveTransmission(Globals._gameManager.blobEntities);
                             break;
                         }
                     default:
@@ -83,60 +76,64 @@ namespace Goofy_Groovers.Managers
             }
         }
 
-        public async void ConnectAndCommunicateContiniously(GoofyGroovers game)
-        {
-            // Create a Stopwatch instance
-            Stopwatch stopwatch = new Stopwatch();
-
-            while (true)
-            {
-                try
-                {
-                    client = new TcpClient();
-                    stopwatch.Restart();
-                    await client.ConnectAsync(serverName, port);
-                    stopwatch.Stop(); // Stop the stopwatch
-                    Debug.WriteLine($"Connection time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
-
-                    stopwatch.Restart();
-                    stream = client.GetStream();
-                    stopwatch.Stop(); // Stop the stopwatch
-                    Debug.WriteLine($"Stream time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
-
-                    stopwatch.Restart();
-                    MakeTransmission(client, Globals._gameManager.playerBlob);
-                    stopwatch.Stop(); // Stop the stopwatch
-                    Debug.WriteLine($"Transmission time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds"); // Display the elapsed time
-
-                    stopwatch.Restart();
-                    await ReceiveTransmission(Globals._gameManager.blobEntities);
-                    stopwatch.Stop(); // Stop the stopwatch
-                    Debug.WriteLine($"Feedback time: {stopwatch.Elapsed.TotalMilliseconds} milliseconds\n\n"); // Display the elapsed time
-
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("There was a problem connecting to server");
-                }
-                finally
-                {
-                    //    client?.Dispose();
-                }
-            }
-        }
-
         public static TcpClient AsyncConnect(TcpClient client, string serverName, int port)
         {
             client = new TcpClient(serverName, port);   //We create the socket
             return client;
         }
 
-        public static void MakeTransmission(TcpClient connectedClient, BlobEntity playerBlob)
+        private void MakeLobbyTransmission(BlobEntity playerBlob)
+        {
+            // Create objects reading and writing to the network stream
+            writer = new StreamWriter(stream);
+            var jsonMessage = new
+            {
+                messageType = "LobbyWait",
+                player = playerBlob,
+            };
+            writer.WriteLine(JsonConvert.SerializeObject(jsonMessage));
+            writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
+        }
+
+        private void MakeStartingTransmission()
+        {
+            // Create objects reading and writing to the network stream
+            writer = new StreamWriter(stream);
+            var jsonMessage = new
+            {
+                messageType = "RaceStart",
+                startTime = (int) Globals._gameManager.raceStartTime,
+            };
+            writer.WriteLine(JsonConvert.SerializeObject(jsonMessage));
+            writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
+        }
+
+        public static void MakeRaceTransmission(BlobEntity playerBlob)
         {
             // Create objects reading and writing to the network stream
             writer = new StreamWriter(stream);
 
-            writer.WriteLine(JsonConvert.SerializeObject(playerBlob));
+            var jsonMessage = new
+            {
+                messageType = "RaceUpdate",
+                player = playerBlob,
+            };
+            writer.WriteLine(JsonConvert.SerializeObject(jsonMessage));
+            writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
+        }
+
+        public static void MakeFinishLineTransmission(BlobEntity playerBlob)
+        {
+            // Create objects reading and writing to the network stream
+            writer = new StreamWriter(stream);
+
+            var jsonMessage = new
+            {
+                messageType = "FinishLineUpdate",
+                player = playerBlob,
+            };
+
+            writer.WriteLine(JsonConvert.SerializeObject(jsonMessage));
             writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
         }
 
@@ -148,14 +145,38 @@ namespace Goofy_Groovers.Managers
             if (jsonResponse != null)
             {
                 Response jsonData = JsonConvert.DeserializeObject<Response>(jsonResponse);
+
                 if (jsonData != null)
                 {
-                    switch (jsonData.responseType)
+                    switch (jsonData.messageType)
                     {
-                        case "AvaialbleLobbys":
+                        case "SetRaceStarter":
                             {
-                                break;
+                                try
+                                {
+                                    Globals._gameManager.raceStarter = jsonData.raceStarter;
+                                    if (Globals._gameManager.playerBlob.blobUserId == jsonData.raceStarterId)
+                                    {
+                                        Globals._gameManager.playerBlob.isStartingTheRace = true;
+                                    }
+                                }
+                                catch (Exception)
+                                { }
                             }
+                            break;
+
+                        case "RaceStart":
+                            {
+                                try
+                                {
+                                    Globals._gameManager.raceStartTime = jsonData.startTime;
+                                    gameState = GameState.RaceScreen;
+                                }
+                                catch (Exception)
+                                { }
+                            }
+                            break;
+
                         case "Update":
                             {
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
@@ -180,14 +201,28 @@ namespace Goofy_Groovers.Managers
                                                 blobs.Remove(localPlayer);
                                                 blobs.Add(bufferEntity);
                                             }
-                                            else
-                                            {
-                                                Debug.WriteLine("Busy...");
-                                            }
                                         }
                                         else
                                         {
-                                            Debug.WriteLine("New user!");
+                                            blobs.Add(bufferEntity);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        case "FinishLine":
+                            {
+                                for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
+                                {
+                                    BlobEntity localPlayer = blobs.Find(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
+                                    lock (Globals._gameManager.toKeepEntitiesIntact)
+                                    {
+                                        if (localPlayer != null)
+                                        {
+                                            localPlayer.finishTime = jsonData.playerList[iterator].finishTime;
+                                        }
+                                        else
+                                        {
                                             blobs.Add(bufferEntity);
                                         }
                                     }

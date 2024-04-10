@@ -1,18 +1,12 @@
-﻿using Goofy_Groovers;
-using Goofy_Groovers.Entity;
-using Goofy_Groovers.Managers;
+﻿using Goofy_Groovers.Entity;
 using Goofy_Groovers.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Threading;
 using System.Threading.Tasks;
 using static Goofy_Groovers.GoofyGroovers;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Goofy_Groovers.Managers
 {
@@ -23,14 +17,13 @@ namespace Goofy_Groovers.Managers
 
         public readonly Object toKeepEntitiesIntact = new Object();
         public List<BlobEntity> blobEntities;
-        private Thread serverTransmitterThread;
 
         private List<Vector2> map;
         private List<Vector2[]> obstacles;
 
         public BlobEntity playerBlob;
+        public string raceStarter;
 
-        private bool showEndScreen;
         private float endScreenTimer; //Time that the game waits after the player finished the race to show the leaderboard
         private float overlayTransparency;
 
@@ -50,15 +43,20 @@ namespace Goofy_Groovers.Managers
 
         private double elapsedSecondsSinceVisualisationShift;
         private double elapsedSecondsSinceTransmissionToServer;
-        private bool hasFinishedTransmission = true;
+        internal bool raceHasStarted;
+        internal string raceStartMessage;
+
+        public double raceStartTime;
 
         public GameManager(GoofyGroovers game)
         {
             _mouseManager = new MouseManager();
             _levelManager = new TileMapManager();
 
-            blobEntities = new List<BlobEntity>();
-            blobEntities.Add(new BlobEntity(new Vector2(192, 192), _levelManager.GetCameraPosition(new Vector2(192, 192)), true));
+            blobEntities = new List<BlobEntity>
+            {
+                new BlobEntity(new Vector2(192, 192), _levelManager.GetCameraPosition(new Vector2(192, 192)), true)
+            };
             playerBlob = blobEntities.ElementAt(0);
 
             playerBlob.SetUserName("Player 1");
@@ -73,7 +71,6 @@ namespace Goofy_Groovers.Managers
             //increased for full screen
             parabolicVisualisationTimeDelta = 0.27;
             parabolicVisualisationTimeMax = 40;
-            
 
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
 
@@ -84,7 +81,7 @@ namespace Goofy_Groovers.Managers
 
             endScreenTimer = 0.5f;
             overlayTransparency = 0f;
-            showEndScreen = false;
+            raceStartMessage = "";
         }
 
         public void Update(GameTime elapsedSeconds, GoofyGroovers game)
@@ -92,86 +89,139 @@ namespace Goofy_Groovers.Managers
             elapsedTimeSeconds = elapsedSeconds.ElapsedGameTime.TotalSeconds;
             elapsedSecondsSinceVisualisationShift += elapsedTimeSeconds;
             elapsedSecondsSinceTransmissionToServer += elapsedTimeSeconds;
-            _mouseManager.Update(game);
-
-            if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
-            {
-                if (_mouseManager.IsJumpCancelled())
-                    parabolicMovementVisualisation.Clear();
-
-                else if (_mouseManager.IsNewJumpInitiated())
-                {
-                    VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
-                }
-                else if (_mouseManager.IsNewJumpAttempted())
-                {
-                    // Calculate the force of the jump, pass it to the blob
-                    // Calculate the new intersection point FIRST, pass it to the blob
-                    // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
-
-                    parabolicMovementVisualisation.Clear();
-                    VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
-                }
-            }
-
-
 
             _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
 
+            if (Globals._gameManager.raceHasStarted)
             {
-            lock (Globals._gameManager.toKeepEntitiesIntact)
-                foreach (var blob in blobEntities)
+                _mouseManager.Update(game);
+
+                if (!playerBlob.GetJumpingState() && !playerBlob.finishedRace) //if the player has crossed the finish line, it can't move anymore
                 {
-                    blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
-                    blob.Update(elapsedSeconds);
+                    if (_mouseManager.IsJumpCancelled())
+                        parabolicMovementVisualisation.Clear();
+                    else if (_mouseManager.IsNewJumpInitiated())
+                    {
+                        VisualizeTrajectory(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                     }
+                    else if (_mouseManager.IsNewJumpAttempted())
+                    {
+                        // Calculate the force of the jump, pass it to the blob
+                        // Calculate the new intersection point FIRST, pass it to the blob
+                        // playerBlob.jumpTheta = _mouseManager.GetTheta(); //or smth
+
+                        parabolicMovementVisualisation.Clear();
+                        VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
+                    }
+                }
+
+                lock (Globals._gameManager.toKeepEntitiesIntact)
+                    foreach (var blob in blobEntities)
+                    {
+                        blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
+                        blob.Update(elapsedSeconds);
+                    }
+
+                if (!playerBlob.finishedRace && playerBlob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
+                {
+                    playerBlob.finishedRace = true;
+
+                    DateTime referenceTime = new DateTime(1970, 1, 1); // Unix epoch
+                    DateTime currentTime = DateTime.Now;
+
+                    TimeSpan timeDifference = currentTime - referenceTime;
+                    double seconds = timeDifference.TotalSeconds;
+                    playerBlob.finishTime = raceStartTime - seconds;
+                    //change colour to know when the condition its true
+                    playerBlob.blobUserColor = Color.White;
+                    //TODO: send message to get leaderboard position
+                }
+
+                //After the player crosses the finish line, waits for a determined amount of time before showing the end screen
+                if (playerBlob.finishedRace && !gameState.Equals(GameState.LeaderBoardScreen))
+                {
+                    endScreenTimer -= (float)elapsedTimeSeconds;
+                    overlayTransparency += (float)elapsedTimeSeconds * 1.2f;
+
+                    if (endScreenTimer < 0)
+                        gameState = GameState.LeaderBoardScreen;
+
+                    if (overlayTransparency > 0.8f)
+                        overlayTransparency = 0.8f;
+                }
+
+                //Adjust player pos if out of bounds?
+                //I dont like how its working tbh, still gets stuck sometimes
+                if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
+                {
+                    playerBlob.worldPosition = lastValidPosition;
+                    playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
+                }
             }
 
-            if (!playerBlob.finishedRace && playerBlob.GetCameraPosition().X >= _levelManager.getFinishLineXCoordinate())
-            {
-                playerBlob.finishedRace = true;
-                //change colour to know when the condition its true
-                playerBlob.blobUserColor = Color.White;
-                //TODO: send message to get leaderboard position
-
-            }
-
-            //After the player crosses the finish line, waits for a determined amount of time before showing the end screen
-            if(playerBlob.finishedRace && !showEndScreen)
-            {
-                endScreenTimer -= (float)elapsedTimeSeconds;
-                overlayTransparency += (float)elapsedTimeSeconds*1.2f; 
-
-                if (endScreenTimer < 0)
-                    showEndScreen = true;
-
-                if (overlayTransparency > 0.8f)
-                    overlayTransparency = 0.8f;
-
-            }
-
-
-            //Adjust player pos if out of bounds?
-            //I dont like how its working tbh, still gets stuck sometimes
-            if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
-            {
-                playerBlob.worldPosition = lastValidPosition;
-                playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
-            }
-
-
-           
             if (elapsedSecondsSinceTransmissionToServer > 0.16)
             {
                 elapsedSecondsSinceTransmissionToServer = 0;
                 _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
             }
-             /*
-            if (elapsedSecondsSinceVisualisationShift > 1)
+            if (!raceHasStarted && raceStartTime != 0)
             {
-                elapsedSecondsSinceVisualisationShift = 0;
-                parabolicVisualisationOffset += 0.01;
-            }*/
+                DateTime referenceTime = new DateTime(1970, 1, 1); // Unix epoch
+                DateTime currentTime = DateTime.Now;
+
+                TimeSpan timeDifference = currentTime - referenceTime;
+                double seconds = timeDifference.TotalSeconds;
+
+                switch ((int)(raceStartTime - seconds))
+                {
+                    case 5:
+                        {
+                            raceStartMessage = "3";
+                        }
+                        break;
+
+                    case 4:
+                        {
+                            raceStartMessage = "2";
+                        }
+                        break;
+
+                    case 3:
+                        {
+                            raceStartMessage = "1";
+                        }
+                        break;
+
+                    case 2:
+                    case 1:
+                        {
+                            raceStartMessage = "GO!";
+                        }
+                        break;
+
+                    case 0:
+                        {
+                            raceHasStarted = true;
+                        }
+                        break;
+
+                    default:
+                        {
+                            if (raceStartTime < seconds)
+                            {
+                                raceHasStarted = true;
+                            }
+                            raceStartMessage = "";
+                        }
+                        break;
+                }
+            }
+            /*
+           if (elapsedSecondsSinceVisualisationShift > 1)
+           {
+               elapsedSecondsSinceVisualisationShift = 0;
+               parabolicVisualisationOffset += 0.01;
+           }*/
         }
 
         private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
@@ -206,7 +256,6 @@ namespace Goofy_Groovers.Managers
 
         public void VerifyIntersenction(BlobEntity playerBlob, float theta, float velocity)
         {
-
             // depending on the direction of the jump, adds or subtracts half the player size to the position before checking if its inside bounds
 
             bool[] jumpDirection = playerBlob.jumpDirection;
@@ -217,7 +266,7 @@ namespace Goofy_Groovers.Managers
             else
                 blobArea.X = 12;
 
-            if(jumpDirection[1])
+            if (jumpDirection[1])
                 blobArea.Y = -12;
             else
                 blobArea.Y = 12;
@@ -273,17 +322,31 @@ namespace Goofy_Groovers.Managers
                 Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.White);
             }
 
-           // Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
+            // Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
             //Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
-
-            foreach (var blob in blobEntities)
+            if (Globals._gameManager.raceHasStarted)
             {
-                blob.Draw(gameTime);
+                foreach (var blob in blobEntities)
+                {
+                    blob.Draw(gameTime);
+                }
             }
 
-            if(showEndScreen)
+            if (gameState == GameState.LeaderBoardScreen)
                 Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * overlayTransparency);
+        }
 
+        public void DrawLeaderboard()
+        {
+        }
+
+        public string FormatTime(int timeMs)
+        {
+            TimeSpan timeSpan = TimeSpan.FromMilliseconds(timeMs);
+
+            return string.Format("{0:D2}:{1:D2}",
+                               (int)timeSpan.TotalMinutes,
+                               timeSpan.Seconds);
         }
 
         public MouseManager getMouseManager()
@@ -294,11 +357,6 @@ namespace Goofy_Groovers.Managers
         public TileMapManager getLevelManager()
         {
             return _levelManager;
-        }
-
-        public bool getShowEndScreen()
-        {
-            return showEndScreen;
         }
     }
 }

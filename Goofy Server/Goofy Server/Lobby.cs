@@ -7,7 +7,9 @@ public class Lobby
 {
     public string lobbyName;
     public List<BlobEntity> playerList;
-    public int controllingPlayerId;
+    public int raceStartTime = -1;
+    public int controllingPlayerId = -1;
+    public string controllingPlayerName = "";
     public LobbyMode lobbyMode;
 
     public Lobby()
@@ -18,7 +20,6 @@ public class Lobby
         lobbyName = name;
         lobbyMode = LobbyMode.Lobby;
         playerList = new List<BlobEntity>();
-        controllingPlayerId = -1;
     }
 
     public Lobby(string lobbyName, BlobEntity controllingPlayer) : this(lobbyName)

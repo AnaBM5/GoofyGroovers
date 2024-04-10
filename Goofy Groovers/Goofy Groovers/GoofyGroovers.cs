@@ -1,18 +1,19 @@
-﻿using Goofy_Groovers.Managers;
+﻿using Goofy_Groovers.Entity;
+using Goofy_Groovers.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Goofy_Groovers
 {
     public class GoofyGroovers : Game
     {
         public enum GameState
-        { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen,QuitScreen };
+        { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen, QuitScreen };
+
         public static GameState gameState = GameState.LoginScreen;
         private GameState previousGameState;
 
@@ -29,6 +30,7 @@ namespace Goofy_Groovers
 
         //We calculate the position and size of the rectangle
         private int rectWidth = 400;
+
         private int rectHeight = 40;
         private int positionX = 230;
         private int positionY = 275;
@@ -41,15 +43,16 @@ namespace Goofy_Groovers
         private int position3X = 330;
         private int position3Y = 360;
 
-        float rectQWidth;
-        float rectQHeight;
-        float rect1QX;
-        float rect1QY;
-        float rect2QX;
-        float rect2QY;
+        private float rectQWidth;
+        private float rectQHeight;
+        private float rect1QX;
+        private float rect1QY;
+        private float rect2QX;
+        private float rect2QY;
 
         //Interfaces
         private Texture2D menuInterface;
+
         private Texture2D quitInterface;
         private Texture2D leaderBoardInterface;
         private Texture2D lobbyInterface;
@@ -89,7 +92,7 @@ namespace Goofy_Groovers
             //     Globals._gameClient.ConnectAndCommunicate();
             // });
             // thread.Start();
-            
+
             // _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate());
 
             base.Initialize();
@@ -154,7 +157,7 @@ namespace Goofy_Groovers
             else if (isIPRectClicked && pressedKeys.Length > 0 && !isKeyPressed)
             {
                 Keys firstKey = pressedKeys[0];
-                if ((char.IsLetterOrDigit((char)firstKey) || firstKey == Keys.OemPeriod) || (firstKey >= Keys.NumPad0 && firstKey <= Keys.NumPad9)  && ipAddress.Length <= 13)
+                if ((char.IsLetterOrDigit((char)firstKey) || firstKey == Keys.OemPeriod) || (firstKey >= Keys.NumPad0 && firstKey <= Keys.NumPad9) && ipAddress.Length <= 13)
                 {
                     if ((firstKey == Keys.Space || firstKey == Keys.OemPeriod) && ipAddress.Length == 0)
                     {
@@ -202,7 +205,6 @@ namespace Goofy_Groovers
 
             switch (gameState)
             {
-             
                 case GameState.LoginScreen:
 
                     if (keyboardState.IsKeyDown(Keys.Escape))
@@ -236,35 +238,41 @@ namespace Goofy_Groovers
 
                             isKeyPressed = true;
                             Globals._gameManager.playerBlob.SetUserName(initials);
-                            gameState = GameState.LobbyScreen;                                       //We change the game state if all the requirements are met                    
+                            gameState = GameState.LobbyScreen;                                       //We change the game state if all the requirements are met
 
-                            
                             //Changes to full screen when the game/lobby starts
-                           
+
                             Globals._graphics.IsFullScreen = true;
                             Globals._graphics.PreferredBackBufferWidth = 1920;
                             Globals._graphics.PreferredBackBufferHeight = 1080;
 
                             Globals.windowWidth = (ushort)Globals._graphics.PreferredBackBufferWidth;
                             Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
-                            
+
                             Globals._graphics.ApplyChanges();
 
                             leaderBoardPosition = Globals.windowWidth;
-
                         }
                     }
                     if (GetPlayerKeyInputFromUser())
                     {
-                        //gameState = GameState.RaceScreen;                                           // Change game state to RaceScreen            
+                        //gameState = GameState.RaceScreen;                                           // Change game state to RaceScreen
                     }
                     break;
-                
+
                 case GameState.LobbyScreen:
                     {
                         if (keyboardState.IsKeyDown(Keys.Enter))
                         {
-                            gameState = GameState.RaceScreen;
+                            if (Globals._gameManager.playerBlob.isStartingTheRace)
+                            {
+                                DateTime referenceTime = new DateTime(1970, 1, 1); // Unix epoch
+                                DateTime currentTime = DateTime.Now;
+
+                                TimeSpan timeDifference = currentTime - referenceTime;
+                                Globals._gameManager.raceStartTime = timeDifference.TotalSeconds + 7;
+                                gameState = GameState.RaceScreen;
+                            }
                         }
 
                         if (keyboardState.IsKeyDown(Keys.Escape))
@@ -272,25 +280,20 @@ namespace Goofy_Groovers
                             previousGameState = GameState.LobbyScreen;                  //We add the previous state
                             gameState = GameState.QuitScreen;
                         }
+
+                        Globals._gameManager.Update(gameTime, this);
                     }
                     break;
 
                 case GameState.RaceScreen:
                     {
+                        Globals._gameManager.Update(gameTime, this);
 
-                    Globals._gameManager.Update(gameTime, this);
-
-                    }
-
-                    if (keyboardState.IsKeyDown(Keys.Escape))
-                    {
-                        previousGameState = GameState.RaceScreen;                                   //We add the previous game state 
-                        gameState = GameState.QuitScreen;
-                    }      
-
-                    if (Globals._gameManager.getShowEndScreen())                            //If the player finish the race, we change the game state 
-                    {
-                        gameState = GameState.LeaderBoardScreen; 
+                        if (keyboardState.IsKeyDown(Keys.Escape))
+                        {
+                            previousGameState = GameState.RaceScreen;                                   //We add the previous game state
+                            gameState = GameState.QuitScreen;
+                        }
                     }
                     break;
 
@@ -314,10 +317,9 @@ namespace Goofy_Groovers
                         {
                             Exit(); //We close the program
                         }
-                        else if (rect2Q.Contains(mouseState.Position))   //If the user press the button "No" we go back to the previous game state 
+                        else if (rect2Q.Contains(mouseState.Position))   //If the user press the button "No" we go back to the previous game state
                         {
-                           
-                            if (previousGameState == GameState.LoginScreen)     
+                            if (previousGameState == GameState.LoginScreen)
                             {
                                 gameState = GameState.LoginScreen;
                             }
@@ -333,7 +335,6 @@ namespace Goofy_Groovers
                             {
                                 gameState = GameState.LobbyScreen;
                             }
-
                         }
                     }
                     break;
@@ -342,15 +343,14 @@ namespace Goofy_Groovers
                     if (leaderBoardPosition > 0)
                     {
                         leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds * 2;
-                       
-                        if(leaderBoardPosition < 0)
+
+                        if (leaderBoardPosition < 0)
                             leaderBoardPosition = 0;
                     }
-                        
 
                     if (keyboardState.IsKeyDown(Keys.Escape))
                     {
-                        previousGameState = GameState.LeaderBoardScreen;                //We add the state 
+                        previousGameState = GameState.LeaderBoardScreen;                //We add the state
                         gameState = GameState.QuitScreen;
                     }
 
@@ -369,7 +369,7 @@ namespace Goofy_Groovers
             float scaleXLeader = (float)GraphicsDevice.Viewport.Width / leaderBoardInterface.Width;
             float scaleYLeader = (float)GraphicsDevice.Viewport.Height / leaderBoardInterface.Height;
             float scaleXLobby = (float)GraphicsDevice.Viewport.Width / lobbyInterface.Width;
-            float scaleYLobby = (float)GraphicsDevice.Viewport.Height/ lobbyInterface.Height;
+            float scaleYLobby = (float)GraphicsDevice.Viewport.Height / lobbyInterface.Height;
 
             // Add your drawing code here
             Globals._spriteBatch.Begin();
@@ -405,33 +405,40 @@ namespace Goofy_Groovers
 
                 case GameState.LobbyScreen:
 
-                   
                     float scaleX = (float)GraphicsDevice.Viewport.Width / leaderBoardInterface.Width;
                     float scaleY = (float)GraphicsDevice.Viewport.Height / leaderBoardInterface.Height;
 
                     // Calcular la nueva posición y tamaño del texto
                     Vector2 newPosition = new Vector2(400 * scaleX, 830 * scaleY);
-                    float newSize = 5.5f * scaleX; 
-                    
+                    float newSize = 5.5f * scaleX;
+
                     GraphicsDevice.Clear(Color.DarkSlateBlue);
                     Globals._spriteBatch.Draw(lobbyInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLobby, scaleYLobby), SpriteEffects.None, 0f);
-                    
-                    Globals._spriteBatch.DrawString(Globals._gameFont, "      Waiting for: \n          " + initials + "\n  to start the race.", newPosition, Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+
+                    if (Globals._gameManager.raceStarter != null)
+                    {
+                        Globals._spriteBatch.DrawString(Globals._gameFont, "      Waiting for: \n          "
+                            + Globals._gameManager.raceStarter
+                            + "\n  to start the race.", newPosition, Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+                    }
 
                     break;
 
                 case GameState.RaceScreen:
                     {
                         GraphicsDevice.Clear(Color.DarkSlateBlue);
-                        // Draw game objects using _spriteBatch
                         Globals._gameManager.Draw(gameTime);
+                        if (!Globals._gameManager.raceHasStarted)
+                        {
+                            // Draw game objects using _spriteBatch
+                            Globals._spriteBatch.DrawString(Globals._gameFont, Globals._gameManager.raceStartMessage, new Vector2((float)GraphicsDevice.Viewport.Width / 2, (float)GraphicsDevice.Viewport.Height / 2), Color.White, 0f, Vector2.Zero, (float)7.5f, SpriteEffects.None, 0f);
+                        }
                         Globals._gameManager.getMouseManager().Draw();
                     }
                     break;
 
                 case GameState.QuitScreen:
                     {
-                   
                         rectQWidth = GraphicsDevice.Viewport.Width * 0.2f;
                         rectQHeight = GraphicsDevice.Viewport.Height * 0.12f;
 
@@ -440,7 +447,7 @@ namespace Goofy_Groovers
 
                         rect2QX = GraphicsDevice.Viewport.Width * 0.59f;
                         rect2QY = GraphicsDevice.Viewport.Height * 0.77f;
-                        Globals._spriteBatch.Draw(quitInterface,Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXQuit, scaleYQuit), SpriteEffects.None, 0f);
+                        Globals._spriteBatch.Draw(quitInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXQuit, scaleYQuit), SpriteEffects.None, 0f);
 
                         // yes button
                         Rectangle rect1Q = new Rectangle((int)rect1QX, (int)rect1QY, (int)rectQWidth, (int)rectQHeight);
@@ -452,19 +459,28 @@ namespace Goofy_Groovers
                     }
                     break;
 
-                case GameState.LeaderBoardScreen: 
+                case GameState.LeaderBoardScreen:
                     {
-                        string spaces = ".........................................";
+                        string spaces = "             ";
 
                         GraphicsDevice.Clear(Color.DarkSlateBlue);
                         // Draw game objects using _spriteBatch
                         Globals._gameManager.Draw(gameTime);
 
                         //GraphicsDevice.Clear(Color.RoyalBlue);
-                        Globals._spriteBatch.Draw(leaderBoardInterface, new Vector2(leaderBoardPosition,0), null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
-                        
+                        Globals._spriteBatch.Draw(leaderBoardInterface, new Vector2(leaderBoardPosition, 0), null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
+
                         //Testing
-                        //Globals._spriteBatch.DrawString(Globals._gameFont,"POSITION" + spaces + initials + spaces + "TIME", new Vector2(50, 150), Color.Black, 0f,Vector2.Zero, (float) 1.5f, SpriteEffects.None,0f);
+                        List<BlobEntity> blobEntities = Globals._gameManager.blobEntities;
+                        blobEntities.RemoveAll(entity => entity.finishTime == -1);
+                        blobEntities.Sort((x, y) => x.finishTime.CompareTo(y.finishTime));
+                        for (int iterator = 0; iterator < blobEntities.Count; iterator++)
+                        {
+                            Globals._spriteBatch.DrawString(Globals._gameFont, (iterator + 1) +
+                                spaces + blobEntities.ElementAt(iterator).blobUserName +
+                                spaces + Globals._gameManager.FormatTime((int)blobEntities.ElementAt(iterator).finishTime),
+                                new Vector2(200, 450 + iterator * 20), Color.Black, 0f, Vector2.Zero, (float)7.5f, SpriteEffects.None, 0f);
+                        }
                     }
                     break;
             }

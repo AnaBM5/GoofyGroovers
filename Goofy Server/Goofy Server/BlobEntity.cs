@@ -8,18 +8,18 @@ public class BlobEntity
     public Color blobUserColor { get; set; }
 
     public Vector2 worldPosition { get; set; }
+
     public bool isJumping { get; set; } = false;
+    public float jumpTheta { get; set; }
     public Vector2 jumpStartPoint { get; set; }
     public Vector2 jumpEndPoint { get; set; }
 
-    public int frameNumber { get; set; }
-    public int animationNumber { get; set; }
-    public float animationEndTime { get; set; }
+    public double finishTime { get; set; }
+
 
     public float velocity { get; set; }
-
-    public float jumpTheta { get; set; }
-    private float lastUpdateTime;
+    public float elapsedSecondsSinceJumpStart { get; set; }
+    public bool isStartingTheRace { get; set; }
 
     public BlobEntity()
     { }
@@ -43,15 +43,5 @@ public class BlobEntity
         this.isJumping = isJumping;
         this.jumpStartPoint = jumpStartPoint;
         this.jumpEndPoint = jumpEndPoint;
-    }
-
-    public void SetLastUpdateTime(float time)
-    {
-        lastUpdateTime = time;
-    }
-
-    public float GetLastUpdateTime()
-    {
-        return lastUpdateTime;
     }
 }
