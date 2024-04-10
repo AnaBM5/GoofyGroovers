@@ -20,6 +20,7 @@ public class BlobEntity
     public float velocity { get; set; }
     public float elapsedSecondsSinceJumpStart { get; set; }
     public bool isStartingTheRace { get; set; }
+    public bool finishedRace { get; set; } = false;
 
     public BlobEntity()
     { }

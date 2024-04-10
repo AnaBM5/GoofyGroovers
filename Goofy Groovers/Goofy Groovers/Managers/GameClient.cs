@@ -225,9 +225,6 @@ namespace Goofy_Groovers.Managers
                                             // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
                                             if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
                                             {
-                                                Debug.WriteLine(blobs.ElementAt(iteratorSecond).blobUserName + " is found");
-                                                Debug.WriteLine("It is now... Jumping = " + jsonData.playerList.ElementAt(iterator).isJumping);
-
                                                 objectFound = true;
 
                                                 if (!blobs.ElementAt(iteratorSecond).isJumping)
@@ -242,7 +239,6 @@ namespace Goofy_Groovers.Managers
 
                                                         blobs.ElementAt(iteratorSecond).SetJumpingState(jsonData.playerList[iterator].isJumping);
                                                         Debug.WriteLine(blobs.ElementAt(iterator).ToString());
-                                                        Debug.WriteLine(blobs.ElementAt(iterator).blobUserName + " is supposed to Jump.");
                                                     }
                                                 }
                                                 iteratorSecond = blobs.Count;
@@ -265,7 +261,6 @@ namespace Goofy_Groovers.Managers
                                             bufferEntity.SetThetha(jsonData.playerList[iterator].jumpTheta);
                                             bufferEntity.SetVelocity(jsonData.playerList[iterator].velocity);
                                             blobs.Add(bufferEntity);
-                                            Debug.WriteLine("Added new user");
                                         }
                                     }
                                 }
@@ -274,21 +269,23 @@ namespace Goofy_Groovers.Managers
 
                         case "FinishLineUpdate":
                             {
-                                Debug.WriteLine(jsonResponse);
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
                                 {
                                     lock (Globals._gameManager.toKeepEntitiesIntact)
                                     {
                                         objectFound = false;
-                                        for (iterator = 0; iterator < blobs.Count; iterator++)
+                                        for (iteratorSecond = 0; iteratorSecond < blobs.Count; iteratorSecond++)
                                         {
                                             // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
-                                            if (blobs.ElementAt(iterator).blobUserId == jsonData.playerList[iterator].blobUserId)
+                                            if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
                                             {
+                                                Debug.WriteLine(blobs[iteratorSecond].blobUserName + "Has been found");
+                                                Debug.WriteLine(blobs.ElementAt(iteratorSecond).finishTime + " / " + jsonData.playerList.ElementAt(iterator).finishTime + " / " + jsonData.playerList[iterator].finishTime);
                                                 objectFound = true;
-
-                                                blobs.ElementAt(iterator).finishTime = jsonData.playerList.ElementAt(iterator).finishTime;
-                                                Debug.WriteLine(blobs.ElementAt(iterator).finishTime);
+                                                if (jsonData.playerList.ElementAt(iterator).finishTime != -1)
+                                                {
+                                                    blobs.ElementAt(iteratorSecond).finishTime = jsonData.playerList.ElementAt(iterator).finishTime;
+                                                }
 
                                                 iterator = blobs.Count;
                                                 break;
