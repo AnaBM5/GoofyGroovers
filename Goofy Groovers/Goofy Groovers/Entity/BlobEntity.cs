@@ -32,6 +32,7 @@ namespace Goofy_Groovers.Entity
         //private Sprite sprite;
         private Texture2D dotTexture;
 
+        public int finishTime { get; set; } = -1;
         public int frameNumber { get; set; }
         public int animationNumber { get; set; }
         public float animationEndTime { get; set; }
@@ -41,6 +42,8 @@ namespace Goofy_Groovers.Entity
 
         public float velocity;
         private float elapsedSecondsSinceJumpStart;
+        public bool isStartingTheRace;
+
         // private float elapsedSecondsSinceLastSprite;
 
         public BlobEntity()
@@ -248,9 +251,23 @@ namespace Goofy_Groovers.Entity
 
     public class Response
     {
-        public string responseType;
+        public string messageType;
+        public string raceStarter;
+        public int raceStarterId = -1;
+        public DateTime startTime;
+        public string message;
+
         public List<BlobEntity> playerList;
         public Response()
         { }
+
+        public override string ToString()
+        {
+            return "\nmt: " + messageType?.ToString() +
+                "\nrs: " + raceStarter?.ToString() +
+                "\nrs: " + raceStarterId.ToString() +
+                "\nrs: " + startTime.ToString() +
+                "\nrs: " + base.ToString();
+        }
     }
 }

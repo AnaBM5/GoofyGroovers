@@ -1,6 +1,4 @@
-﻿using Goofy_Groovers;
-using Goofy_Groovers.Entity;
-using Goofy_Groovers.Managers;
+﻿using Goofy_Groovers.Entity;
 using Goofy_Groovers.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,11 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Threading;
 using System.Threading.Tasks;
 using static Goofy_Groovers.GoofyGroovers;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Goofy_Groovers.Managers
 {
@@ -24,12 +19,12 @@ namespace Goofy_Groovers.Managers
 
         public readonly Object toKeepEntitiesIntact = new Object();
         public List<BlobEntity> blobEntities;
-        private Thread serverTransmitterThread;
 
         private List<Vector2> map;
         private List<Vector2[]> obstacles;
 
         public BlobEntity playerBlob;
+        public string raceStarter;
 
         //Variables for controlling the timing of the start and end of the race
         private bool countdownStarted;
@@ -37,6 +32,7 @@ namespace Goofy_Groovers.Managers
         private byte countdownMessages;
         private bool raceStarted;
         private bool showEndScreen;
+      
         private float endScreenTimer; //Time that the game waits after the player finished the race to show the leaderboard
         private float overlayTransparency;
 
@@ -59,31 +55,36 @@ namespace Goofy_Groovers.Managers
 
         private double elapsedSecondsSinceVisualisationShift;
         private double elapsedSecondsSinceTransmissionToServer;
-        private bool hasFinishedTransmission = true;
+        public bool raceHasStarted = false;
+        public string raceStartMessage;
+
+        public DateTime raceStartTime;
 
         public GameManager(GoofyGroovers game)
         {
             _mouseManager = new MouseManager();
             _levelManager = new TileMapManager();
 
-            blobEntities = new List<BlobEntity>();
-            blobEntities.Add(new BlobEntity(new Vector2(220, 880), _levelManager.GetCameraPosition(new Vector2(220, 880)), true));
-            playerBlob = blobEntities.ElementAt(0);
+
+            blobEntities = new List<BlobEntity>
+            {
+                playerBlob = new BlobEntity(new Vector2(220, 880), _levelManager.GetCameraPosition(new Vector2(220, 880)), true)
+            };
 
             playerBlob.SetUserName("Player 1");
             playerBlob.SetUserColor(Color.Blue);
 
             lastValidPosition = playerBlob.GetWorldPosition();
 
-            /*
+            
             parabolicVisualisationTimeDelta = 0.2;
             parabolicVisualisationTimeMax = 20;
-            */
+           
             //increased for full screen
+            /*
             parabolicVisualisationTimeDelta = 0.27;
             parabolicVisualisationTimeMax = 40;
-            
-
+            */
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
 
             map = _levelManager.getLevelOutlinePixelCoordinates();
@@ -105,12 +106,11 @@ namespace Goofy_Groovers.Managers
             KeyboardState state = Keyboard.GetState();
 
             // If they hit esc, exit
-            if (state.IsKeyDown(Keys.S))
+            if (state.IsKeyDown(Keys.S) || (TimeSpan) (raceStartTime - DateTime.Now).TotalSeconds <= 3)
             {
                 countdownStarted = true;
                 return;
             }
-
 
             if (!raceStarted)
             {
@@ -140,13 +140,10 @@ namespace Goofy_Groovers.Managers
                                 countdownStarted = false;
                                 raceStarted = true;
                             }
-
                         }
-
                     }
                 }
             }
-
             else
             {
 
@@ -197,17 +194,17 @@ namespace Goofy_Groovers.Managers
                 }
 
                 //After the player crosses the finish line, waits for a determined amount of time before showing the end screen
-                if (playerBlob.finishedRace && !showEndScreen)
+                if (playerBlob.finishedRace && gameState.Equals(GameState.RaceScreen))
                 {
                     endScreenTimer -= (float)elapsedTimeSeconds;
                     overlayTransparency += (float)elapsedTimeSeconds * 1.2f;
 
                     if (endScreenTimer < 0)
-                        showEndScreen = true;
+                      gameState = GameState.LeaderBoardScreen;
+                        \\ showEndScreen = true;
 
                     if (overlayTransparency > 0.8f)
                         overlayTransparency = 0.8f;
-
                 }
 
 
@@ -219,19 +216,11 @@ namespace Goofy_Groovers.Managers
                     playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
                 }
 
-
-
                 if (elapsedSecondsSinceTransmissionToServer > 0.16)
                 {
                     elapsedSecondsSinceTransmissionToServer = 0;
                     _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
                 }
-                /*
-               if (elapsedSecondsSinceVisualisationShift > 1)
-               {
-                   elapsedSecondsSinceVisualisationShift = 0;
-                   parabolicVisualisationOffset += 0.01;
-               }*/
             }
         }
 
@@ -267,7 +256,6 @@ namespace Goofy_Groovers.Managers
 
         public void VerifyIntersenction(BlobEntity playerBlob, float theta, float velocity)
         {
-
             // depending on the direction of the jump, adds or subtracts half the player size to the position before checking if its inside bounds
 
             bool[] jumpDirection = playerBlob.jumpDirection;
@@ -279,7 +267,7 @@ namespace Goofy_Groovers.Managers
             else
                 blobArea.X = 12;
 
-            if(jumpDirection[1])
+            if (jumpDirection[1])
                 blobArea.Y = -12;
             else
                 blobArea.Y = 12;
@@ -343,12 +331,14 @@ namespace Goofy_Groovers.Managers
                 Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)parabolicMovementVisualisation.ElementAt(iterator).X - 2, (int)parabolicMovementVisualisation.ElementAt(iterator).Y - 2, 5, 5), Color.White);
             }
 
-           // Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
+            // Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
             //Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
-
-            foreach (var blob in blobEntities)
+            if (Globals._gameManager.raceHasStarted)
             {
-                blob.Draw(gameTime);
+                foreach (var blob in blobEntities)
+                {
+                    blob.Draw(gameTime);
+                }
             }
 
             if(countdownStarted)
@@ -360,9 +350,23 @@ namespace Goofy_Groovers.Managers
                     Globals._spriteBatch.DrawString(countdownFont, "GO!!!", new Vector2(Globals.windowWidth / 2 - 170, Globals.windowHeight / 2 - 50), Color.Yellow);
             }
 
-            if(showEndScreen)
-                Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * overlayTransparency);
+            if (gameState.Equals(GameState.LeaderBoardScreen))
+            {
+              Globals._spriteBatch.Draw(overlayScreen, new Rectangle(0, 0, Globals.windowWidth, Globals.windowHeight), Color.Black * overlayTransparency);
+            }
+        }
 
+        public void DrawLeaderboard()
+        {
+        }
+
+        public string FormatTime(int timeMs)
+        {
+            TimeSpan timeSpan = TimeSpan.FromMilliseconds(timeMs);
+
+            return string.Format("{0:D2}:{1:D2}",
+                               (int)timeSpan.TotalMinutes,
+                               timeSpan.Seconds);
         }
 
         public MouseManager getMouseManager()
@@ -373,11 +377,6 @@ namespace Goofy_Groovers.Managers
         public TileMapManager getLevelManager()
         {
             return _levelManager;
-        }
-
-        public bool getShowEndScreen()
-        {
-            return showEndScreen;
         }
     }
 }
