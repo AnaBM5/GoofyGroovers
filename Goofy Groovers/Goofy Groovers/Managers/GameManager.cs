@@ -68,9 +68,10 @@ namespace Goofy_Groovers.Managers
 
             blobEntities = new List<BlobEntity>
             {
-                playerBlob = new BlobEntity(new Vector2(220, 880), _levelManager.GetCameraPosition(new Vector2(220, 880)), true)
+                new BlobEntity(new Vector2(220, 880), _levelManager.GetCameraPosition(new Vector2(220, 880)), true)
             };
 
+            playerBlob = blobEntities.ElementAt(0);
             playerBlob.SetUserName("Player 1");
             playerBlob.SetUserColor(Color.Blue);
 
@@ -106,7 +107,7 @@ namespace Goofy_Groovers.Managers
             KeyboardState state = Keyboard.GetState();
 
             // If they hit esc, exit
-            if (state.IsKeyDown(Keys.S) || (TimeSpan) (raceStartTime - DateTime.Now).TotalSeconds <= 3)
+            if (state.IsKeyDown(Keys.S) || (raceStartTime - DateTime.Now).TotalSeconds <= 3)
             {
                 countdownStarted = true;
                 return;
@@ -201,7 +202,7 @@ namespace Goofy_Groovers.Managers
 
                     if (endScreenTimer < 0)
                       gameState = GameState.LeaderBoardScreen;
-                        \\ showEndScreen = true;
+                        // showEndScreen = true;
 
                     if (overlayTransparency > 0.8f)
                         overlayTransparency = 0.8f;

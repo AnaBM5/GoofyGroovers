@@ -199,6 +199,11 @@ public class Server
                                 }
                                     Debug.WriteLine(JsonConvert.SerializeObject(jsonResponse));
                                 }
+                                else
+                                {
+                                    lock (toKeepEntitiesIntact)
+                                        lobbyList.ElementAt(0).playerList.Add(jsonInput.player);
+                                }
                             }
                         }
                         else
