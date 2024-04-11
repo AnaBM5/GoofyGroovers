@@ -59,6 +59,7 @@ namespace Goofy_Groovers.Managers
 
         public DateTime raceStartTime;
         public DateTime raceEndTime;
+        public bool waitingOnLobby;
         private double timeSinceParabolicVisualisationOffset;
 
         public GameManager(GoofyGroovers game)

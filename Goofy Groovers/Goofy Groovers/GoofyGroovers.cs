@@ -502,20 +502,27 @@ namespace Goofy_Groovers
                     GraphicsDevice.Clear(Color.DarkSlateBlue);
                     Globals._spriteBatch.Draw(lobbyInterface, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLobby, scaleYLobby), SpriteEffects.None, 0f);
 
-                    if (Globals._gameManager.raceStarter != null)
+                    if (!Globals._gameManager.waitingOnLobby)
                     {
-                        Globals._spriteBatch.DrawString(Globals._gameFont, "      Waiting for: \n          "
-                            + Globals._gameManager.raceStarter
-                            + "\n  to start the race.", newPosition, Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
-                    }
+                        if (Globals._gameManager.raceStarter != null)
+                        {
+                            Globals._spriteBatch.DrawString(Globals._gameFont, "      Waiting for: \n          "
+                                + Globals._gameManager.raceStarter
+                                + "\n  to start the race.", newPosition, Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+                        }
 
-                    for (int iterator = 0; iterator < Globals._gameManager.blobEntities.Count; iterator++)
+                        for (int iterator = 0; iterator < Globals._gameManager.blobEntities.Count; iterator++)
+                        {
+                            if (!Globals._gameManager.blobEntities.ElementAt(iterator).disconnected)
+                                Globals._spriteBatch.DrawString(Globals._gameFont, Globals._gameManager.blobEntities.ElementAt(iterator).blobUserName,
+                                    new Vector2(1390 * scaleX, (340 + iterator * 90) * scaleY), Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+                        }
+                    }
+                    else
                     {
-                        if(!Globals._gameManager.blobEntities.ElementAt(iterator).disconnected)
-                            Globals._spriteBatch.DrawString(Globals._gameFont, Globals._gameManager.blobEntities.ElementAt(iterator).blobUserName,
-                                new Vector2(1390 * scaleX, (340 + iterator * 90) * scaleY), Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+                        newPosition = new Vector2(1500 * scaleX, 830 * scaleY);
+                        Globals._spriteBatch.DrawString(Globals._gameFont, "           The Race \n    has already started \n          ", newPosition, Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
                     }
-
                     break;
 
                 case GameState.RaceScreen:
@@ -561,7 +568,7 @@ namespace Goofy_Groovers
                         Globals._spriteBatch.Draw(leaderBoardInterface, new Vector2(leaderBoardPosition, 0), null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
 
                         List<BlobEntity> blobEntities = new List<BlobEntity>(Globals._gameManager.blobEntities);
-                        blobEntities.RemoveAll(entity => entity.finishTime == -1);
+                        blobEntities.RemoveAll(entity => entity.finishTime <= -1);
                         blobEntities.Sort((x, y) => x.finishTime.CompareTo(y.finishTime));
                         for (int iterator = 0; iterator < blobEntities.Count; iterator++)
                         {
