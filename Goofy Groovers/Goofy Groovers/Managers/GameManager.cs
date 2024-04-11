@@ -123,6 +123,7 @@ namespace Goofy_Groovers.Managers
                 int randomIndex = random.Next(game.availableColors.Count);
                 Color randomColor = game.availableColors[randomIndex];
                 Globals._gameManager.playerBlob.SetUserColor(randomColor);
+                game.leaderBoardPosition = Globals.windowWidth;
             }
 
             _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
@@ -135,7 +136,6 @@ namespace Goofy_Groovers.Managers
                         blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
                         blob.Update(elapsedSeconds);
                     }
-                    
                 }
             }
 
@@ -272,7 +272,10 @@ namespace Goofy_Groovers.Managers
             Vector2 blobArea = new Vector2(playerBlob.blobRadius, playerBlob.blobRadius);
 
             if (intersectionTime <= 0.2)
+            {
+
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
+            }
             else
             {
                 //resimulates the last half second and the consequent one
@@ -288,6 +291,27 @@ namespace Goofy_Groovers.Managers
                     {
                         lastValidPosition = _levelManager.GetWorldPosition(position);
                         playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
+                        if ((!LineUtil.PointInPolygon(map, (playerBlob.GetEndpoint() + new Vector2(50, 0))) ||
+                            (!LineUtil.PointInPolygon(map, (playerBlob.GetEndpoint() + new Vector2(30, 0))) ||
+                            !OutsideObstacles(playerBlob.GetEndpoint() + new Vector2(50, 0)) ||
+                            !OutsideObstacles(playerBlob.GetEndpoint() + new Vector2(30, 0)) ||
+                            !LineUtil.PointInPolygon(map, (playerBlob.GetEndpoint() - new Vector2(50, 0))) ||
+                            !LineUtil.PointInPolygon(map, (playerBlob.GetEndpoint() - new Vector2(30, 0))) ||
+                            !OutsideObstacles(playerBlob.GetEndpoint() - new Vector2(50, 0))) ||
+                            !OutsideObstacles(playerBlob.GetEndpoint() - new Vector2(30, 0))) 
+                            &&
+                            (LineUtil.PointInPolygon(map, (playerBlob.GetEndpoint() + new Vector2(0,5))) &&
+                            OutsideObstacles(playerBlob.GetEndpoint() + new Vector2(0, 5)) &&
+                            LineUtil.PointInPolygon(map, (playerBlob.GetEndpoint() - new Vector2(0, 5))) &&
+                            OutsideObstacles(playerBlob.GetEndpoint() - new Vector2(0, 5))))
+                        {
+                            playerBlob.isOnWalls = true;
+                        }
+                        else
+                        {
+                            playerBlob.isOnWalls = false;
+                        }
+
                         Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0.15;
                     }
                     else
@@ -343,9 +367,9 @@ namespace Goofy_Groovers.Managers
             if (countdownStarted && countdownMessages<=3)
             {
                 if (countdownMessages > 0)
-                    Globals._spriteBatch.DrawString(countdownFont, countdownMessages.ToString(), new Vector2(Globals.windowWidth / 2 - 50, Globals.windowHeight / 2 - 50), Color.Yellow);
+                    Globals._spriteBatch.DrawString(countdownFont, countdownMessages.ToString(), new Vector2(Globals.windowWidth / 2 - 50, Globals.windowHeight / 2 - 50), Color.LightYellow);
                 else
-                    Globals._spriteBatch.DrawString(countdownFont, "GO!!!", new Vector2(Globals.windowWidth / 2 - 170, Globals.windowHeight / 2 - 50), Color.Yellow);
+                    Globals._spriteBatch.DrawString(countdownFont, "GO!!!", new Vector2(Globals.windowWidth / 2 - 170, Globals.windowHeight / 2 - 50), playerBlob.blobUserColor);
             }
 
             if (gameState.Equals(GameState.LeaderBoardScreen))

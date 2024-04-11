@@ -61,7 +61,7 @@ namespace Goofy_Groovers
         private Texture2D lobbyInterface;
         private Texture2D _blankTexture;
 
-        private int leaderBoardPosition;
+        public int leaderBoardPosition;
 
         public GoofyGroovers()
         {
@@ -120,17 +120,17 @@ namespace Goofy_Groovers
 
             Globals._dotClickTexture = Content.Load<Texture2D>("dotClickSprite");
             Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTexture);
-            Globals._dotClickTextureUP = Content.Load<Texture2D>("dotClickSpriteUP");
-            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTextureUP);
-            Globals._dotClickTextureRigth = Content.Load<Texture2D>("dotClickSpriteRigth");
-            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTextureRigth);
+            Globals._dotClickTextureUp = Content.Load<Texture2D>("dotClickSpriteUP");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTextureUp);
+            Globals._dotClickTextureRight = Content.Load<Texture2D>("dotClickSpriteRigth");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTextureRight);
             Globals._dotClickTexturLeft = Content.Load<Texture2D>("dotClickSpriteLeft");
             Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTexturLeft);
 
             Globals._dotLeftTexture = Content.Load<Texture2D>("dotSpriteLeft");
             Globals._gameManager.playerBlob.SetTexture(Globals._dotLeftTexture);
-            Globals._dotRighttTexture = Content.Load<Texture2D>("dotSpriteRight");
-            Globals._gameManager.playerBlob.SetTexture(Globals._dotRighttTexture);
+            Globals._dotRightTexture = Content.Load<Texture2D>("dotSpriteRight");
+            Globals._gameManager.playerBlob.SetTexture(Globals._dotRightTexture);
             Globals._dotUpTexture = Content.Load<Texture2D>("dotSpriteUp");
             Globals._gameManager.playerBlob.SetTexture(Globals._dotUpTexture);
 
@@ -568,7 +568,7 @@ namespace Goofy_Groovers
                             Globals._spriteBatch.DrawString(Globals._gameFont, (iterator + 1) +
                                 spaces + AdjustStringLength(blobEntities.ElementAt(iterator).blobUserName, 6) +
                                 spaces + Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime),
-                                new Vector2(330, (330 + iterator * 100)), Color.Black, 0f, Vector2.Zero, (float)5.65f * scaleX, SpriteEffects.None, 0f);
+                                new Vector2(330 + leaderBoardPosition, (330 + iterator * 100)), Color.Black, 0f, Vector2.Zero, (float)5.65f * scaleX, SpriteEffects.None, 0f);
                         }
 
                         if (Globals._gameManager.raceEndTime != DateTime.MinValue)
@@ -576,7 +576,7 @@ namespace Goofy_Groovers
                             if((Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds <= 15 && (Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds > 0)
                             {
                                 Globals._spriteBatch.DrawString(Globals._gameFont, ((int)(Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds).ToString(),
-                                    new Vector2(1690, 950), Color.Black, 0f, Vector2.Zero, (float)6.0f * scaleX, SpriteEffects.None, 0f);
+                                    new Vector2(1690 + leaderBoardPosition, 950), Color.Black, 0f, Vector2.Zero, (float)6.0f * scaleX, SpriteEffects.None, 0f);
                             }
                         }
                     }

@@ -53,7 +53,7 @@ namespace Goofy_Groovers.Entity
         private MouseState mouseState1;
         private bool upsideDownSprite = false;
         private bool IsOnTheLeftSprite = false;
-        private bool IsOnWalls = false;
+        public bool isOnWalls = false;
         private Vector2 previousPosition;
 
         public BlobEntity()
@@ -145,6 +145,8 @@ namespace Goofy_Groovers.Entity
             Texture2D textureToDraw = SpriteDirection();
 
             Globals._spriteBatch.Draw(textureToDraw, new Rectangle((int)cameraPosition.X - blobRadius, (int)cameraPosition.Y - blobRadius, 50, 50), blobUserColor);
+            //  Globals._spriteBatch.Draw(textureToDraw, new Vector2(cameraPosition.X, cameraPosition.Y), new Rectangle((int)cameraPosition.X - blobRadius, (int)cameraPosition.Y - blobRadius, 50, 50), blobUserColor, 0f, Vector2.Zero, new Vector2(2,2), SpriteEffects.None, 0f);
+
         }
 
         public Texture2D SpriteDirection()
@@ -154,11 +156,11 @@ namespace Goofy_Groovers.Entity
             {
                 return Globals._dotJumpTexture;
             }
-            else if (IsOnWalls == false)
+            else if (isOnWalls == false)
             {
                 if (mouseState1.LeftButton == ButtonState.Pressed)
                 {
-                    return upsideDownSprite ? Globals._dotClickTextureUP : Globals._dotClickTexture;
+                    return upsideDownSprite ? Globals._dotClickTextureUp : Globals._dotClickTexture;
                 }
                 if (mouseState1.LeftButton == ButtonState.Released)
                 {
@@ -183,25 +185,25 @@ namespace Goofy_Groovers.Entity
             {
                 if (mouseState1.LeftButton == ButtonState.Pressed)
                 {
-                    return IsOnTheLeftSprite ? Globals._dotClickTextureRigth : Globals._dotClickTexturLeft;
+                    return IsOnTheLeftSprite ? Globals._dotClickTexturLeft : Globals._dotClickTextureRight;
                 }
                 if (mouseState1.LeftButton == ButtonState.Released)
                 {
                     if (previousPosition.X <= jumpEndPoint.X)
                     {
-                        return Globals._dotRighttTexture;
                         IsOnTheLeftSprite = false;
+                        return Globals._dotRightTexture;
                     }
                     else if (previousPosition.X > jumpEndPoint.X)
                     {
-                        return Globals._dotLeftTexture;
                         IsOnTheLeftSprite = true;
+                        return Globals._dotLeftTexture;
                     }
                 }
                 if (mouseState1.LeftButton != ButtonState.Released && mouseState1.LeftButton != ButtonState.Pressed)
                 {
-                    return Globals._dotTexture;
                     upsideDownSprite = false;
+                    return Globals._dotTexture;
                 }
             }
             return Globals._dotJumpTexture;
