@@ -331,8 +331,11 @@ namespace Goofy_Groovers.Entity
 
         internal void Reset()
         {
+            Random rnd = new Random();
+            
             timeSinceLastUpdate = 0;
-            worldPosition = new Vector2(110, 400);
+            worldPosition = new Vector2(240 + rnd.Next(-10, 100), 870);
+            cameraPosition = new Vector2(200, 860);
             shortMovement = false;
             finishedRace = false;
             isJumping = false;

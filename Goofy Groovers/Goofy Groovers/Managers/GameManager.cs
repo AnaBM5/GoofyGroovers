@@ -66,9 +66,10 @@ namespace Goofy_Groovers.Managers
             _mouseManager = new MouseManager();
             _levelManager = new TileMapManager();
 
+            Random rnd = new Random();
             blobEntities = new List<BlobEntity>
             {
-                new BlobEntity(new Vector2(110, 400), _levelManager.GetCameraPosition(new Vector2(110, 410)), true)
+                new BlobEntity(new Vector2(240 + rnd.Next(-10, 100), 870), _levelManager.GetCameraPosition(new Vector2(200, 860)), true)
             };
 
             playerBlob = blobEntities.ElementAt(0);
@@ -77,14 +78,10 @@ namespace Goofy_Groovers.Managers
 
             lastValidPosition = playerBlob.GetWorldPosition();
 
-            parabolicVisualisationTimeDelta = 0.2;
-            parabolicVisualisationTimeMax = 20;
-
             //increased for full screen
-            /*
             parabolicVisualisationTimeDelta = 0.27;
             parabolicVisualisationTimeMax = 40;
-            */
+            
             parabolicVisualisationOffset = parabolicVisualisationTimeDelta;
 
             map = _levelManager.getLevelOutlinePixelCoordinates();
@@ -122,6 +119,10 @@ namespace Goofy_Groovers.Managers
 
                 raceStartTime = DateTime.MinValue;
                 raceEndTime = DateTime.MinValue;
+                Random random = new Random();
+                int randomIndex = random.Next(game.availableColors.Count);
+                Color randomColor = game.availableColors[randomIndex];
+                Globals._gameManager.playerBlob.SetUserColor(randomColor);
             }
 
             _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
@@ -225,7 +226,7 @@ namespace Goofy_Groovers.Managers
                 }
 
                 timeSinceParabolicVisualisationOffset += elapsedSeconds.ElapsedGameTime.TotalSeconds;
-                if (timeSinceParabolicVisualisationOffset >= 0.15)
+                if (timeSinceParabolicVisualisationOffset >= 0.01)
                 {
                     timeSinceParabolicVisualisationOffset = 0;
                     parabolicVisualisationOffset += parabolicVisualisationTimeDelta * 0.1;

@@ -19,8 +19,8 @@ namespace Goofy_Groovers
         public static GameState gameState = GameState.LoginScreen;
         private GameState previousGameState;
 
-        private List<Color> availableColors = new List<Color> { Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Purple, Color.Orange, Color.Pink, Color.Cyan };  //available colours
-        private List<Color> assignedColors = new List<Color>();                                                                                                 //Colour that we already use
+        public List<Color> availableColors = new List<Color> { Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Purple, Color.Orange, Color.Pink, Color.Cyan };  //available colours
+        public List<Color> assignedColors = new List<Color>();                                                                                                 //Colour that we already use
         private Random random = new Random();
 
         private bool isKeyPressed = false;
@@ -311,7 +311,7 @@ namespace Goofy_Groovers
                             gameState = GameState.LobbyScreen;                                       //We change the game state if all the requirements are met
 
                             //Changes to full screen when the game/lobby starts
-                            /*
+                            
                             Globals._graphics.IsFullScreen = true;
                             Globals._graphics.PreferredBackBufferWidth = 1920;
                             Globals._graphics.PreferredBackBufferHeight = 1080;
@@ -320,7 +320,7 @@ namespace Goofy_Groovers
                             Globals.windowHeight = (ushort)Globals._graphics.PreferredBackBufferHeight;
 
                             Globals._graphics.ApplyChanges();
-                            */
+                            
                             leaderBoardPosition = Globals.windowWidth;
                         }
                     }
@@ -568,7 +568,7 @@ namespace Goofy_Groovers
                             Globals._spriteBatch.DrawString(Globals._gameFont, (iterator + 1) +
                                 spaces + AdjustStringLength(blobEntities.ElementAt(iterator).blobUserName, 6) +
                                 spaces + Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime),
-                                new Vector2(430 * scaleX, (500 + iterator * 100) * scaleY), Color.Black, 0f, Vector2.Zero, (float)1.5f, SpriteEffects.None, 0f);
+                                new Vector2(330, (330 + iterator * 100)), Color.Black, 0f, Vector2.Zero, (float)5.65f * scaleX, SpriteEffects.None, 0f);
                         }
 
                         if (Globals._gameManager.raceEndTime != DateTime.MinValue)
@@ -576,7 +576,7 @@ namespace Goofy_Groovers
                             if((Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds <= 15 && (Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds > 0)
                             {
                                 Globals._spriteBatch.DrawString(Globals._gameFont, ((int)(Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds).ToString(),
-                                    new Vector2(2702 * scaleX, 1901 * scaleY), Color.Black, 0f, Vector2.Zero, (float)2.9f, SpriteEffects.None, 0f);
+                                    new Vector2(1690, 950), Color.Black, 0f, Vector2.Zero, (float)6.0f * scaleX, SpriteEffects.None, 0f);
                             }
                         }
                     }

@@ -104,6 +104,7 @@ public class Server
                             if (lobbyList.ElementAt(0).raceEndTime.AddSeconds(1) > DateTime.Now)
                             {
                                 lobbyList.ElementAt(0).raceStartTime = DateTime.MinValue;
+                                lobbyList.ElementAt(0).playerList.Clear();
                             }
                             else
                             {
