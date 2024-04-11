@@ -259,14 +259,15 @@ namespace Goofy_Groovers.Managers
                             {
                                 for (iterator = 0; iterator < jsonData.playerList.Count; iterator++)
                                 {
+                                    objectFound = false;
                                     lock (Globals._gameManager.toKeepEntitiesIntact)
                                     {
-                                        objectFound = false;
                                         for (iteratorSecond = 0; iteratorSecond < blobs.Count; iteratorSecond++)
                                         {
-                                            // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
+
                                             if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
-                                            {
+                                           {
+                                            // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
                                                 objectFound = true;
                                                 if (jsonData.playerList.ElementAt(iterator).finishTime != -1)
                                                 {

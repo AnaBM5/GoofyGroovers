@@ -198,26 +198,22 @@ public class Server
                         {
                             if (lobbyList.ElementAt(0).playerList.Any(it => it.blobUserId == jsonInput.player.blobUserId))
                             {
-                                if (jsonInput.player.finishTime == -1)
+                                lock (toKeepEntitiesIntact)
                                 {
-                                    lock (toKeepEntitiesIntact)
+                                    foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
                                     {
-                                        foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
+                                        if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
                                         {
-                                            if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
+                                            if (!existingPlayerData.finishedRace)
                                             {
-                                                if (!existingPlayerData.finishedRace)
-                                                {
-                                                    TimeSpan timeDifference = DateTime.Now - lobbyList.ElementAt(0).raceStartTime;
-                                                    existingPlayerData.finishTime = (int)timeDifference.TotalSeconds;
-                                                    existingPlayerData.finishedRace = true;
-                                                    Debug.WriteLine(existingPlayerData.finishTime);
-
-                                                }
+                                                TimeSpan timeDifference = DateTime.Now - lobbyList.ElementAt(0).raceStartTime;
+                                                existingPlayerData.finishTime = (int)timeDifference.TotalSeconds;
+                                                existingPlayerData.finishedRace = true;
+                                                Debug.WriteLine(existingPlayerData.finishTime);
                                             }
-
-                                            jsonResponse.playerList.Add(existingPlayerData);
                                         }
+
+                                        jsonResponse.playerList.Add(existingPlayerData);
                                     }
                                 }
                             }

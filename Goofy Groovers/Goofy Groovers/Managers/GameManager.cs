@@ -491,9 +491,9 @@ namespace Goofy_Groovers.Managers
         {
         }
 
-        public string FormatTime(int timeMs)
+        public string FormatTime(int timeS)
         {
-            TimeSpan timeSpan = TimeSpan.FromMilliseconds(timeMs);
+            TimeSpan timeSpan = TimeSpan.FromSeconds(timeS);
 
             return string.Format("{0:D2}:{1:D2}",
                                (int)timeSpan.TotalMinutes,

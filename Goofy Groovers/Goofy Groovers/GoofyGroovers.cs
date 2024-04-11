@@ -549,8 +549,9 @@ namespace Goofy_Groovers
 
                 case GameState.LeaderBoardScreen:
                     {
-                        string spaces = "             ";
-
+                        string spaces = "                              ";
+                        scaleX = (float)GraphicsDevice.Viewport.Width / leaderBoardInterface.Width;
+                        scaleY = (float)GraphicsDevice.Viewport.Height / leaderBoardInterface.Height;
                         GraphicsDevice.Clear(Color.DarkSlateBlue);
                         // Draw game objects using _spriteBatch
                         Globals._gameManager.Draw(gameTime);
@@ -563,10 +564,12 @@ namespace Goofy_Groovers
                         blobEntities.Sort((x, y) => x.finishTime.CompareTo(y.finishTime));
                         for (int iterator = 0; iterator < blobEntities.Count; iterator++)
                         {
+                            Debug.WriteLine(blobEntities.ElementAt(iterator).finishTime);
+                            Debug.WriteLine(Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime));
                             Globals._spriteBatch.DrawString(Globals._gameFont, (iterator + 1) +
-                                spaces + blobEntities.ElementAt(iterator).blobUserName +
+                                spaces + AdjustStringLength(blobEntities.ElementAt(iterator).blobUserName, 6) +
                                 spaces + Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime),
-                                new Vector2(200, 450 + iterator * 20), Color.Black, 0f, Vector2.Zero, (float)1.5f, SpriteEffects.None, 0f);
+                                new Vector2(430 * scaleX, (500 + iterator * 100) * scaleY), Color.Black, 0f, Vector2.Zero, (float)1.5f, SpriteEffects.None, 0f);
                         }
                     }
                     break;
@@ -574,6 +577,22 @@ namespace Goofy_Groovers
             Globals._spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        static string AdjustStringLength(string str, int length)
+        {
+            if (str.Length > length)
+            {
+                return str.Substring(0, length - 3) + "...";
+            }
+            else if (str.Length < length)
+            {
+                return str.PadRight(length);
+            }
+            else
+            {
+                return str;
+            }
         }
     }
 }
