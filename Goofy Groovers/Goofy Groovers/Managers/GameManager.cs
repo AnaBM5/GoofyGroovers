@@ -192,11 +192,11 @@ namespace Goofy_Groovers.Managers
 
                 //Adjust player pos if out of bounds?
                 //I dont like how its working tbh, still gets stuck sometimes
-                /*                if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
+                                if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
                                 {
                                     playerBlob.worldPosition = lastValidPosition;
                                     playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
-                                }*/
+                                }
             }
         }
 
@@ -364,13 +364,13 @@ namespace Goofy_Groovers.Managers
                 if (LineUtil.PointInPolygon(map, position) && OutsideObstacles(position))
                 {
                     parabolicMovementVisualisation.Add(position);
+                    lastValidPosition = _levelManager.GetWorldPosition(position);
                 }
                 else
                 {    //It was a visualisation, not a calculation btw
                     intersectionTime = time - parabolicVisualisationTimeDelta;
-
+                    
                     playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
-                    playerBlob.DefineJumpDirection();
 
                     time = parabolicVisualisationTimeMax;
                 }
@@ -388,18 +388,6 @@ namespace Goofy_Groovers.Managers
             bool[] jumpDirection = playerBlob.jumpDirection;
             Vector2 blobArea = new Vector2(playerBlob.blobRadius, playerBlob.blobRadius);
 
-            /*
-            if (jumpDirection[0])
-                blobArea.X = -12;
-            else
-                blobArea.X = 12;
-
-            if (jumpDirection[1])
-                blobArea.Y = -12;
-            else
-                blobArea.Y = 12;
-
-            */
 
             if (intersectionTime <= 0.2)
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
@@ -408,7 +396,7 @@ namespace Goofy_Groovers.Managers
                 //resimulates the last half second and the consequent one
                 //to confirm where the blob should stick to
 
-                for (double time = intersectionTime - 0.8; time <= intersectionTime + 0.2; time += 0.02)
+                for (double time = intersectionTime - 1; time <= intersectionTime; time += 0.02)
                 {
                     position = playerBlob.GetCameraPosition() + new Vector2(
                         -velocity * (float)(Math.Cos(theta) * (time)),
