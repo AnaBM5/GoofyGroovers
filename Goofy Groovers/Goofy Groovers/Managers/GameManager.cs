@@ -39,7 +39,6 @@ namespace Goofy_Groovers.Managers
         private Vector2 position;
 
         private Vector2 lastValidPosition;
-        private Vector2 lastPosition;
         private List<Vector2> parabolicMovementVisualisation;
         private double intersectionTime;
 
@@ -59,6 +58,8 @@ namespace Goofy_Groovers.Managers
         public double elapsedSecondsSinceTransmissionToServer = 0;
 
         public DateTime raceStartTime;
+        public DateTime raceEndTime;
+        private double timeSinceParabolicVisualisationOffset;
 
         public GameManager(GoofyGroovers game)
         {
@@ -67,7 +68,7 @@ namespace Goofy_Groovers.Managers
 
             blobEntities = new List<BlobEntity>
             {
-                new BlobEntity(new Vector2(110, 410), _levelManager.GetCameraPosition(new Vector2(110, 410)), true)
+                new BlobEntity(new Vector2(110, 400), _levelManager.GetCameraPosition(new Vector2(110, 410)), true)
             };
 
             playerBlob = blobEntities.ElementAt(0);
@@ -101,6 +102,27 @@ namespace Goofy_Groovers.Managers
         public void Update(GameTime elapsedSeconds, GoofyGroovers game)
         {
             elapsedTimeSeconds = elapsedSeconds.ElapsedGameTime.TotalSeconds;
+
+            if (DateTime.Now > raceEndTime && raceEndTime != DateTime.MinValue)
+            {
+                gameState = GameState.LobbyScreen;
+
+                playerBlob.Reset();
+                blobEntities = new List<BlobEntity>
+                {
+                    playerBlob
+                };
+                lastValidPosition = playerBlob.GetWorldPosition();
+
+                endScreenTimer = 0.5f;
+                overlayTransparency = 0f;
+                countdownMessages = 3;
+                showEndScreen = false;
+                raceStarted = false;
+
+                raceStartTime = DateTime.MinValue;
+                raceEndTime = DateTime.MinValue;
+            }
 
             _levelManager.ModifyOffset(playerBlob.GetWorldPosition());
             lock (Globals._gameManager.toKeepEntitiesIntact)
@@ -166,7 +188,7 @@ namespace Goofy_Groovers.Managers
 
                         parabolicMovementVisualisation.Clear();
                         VerifyIntersenction(playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
-                        
+
                         // Test?
                         //CalculateTrajectoryAndIntersection(map, playerBlob, _mouseManager.GetTheta(), _mouseManager.GetVelocity());
                     }
@@ -196,162 +218,18 @@ namespace Goofy_Groovers.Managers
 
                 //Adjust player pos if out of bounds?
                 //I dont like how its working tbh, still gets stuck sometimes
-                                if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
-                                {
-                                    playerBlob.worldPosition = lastValidPosition;
-                                    playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
-                                }
-            }
-        }
-
-        public void CalculateTrajectoryAndIntersection(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
-        {
-            intersectionTime = 0;
-            lastPosition = playerBlob.GetCameraPosition();
-            parabolicMovementVisualisation.Clear();
-            Vector2 testPositionOne = new Vector2(), testPositionTwo = new Vector2();
-
-            for (double time = 0; time <= parabolicVisualisationTimeMax; time += parabolicVisualisationTimeDelta)
-            {
-                if (time > 0)
+                if (!LineUtil.PointInPolygon(map, playerBlob.GetCameraPosition()) || !OutsideObstacles(playerBlob.GetCameraPosition()))
                 {
-                    lastPosition = position;
+                    playerBlob.worldPosition = lastValidPosition;
+                    playerBlob.SetCameraPosition(_levelManager.GetCameraPosition(playerBlob.worldPosition));
                 }
 
-                position = playerBlob.GetCameraPosition() + new Vector2(
-                    -velocity * (float)(Math.Cos(theta) * time),
-                    -velocity * (float)(Math.Sin(theta) * time) - 0.5f * -9.8f * (float)Math.Pow((time + parabolicVisualisationOffset), 2));
-                if (PointInObstacles(position, out Vector2[] intersectedObstacle)) // IN one of the obstacles
+                timeSinceParabolicVisualisationOffset += elapsedSeconds.ElapsedGameTime.TotalSeconds;
+                if (timeSinceParabolicVisualisationOffset >= 0.15)
                 {
-                    for (int i = 0; i < intersectedObstacle.Length; i++)
-                    {
-                        if (i == 0)
-                        {
-                            testPositionOne = intersectedObstacle.Last();
-                            testPositionTwo = intersectedObstacle[0];
-                        }
-                        else
-                        {
-                            testPositionOne = intersectedObstacle[i - 1];
-                            testPositionTwo = intersectedObstacle[i];
-                        }
-
-                        if (LineUtil.IntersectLineSegments2D(lastPosition, position, testPositionOne, testPositionTwo, out Vector2 intersection))
-                        {
-                            if (intersectedObstacle[i - 1].X == intersectedObstacle[i].X)
-                            {
-                                if (lastPosition.Y < intersection.Y)
-                                {   // WE'RE UP SIDE UP, YUP
-                                    Debug.WriteLine("Up");
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection - new Vector2(0, playerBlob.blobRadius)));
-                                }
-                                else
-                                {   // WE'RE UP SIDE DOWN NOW
-                                    Debug.WriteLine("Down");
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection + new Vector2(0, playerBlob.blobRadius)));
-                                }
-                            }
-                            else if (intersectedObstacle[i - 1].Y == intersectedObstacle[i].Y)
-                            {
-                                if (lastPosition.X < intersection.X)
-                                {   // WE'RE UHHH.... UHMM.... UP SIDE LEFT?
-                                    Debug.WriteLine("Left");
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection - new Vector2(playerBlob.blobRadius, 0)));
-                                }
-                                else
-                                {   // WE'RE UP SIDE RIGHT!!!
-                                    Debug.WriteLine("Right");
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection + new Vector2(playerBlob.blobRadius, 0)));
-                                }
-                            }
-                            // Maybe add the check for the case we're trying to jump from inside the obstacle.
-                            // Check -> inside -> intersection? higher/lower/on the right/on the left -> set to intersection
-                            // And if no intersection... Set to closest middle of the line.
-
-                            time = parabolicVisualisationTimeMax;
-                            break;
-                        }
-                    }
-                    // If you got here...
-                    // You're stuck.
-                    // Or maybe you aim for angles, are you a tester?
-                }
-                else if (!LineUtil.PointInPolygon(map, position)) // NOT in map
-                {
-                    for (int i = 0; i < map.Count; i++)
-                    {
-                        if (i == 0)
-                        {
-                            testPositionOne = map.Last();
-                            testPositionTwo = map[0];
-                        }
-                        else
-                        {
-                            testPositionOne = map[i - 1];
-                            testPositionTwo = map[i];
-                        }
-
-                        if (LineUtil.IntersectLineSegments2D(lastPosition, position, testPositionOne, testPositionTwo, out Vector2 intersection))
-                        {
-                            if (map[i - 1].X == map[i].X)
-                            {
-                                if (lastPosition.Y < intersection.Y)
-                                {   // UP SIDE UP
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection - new Vector2(0, playerBlob.blobRadius)));
-                                }
-                                else
-                                {   // UP SIDE DOWN
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection + new Vector2(0, playerBlob.blobRadius)));
-                                }
-                            }
-                            else if (map[i - 1].Y == map[i].Y)
-                            {
-                                if (lastPosition.X < intersection.X)
-                                {   // UP SIDE LEFT
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection - new Vector2(playerBlob.blobRadius, 0)));
-                                }
-                                else
-                                {   // UP SIDE RIGHT
-                                    playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(intersection + new Vector2(playerBlob.blobRadius, 0)));
-                                }
-                            }
-                            time = parabolicVisualisationTimeMax;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            playerBlob.SetJumpStartPoint(playerBlob.GetWorldPosition());
-            playerBlob.SetVelocity(_mouseManager.GetVelocity());
-            playerBlob.SetThetha(_mouseManager.GetTheta());
-            //playerBlob.DefineJumpDirection();
-            playerBlob.SetSecondsSinceJumpStarted(0);
-            playerBlob.SetJumpingState(true);
-
-            _mouseManager.EndNewJumpAttempt();
-
-            Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0.15;
-        }
-
-        private void VisualizeTrajectory(List<Vector2> map, BlobEntity playerBlob, float theta, float velocity)
-        {
-            intersectionTime = 0;
-            parabolicMovementVisualisation.Clear();
-
-            for (double time = 0; time <= parabolicVisualisationTimeMax; time += parabolicVisualisationTimeDelta)
-            {
-                position = playerBlob.GetCameraPosition() + new Vector2(
-                    -velocity * (float)(Math.Cos(theta) * (time + parabolicVisualisationOffset)),
-                    -velocity * (float)(Math.Sin(theta) * (time + parabolicVisualisationOffset)) - 0.5f * -9.8f * (float)Math.Pow((time + parabolicVisualisationOffset), 2));
-                if (LineUtil.PointInPolygon(map, position) && OutsideObstacles(position))
-                {
-                    parabolicMovementVisualisation.Add(position);
-                }
-                else
-                {
-                    time = parabolicVisualisationTimeMax;
-                }
+                    timeSinceParabolicVisualisationOffset = 0;
+                    parabolicVisualisationOffset += parabolicVisualisationTimeDelta * 0.1;
+                }    
             }
         }
 
@@ -373,7 +251,7 @@ namespace Goofy_Groovers.Managers
                 else
                 {    //It was a visualisation, not a calculation btw
                     intersectionTime = time - parabolicVisualisationTimeDelta;
-                    
+
                     playerBlob.SetJumpEndPoint(_levelManager.GetWorldPosition(position));
 
                     time = parabolicVisualisationTimeMax;
@@ -391,7 +269,6 @@ namespace Goofy_Groovers.Managers
 
             bool[] jumpDirection = playerBlob.jumpDirection;
             Vector2 blobArea = new Vector2(playerBlob.blobRadius, playerBlob.blobRadius);
-
 
             if (intersectionTime <= 0.2)
                 playerBlob.SetJumpEndPoint(playerBlob.GetWorldPosition());
@@ -438,27 +315,6 @@ namespace Goofy_Groovers.Managers
                     return false;
             }
             return true;
-        }
-
-        private bool PointInObstacles(Vector2 position, out Vector2[] intersectedObstacle)
-        {
-            List<Vector2> coordList;
-            foreach (Vector2[] obstacle in obstacles)
-            {
-                coordList = obstacle.ToList();
-                if (LineUtil.PointInPolygon(coordList, position))
-                {
-                    intersectedObstacle = new Vector2[obstacle.Length];
-                    Array.Copy(obstacle, intersectedObstacle, obstacle.Length);
-                    return true;
-                }
-            }
-            intersectedObstacle = null;
-            return false;
-        }
-
-        private void StartRace()
-        {
         }
 
         public void Draw(GameTime gameTime)

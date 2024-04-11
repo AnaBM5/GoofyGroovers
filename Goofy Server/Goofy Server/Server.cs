@@ -14,6 +14,7 @@ public class Response
     public string messageType;
     public List<BlobEntity> playerList;
     public DateTime startTime;
+    public DateTime endTime;
     public int raceStarterId;
     public string raceStarter;
     public BlobEntity player;
@@ -98,11 +99,23 @@ public class Server
             {
                 case "LobbyWait":
                     {
-                        if (lobbyList.ElementAt(0).controllingPlayerId == -1)
+                        if (lobbyList.ElementAt(0).raceEndTime != DateTime.MinValue) 
                         {
-                            lobbyList.ElementAt(0).controllingPlayerId = jsonInput.player.blobUserId;
-                            lobbyList.ElementAt(0).controllingPlayerName = jsonInput.player.blobUserName;
+                            if (lobbyList.ElementAt(0).raceEndTime.AddSeconds(1) > DateTime.Now)
+                            {
+                                lobbyList.ElementAt(0).raceStartTime = DateTime.MinValue;
+                            }
+                            else
+                            {
+                                lobbyList.ElementAt(0).raceEndTime = DateTime.MinValue;
+                            }
                         }
+
+                        if (lobbyList.ElementAt(0).controllingPlayerId == -1)
+                            {
+                                lobbyList.ElementAt(0).controllingPlayerId = jsonInput.player.blobUserId;
+                                lobbyList.ElementAt(0).controllingPlayerName = jsonInput.player.blobUserName;
+                            }
 
                         if (!lobbyList.ElementAt(0).playerList.Exists(player => player.blobUserId == jsonInput.player.blobUserId))
                         {
@@ -111,7 +124,6 @@ public class Server
 
                         if (lobbyList.ElementAt(0).raceStartTime != DateTime.MinValue)
                         {
-                            Debug.WriteLine("Why?" + lobbyList.ElementAt(0).raceStartTime);
                             var responseMessage = new
                             {
                                 messageType = "RaceStart",
@@ -207,7 +219,7 @@ public class Server
                                             if (existingPlayerData.finishTime == -1)
                                             {
                                                 TimeSpan timeDifference = DateTime.Now - lobbyList.ElementAt(0).raceStartTime;
-                                                existingPlayerData.finishTime = (int) timeDifference.TotalSeconds;
+                                                existingPlayerData.finishTime = (int)timeDifference.TotalSeconds;
                                                 existingPlayerData.finishedRace = true;
                                                 Debug.WriteLine(existingPlayerData.finishTime);
                                             }
@@ -216,6 +228,17 @@ public class Server
                                         jsonResponse.playerList.Add(existingPlayerData);
                                     }
                                 }
+                            }
+                            if (lobbyList.ElementAt(0).playerList.All(it => it.finishTime != -1))
+                            {
+                                if (lobbyList.ElementAt(0).raceEndTime == DateTime.MinValue)
+                                {
+                                    lobbyList.ElementAt(0).raceEndTime = DateTime.Now.AddSeconds(15);
+                                }
+                                else
+                                {
+                                    jsonResponse.endTime = lobbyList.ElementAt(0).raceEndTime;
+                                }    
                             }
                         }
                         else
@@ -268,9 +291,6 @@ public class Server
                     break;
             }
         }
-
-        // Response type:
-        // Error, Confirmation, Update, Direction ?
 
         return JsonConvert.SerializeObject(jsonResponse);
     }

@@ -50,13 +50,11 @@ namespace Goofy_Groovers.Entity
 
         // private float elapsedSecondsSinceLastSprite;
 
-
         private MouseState mouseState1;
-        bool upsideDownSprite = false;
-        bool IsOnTheLeftSprite = false;
-        bool IsOnWalls = false;
+        private bool upsideDownSprite = false;
+        private bool IsOnTheLeftSprite = false;
+        private bool IsOnWalls = false;
         private Vector2 previousPosition;
-
 
         public BlobEntity()
         {
@@ -124,7 +122,6 @@ namespace Goofy_Groovers.Entity
                         -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
                         -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
-
                 // Test?
                 //if (LineUtil.PointInPolygon(Globals._gameManager.map, worldPosition))
                 if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0] || shortMovement)
@@ -148,7 +145,6 @@ namespace Goofy_Groovers.Entity
             Texture2D textureToDraw = SpriteDirection();
 
             Globals._spriteBatch.Draw(textureToDraw, new Rectangle((int)cameraPosition.X - blobRadius, (int)cameraPosition.Y - blobRadius, 50, 50), blobUserColor);
-
         }
 
         public Texture2D SpriteDirection()
@@ -162,7 +158,6 @@ namespace Goofy_Groovers.Entity
             {
                 if (mouseState1.LeftButton == ButtonState.Pressed)
                 {
-
                     return upsideDownSprite ? Globals._dotClickTextureUP : Globals._dotClickTexture;
                 }
                 if (mouseState1.LeftButton == ButtonState.Released)
@@ -183,14 +178,11 @@ namespace Goofy_Groovers.Entity
                     upsideDownSprite = false;
                     return Globals._dotTexture;
                 }
-
-
             }
             else
             {
                 if (mouseState1.LeftButton == ButtonState.Pressed)
                 {
-
                     return IsOnTheLeftSprite ? Globals._dotClickTextureRigth : Globals._dotClickTexturLeft;
                 }
                 if (mouseState1.LeftButton == ButtonState.Released)
@@ -211,7 +203,6 @@ namespace Goofy_Groovers.Entity
                     return Globals._dotTexture;
                     upsideDownSprite = false;
                 }
-
             }
             return Globals._dotJumpTexture;
         }
@@ -337,6 +328,22 @@ namespace Goofy_Groovers.Entity
         {
             this.finishTime = finishTime;
         }
+
+        internal void Reset()
+        {
+            timeSinceLastUpdate = 0;
+            worldPosition = new Vector2(110, 400);
+            shortMovement = false;
+            finishedRace = false;
+            isJumping = false;
+
+            finishTime = -1;
+
+            timeSinceLastUpdate = 0;
+
+            velocity = 0;
+            elapsedSecondsSinceJumpStart = 0;
+        }
     }
 
     public class Response
@@ -345,6 +352,7 @@ namespace Goofy_Groovers.Entity
         public string raceStarter;
         public int raceStarterId = -1;
         public DateTime startTime;
+        public DateTime endTime;
         public string message;
 
         public List<BlobEntity> playerList;

@@ -570,6 +570,15 @@ namespace Goofy_Groovers
                                 spaces + Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime),
                                 new Vector2(430 * scaleX, (500 + iterator * 100) * scaleY), Color.Black, 0f, Vector2.Zero, (float)1.5f, SpriteEffects.None, 0f);
                         }
+
+                        if (Globals._gameManager.raceEndTime != DateTime.MinValue)
+                        {
+                            if((Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds <= 15 && (Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds > 0)
+                            {
+                                Globals._spriteBatch.DrawString(Globals._gameFont, ((int)(Globals._gameManager.raceEndTime - DateTime.Now).TotalSeconds).ToString(),
+                                    new Vector2(2702 * scaleX, 1901 * scaleY), Color.Black, 0f, Vector2.Zero, (float)2.9f, SpriteEffects.None, 0f);
+                            }
+                        }
                     }
                     break;
             }
