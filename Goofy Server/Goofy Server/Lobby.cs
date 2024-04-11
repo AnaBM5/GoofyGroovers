@@ -9,6 +9,7 @@ public class Lobby
     public string lobbyName;
     public List<BlobEntity> playerList;
     public DateTime raceStartTime;
+    public DateTime raceEndTime;
     public int controllingPlayerId = -1;
     public string controllingPlayerName = "";
     public LobbyMode lobbyMode;

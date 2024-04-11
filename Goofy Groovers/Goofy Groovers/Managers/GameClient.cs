@@ -279,6 +279,11 @@ namespace Goofy_Groovers.Managers
                                         }
                                     }
                                 }
+
+                                if (jsonData.endTime != DateTime.MinValue && Globals._gameManager.raceEndTime == DateTime.MinValue)
+                                {
+                                    Globals._gameManager.raceEndTime = jsonData.endTime;
+                                }
                             }
                             break;
 
