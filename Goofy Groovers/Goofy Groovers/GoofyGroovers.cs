@@ -564,8 +564,6 @@ namespace Goofy_Groovers
                         blobEntities.Sort((x, y) => x.finishTime.CompareTo(y.finishTime));
                         for (int iterator = 0; iterator < blobEntities.Count; iterator++)
                         {
-                            Debug.WriteLine(blobEntities.ElementAt(iterator).finishTime);
-                            Debug.WriteLine(Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime));
                             Globals._spriteBatch.DrawString(Globals._gameFont, (iterator + 1) +
                                 spaces + AdjustStringLength(blobEntities.ElementAt(iterator).blobUserName, 6) +
                                 spaces + Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime),

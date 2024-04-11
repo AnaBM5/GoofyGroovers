@@ -266,15 +266,14 @@ namespace Goofy_Groovers.Managers
                                         {
 
                                             if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
-                                           {
-                                            // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
+                                            {
                                                 objectFound = true;
-                                                if (jsonData.playerList.ElementAt(iterator).finishTime != -1)
+                                                if (blobs.ElementAt(iteratorSecond).finishTime == -1)
                                                 {
                                                     blobs.ElementAt(iteratorSecond).SetFinishTime(jsonData.playerList.ElementAt(iterator).finishTime);    
                                                 }
 
-                                                iterator = blobs.Count;
+                                                iteratorSecond = blobs.Count;
                                                 break;
                                             }
                                         }

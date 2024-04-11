@@ -204,10 +204,10 @@ public class Server
                                     {
                                         if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
                                         {
-                                            if (!existingPlayerData.finishedRace)
+                                            if (existingPlayerData.finishTime == -1)
                                             {
                                                 TimeSpan timeDifference = DateTime.Now - lobbyList.ElementAt(0).raceStartTime;
-                                                existingPlayerData.finishTime = (int)timeDifference.TotalSeconds;
+                                                existingPlayerData.finishTime = (int) timeDifference.TotalSeconds;
                                                 existingPlayerData.finishedRace = true;
                                                 Debug.WriteLine(existingPlayerData.finishTime);
                                             }
