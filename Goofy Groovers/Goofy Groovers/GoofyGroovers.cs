@@ -127,7 +127,6 @@ namespace Goofy_Groovers
             Globals._dotClickTexturLeft = Content.Load<Texture2D>("dotClickSpriteLeft");
             Globals._gameManager.playerBlob.SetTexture(Globals._dotClickTexturLeft);
 
-
             Globals._dotLeftTexture = Content.Load<Texture2D>("dotSpriteLeft");
             Globals._gameManager.playerBlob.SetTexture(Globals._dotLeftTexture);
             Globals._dotRighttTexture = Content.Load<Texture2D>("dotSpriteRight");
@@ -135,11 +134,7 @@ namespace Goofy_Groovers
             Globals._dotUpTexture = Content.Load<Texture2D>("dotSpriteUp");
             Globals._gameManager.playerBlob.SetTexture(Globals._dotUpTexture);
 
-
-
-
             Globals._gameManager.countdownFont = Content.Load<SpriteFont>("Fonts/CountdownFont");
-          
 
             Texture2D platformSprite = Content.Load<Texture2D>("Sprites/foregroundSprite");
             Globals._gameManager.getLevelManager().setPlatformSprite(platformSprite);
@@ -270,6 +265,7 @@ namespace Goofy_Groovers
         {
             return initials.Length;
         }
+
         protected override void Update(GameTime gameTime)
         {
             MouseState mouseState = Mouse.GetState();
@@ -422,34 +418,33 @@ namespace Goofy_Groovers
                     break;
 
                 case GameState.LeaderBoardScreen:
-
-                    Globals._gameManager.Update(gameTime, this);
-
-                    Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.Milliseconds;
-                    if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer > 16)
                     {
-                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
-                        _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+                        Globals._gameManager.Update(gameTime, this);
+
+                        Globals._gameManager.elapsedSecondsSinceTransmissionToServer += gameTime.ElapsedGameTime.TotalSeconds;
+                        if (Globals._gameManager.elapsedSecondsSinceTransmissionToServer >= 0.15)
+                        {
+                            Globals._gameManager.elapsedSecondsSinceTransmissionToServer = 0;
+                            _ = Task.Run(() => Globals._gameClient.ConnectAndCommunicate(gameState));
+                        }
+
+                        if (leaderBoardPosition > 0)
+                        {
+                            leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds * 2;
+
+                            if (leaderBoardPosition < 0)
+                                leaderBoardPosition = 0;
+                        }
+
+                        if (keyboardState.IsKeyDown(Keys.Escape))
+                        {
+                            previousGameState = GameState.LeaderBoardScreen;                //We add the state
+                            gameState = GameState.QuitScreen;
+                        }
                     }
-
-                    if (leaderBoardPosition > 0)
-                    {
-                        leaderBoardPosition -= (int)gameTime.ElapsedGameTime.TotalMilliseconds * 2;
-
-                        if (leaderBoardPosition < 0)
-                            leaderBoardPosition = 0;
-                    }
-
-                    if (keyboardState.IsKeyDown(Keys.Escape))
-                    {
-                        previousGameState = GameState.LeaderBoardScreen;                //We add the state
-                        gameState = GameState.QuitScreen;
-                    }
-
                     break;
             }
             base.Update(gameTime);
-
         }
 
         protected override void Draw(GameTime gameTime)
@@ -554,8 +549,9 @@ namespace Goofy_Groovers
 
                 case GameState.LeaderBoardScreen:
                     {
-                        string spaces = "             ";
-
+                        string spaces = "                              ";
+                        scaleX = (float)GraphicsDevice.Viewport.Width / leaderBoardInterface.Width;
+                        scaleY = (float)GraphicsDevice.Viewport.Height / leaderBoardInterface.Height;
                         GraphicsDevice.Clear(Color.DarkSlateBlue);
                         // Draw game objects using _spriteBatch
                         Globals._gameManager.Draw(gameTime);
@@ -563,16 +559,15 @@ namespace Goofy_Groovers
                         //GraphicsDevice.Clear(Color.RoyalBlue);
                         Globals._spriteBatch.Draw(leaderBoardInterface, new Vector2(leaderBoardPosition, 0), null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
 
-                        //Testing
-                        List<BlobEntity> blobEntities = Globals._gameManager.blobEntities;
+                        List<BlobEntity> blobEntities = new List<BlobEntity>(Globals._gameManager.blobEntities);
                         blobEntities.RemoveAll(entity => entity.finishTime == -1);
                         blobEntities.Sort((x, y) => x.finishTime.CompareTo(y.finishTime));
                         for (int iterator = 0; iterator < blobEntities.Count; iterator++)
                         {
                             Globals._spriteBatch.DrawString(Globals._gameFont, (iterator + 1) +
-                                spaces + blobEntities.ElementAt(iterator).blobUserName +
-                                spaces + Globals._gameManager.FormatTime((int)blobEntities.ElementAt(iterator).finishTime),
-                                new Vector2(200, 450 + iterator * 20), Color.Black, 0f, Vector2.Zero, (float)7.5f, SpriteEffects.None, 0f);
+                                spaces + AdjustStringLength(blobEntities.ElementAt(iterator).blobUserName, 6) +
+                                spaces + Globals._gameManager.FormatTime(blobEntities.ElementAt(iterator).finishTime),
+                                new Vector2(430 * scaleX, (500 + iterator * 100) * scaleY), Color.Black, 0f, Vector2.Zero, (float)1.5f, SpriteEffects.None, 0f);
                         }
                     }
                     break;
@@ -580,6 +575,22 @@ namespace Goofy_Groovers
             Globals._spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        static string AdjustStringLength(string str, int length)
+        {
+            if (str.Length > length)
+            {
+                return str.Substring(0, length - 3) + "...";
+            }
+            else if (str.Length < length)
+            {
+                return str.PadRight(length);
+            }
+            else
+            {
+                return str;
+            }
         }
     }
 }

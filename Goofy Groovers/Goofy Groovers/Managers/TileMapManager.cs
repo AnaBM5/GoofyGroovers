@@ -88,7 +88,6 @@ namespace Goofy_Groovers.Managers
                     //Take tile info for sprites
                     for (lineCounter = 2; lineCounter < lineCount; lineCounter++)
                     {
-                        Debug.WriteLine(lineCounter);
                         if (lineCounter < mapHeight + 2)
                         {
                             line = lines.ElementAt(lineCounter).Split(' ');
@@ -252,7 +251,6 @@ namespace Goofy_Groovers.Managers
             return playerScreenPosition;
         }
 
-
         private void DefineFinishLineCoordinate(String[] line)
         {
             int lineLength = line.Length;
@@ -287,7 +285,6 @@ namespace Goofy_Groovers.Managers
                     if (yPosition > -tileSize && yPosition < Globals.windowHeight
                         && xPosition > -tileSize && xPosition < Globals.windowWidth)
                     {
-                        //Debug.WriteLine("Show tile in position" + xCounter + " , " + yCounter);
                         switch (currentTile)
                         {
                             case "0":
