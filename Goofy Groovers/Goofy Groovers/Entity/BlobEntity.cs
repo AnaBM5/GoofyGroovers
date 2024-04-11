@@ -1,4 +1,5 @@
 ﻿using Goofy_Groovers.Managers;
+using Goofy_Groovers.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -121,6 +122,9 @@ namespace Goofy_Groovers.Entity
                         -velocity * (float)(Math.Cos(jumpTheta) * elapsedSecondsSinceJumpStart),
                         -velocity * (float)(Math.Sin(jumpTheta) * elapsedSecondsSinceJumpStart) - 0.5f * -9.8f * (float)Math.Pow(elapsedSecondsSinceJumpStart, 2));
 
+
+                // Test?
+                //if (LineUtil.PointInPolygon(Globals._gameManager.map, worldPosition))
                 if ((worldPosition.X < jumpEndPoint.X) != jumpDirection[0] || shortMovement)
                 {
                     worldPosition = jumpEndPoint;
@@ -163,19 +167,19 @@ namespace Goofy_Groovers.Entity
                 {
                     if (previousPosition.Y <= jumpEndPoint.Y)
                     {
-                        return Globals._dotTexture;
                         upsideDownSprite = false;
+                        return Globals._dotTexture;
                     }
                     else if (previousPosition.Y > jumpEndPoint.Y)
                     {
-                        return Globals._dotUpTexture;
                         upsideDownSprite = true;
+                        return Globals._dotUpTexture;
                     }
                 }
                 if (mouseState1.LeftButton != ButtonState.Released && mouseState1.LeftButton != ButtonState.Pressed)
                 {
-                    return Globals._dotTexture;
                     upsideDownSprite = false;
+                    return Globals._dotTexture;
                 }
 
 
@@ -325,6 +329,11 @@ namespace Goofy_Groovers.Entity
         internal void SetUserId(int blobUserId)
         {
             this.blobUserId = blobUserId;
+        }
+
+        internal void SetFinishTime(int finishTime)
+        {
+            this.finishTime = finishTime;
         }
     }
 

@@ -69,8 +69,6 @@ public class MouseManager
         {
             mouseClickStartPoint = new Point(mouseState.X, mouseState.Y);
             newJumpInitiated = true;
-
-            // Debug.WriteLine("Start: " + mouseClickStartPoint);
         }
         // TODO: Show visual cues on p-p-p-power-meter!
     }
@@ -131,8 +129,6 @@ public class MouseManager
             theta = (float)(2 * Math.PI) - theta;
 
         float thetaDeegres = (float)(180 / Math.PI) * theta;
-
-        // Debug.WriteLine(thetaDeegres);
     }
 
     public void Draw()
@@ -158,8 +154,6 @@ public class MouseManager
             maxSpeed *= currentVectorLength / maxVectorLength;
             movementVelocity += maxSpeed;
         }
-
-        //Debug.WriteLine("Speed: " + movementVelocity);
     }
 
     public bool IsNewJumpAttempted()

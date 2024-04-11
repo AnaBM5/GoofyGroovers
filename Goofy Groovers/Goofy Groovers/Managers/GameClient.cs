@@ -42,7 +42,6 @@ namespace Goofy_Groovers.Managers
                         {
                             if (Globals._gameManager.playerBlob.isStartingTheRace && !Globals._gameManager.raceStarted)
                             {
-                                Debug.WriteLine("RaceStarted" + Globals._gameManager.raceStarted);
                                 MakeStartingTransmission();
                             }
                             else
@@ -179,18 +178,7 @@ namespace Goofy_Groovers.Managers
                                                 bufferEntity.SetUserColor(jsonData.playerList[iterator].blobUserColor);
                                                 bufferEntity.SetSecondsSinceJumpStarted(jsonData.playerList[iterator].elapsedSecondsSinceJumpStart);
 
-                                                Debug.WriteLine("Added new user");
-
                                                 blobs.Add(bufferEntity);
-                                            }
-
-                                            if (localPlayer != null)
-                                            {
-                                                Debug.WriteLine("localPlayer: " + localPlayer.blobUserId + "/" + localPlayer.blobUserName);
-                                            }
-                                            else
-                                            {
-                                                Debug.WriteLine("Nothing");
                                             }
                                         }
                                     }
@@ -279,11 +267,10 @@ namespace Goofy_Groovers.Managers
                                             // ref BlobEntity localPlayer = ref blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
                                             if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
                                             {
-                                                Debug.WriteLine(blobs.ElementAt(iteratorSecond).finishTime + " / " + jsonData.playerList.ElementAt(iterator).finishTime + " / " + jsonData.playerList[iterator].finishTime);
                                                 objectFound = true;
                                                 if (jsonData.playerList.ElementAt(iterator).finishTime != -1)
                                                 {
-                                                    blobs.ElementAt(iteratorSecond).finishTime = jsonData.playerList.ElementAt(iterator).finishTime;
+                                                    blobs.ElementAt(iteratorSecond).SetFinishTime(jsonData.playerList.ElementAt(iterator).finishTime);    
                                                 }
 
                                                 iterator = blobs.Count;
