@@ -186,7 +186,7 @@ namespace Goofy_Groovers
             else if (isIPRectClicked && pressedKeys.Length > 0 && !isKeyPressed)
             {
                 Keys firstKey = pressedKeys[0];
-                if ((char.IsLetterOrDigit((char)firstKey) || firstKey == Keys.OemPeriod) || (firstKey >= Keys.NumPad0 && firstKey <= Keys.NumPad9) && ipAddress.Length <= 13)
+                if ((char.IsLetterOrDigit((char)firstKey) || firstKey == Keys.OemPeriod) && ipAddress.Length <= 13)
                 {
                     if ((firstKey == Keys.Space || firstKey == Keys.OemPeriod) && ipAddress.Length == 0)
                     {
@@ -203,6 +203,50 @@ namespace Goofy_Groovers
                         else
                         {
                             keyToAdd = ((char)firstKey).ToString();
+                        }
+                        if (keyboardState.IsKeyDown(Keys.NumPad0))
+                        {
+                            keyToAdd = "0";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad1))
+                        {
+                            keyToAdd = "1";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad2))
+                        {
+                            keyToAdd = "2";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad3))
+                        {
+                            keyToAdd = "3";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad4))
+                        {
+                            keyToAdd = "4";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad5))
+                        {
+                            keyToAdd = "5";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad6))
+                        {
+                            keyToAdd = "6";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad7))
+                        {
+                            keyToAdd = "7";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad8))
+                        {
+                            keyToAdd = "8";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.NumPad9))
+                        {
+                            keyToAdd = "9";
+                        }
+                        else if (keyboardState.IsKeyDown(Keys.Decimal))
+                        {
+                            keyToAdd = ".";
                         }
                         ipAddress += keyToAdd;
                         isKeyPressed = true;
@@ -226,7 +270,6 @@ namespace Goofy_Groovers
         {
             return initials.Length;
         }
-
         protected override void Update(GameTime gameTime)
         {
             MouseState mouseState = Mouse.GetState();
