@@ -19,7 +19,6 @@ namespace Goofy_Groovers.Managers
 
         public readonly Object toKeepEntitiesIntact = new Object();
         public List<BlobEntity> blobEntities;
-        public SpriteFont countdownFont;
 
         private List<Vector2> map;
         private List<Vector2[]> obstacles;

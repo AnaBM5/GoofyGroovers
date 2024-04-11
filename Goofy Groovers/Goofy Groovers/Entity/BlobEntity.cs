@@ -44,7 +44,6 @@ namespace Goofy_Groovers.Entity
         public float velocity;
         public float elapsedSecondsSinceJumpStart;
         public bool isStartingTheRace;
-        public int blobRadius;
 
         // private float elapsedSecondsSinceLastSprite;
 
@@ -61,7 +60,7 @@ namespace Goofy_Groovers.Entity
             jumpDirection = new bool[2];
             Random rnd = new Random();
             blobUserId = rnd.Next(1000);
-            blobRadius = 32;
+            blobRadius = 25;
         }
 
         public BlobEntity(Vector2 worldPosition, Vector2 cameraPosition, bool isOwnedByUser)
@@ -75,7 +74,7 @@ namespace Goofy_Groovers.Entity
 
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
-            blobRadius = 32;
+            blobRadius = 25;
         }
 
         public BlobEntity(Vector2 worldPosition, bool isOwnedByUser, Texture2D dotTexture)
@@ -87,7 +86,7 @@ namespace Goofy_Groovers.Entity
             blobUserId = rnd.Next(1000);
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
-            blobRadius = 32;
+            blobRadius = 25;
         }
 
         public BlobEntity(string userName, int userId, Color userColor, Vector2 worldPosition, bool isOwnedByUser)
@@ -102,7 +101,7 @@ namespace Goofy_Groovers.Entity
             jumpStartPoint = worldPosition;
             jumpDirection = new bool[2];
 
-            blobRadius = 32;
+            blobRadius = 25;
         }
 
         public void Update(GameTime elapsedSeconds)
