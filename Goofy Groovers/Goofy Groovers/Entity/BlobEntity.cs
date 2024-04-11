@@ -34,6 +34,8 @@ namespace Goofy_Groovers.Entity
         //private Sprite sprite;
         private Texture2D dotTexture;
 
+        public bool disconnected { get; set; } = false;
+
         public int finishTime { get; set; } = -1;
         public int frameNumber { get; set; }
         public int animationNumber { get; set; }

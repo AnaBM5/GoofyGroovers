@@ -14,7 +14,7 @@ namespace Goofy_Groovers
     public class GoofyGroovers : Game
     {
         public enum GameState
-        { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen, QuitScreen };
+        { LoginScreen, LobbyScreen, RaceScreen, LeaderBoardScreen, QuitScreen, Closed };
 
         public static GameState gameState = GameState.LoginScreen;
         private GameState previousGameState;
@@ -511,8 +511,9 @@ namespace Goofy_Groovers
 
                     for (int iterator = 0; iterator < Globals._gameManager.blobEntities.Count; iterator++)
                     {
-                        Globals._spriteBatch.DrawString(Globals._gameFont, Globals._gameManager.blobEntities.ElementAt(iterator).blobUserName,
-                            new Vector2(1390 * scaleX, (340 + iterator * 90) * scaleY), Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
+                        if(!Globals._gameManager.blobEntities.ElementAt(iterator).disconnected)
+                            Globals._spriteBatch.DrawString(Globals._gameFont, Globals._gameManager.blobEntities.ElementAt(iterator).blobUserName,
+                                new Vector2(1390 * scaleX, (340 + iterator * 90) * scaleY), Color.Black, 0f, Vector2.Zero, newSize, SpriteEffects.None, 0f);
                     }
 
                     break;
@@ -575,6 +576,14 @@ namespace Goofy_Groovers
             Globals._spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        protected override void OnExiting(object sender, EventArgs args)
+        {
+            // Send meessage to server
+            Globals._gameClient.ConnectAndCommunicate(GameState.Closed);
+
+            base.OnExiting(sender, args);
         }
 
         static string AdjustStringLength(string str, int length)

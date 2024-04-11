@@ -55,12 +55,18 @@ namespace Goofy_Groovers.Managers
                         {
                             MakeLobbyTransmission(Globals._gameManager.playerBlob);
                             await ReceiveTransmission(Globals._gameManager.blobEntities);
+                            ClearPlayerList(Globals._gameManager.blobEntities);
                             break;
                         }
                     case GameState.LeaderBoardScreen:
                         {
                             MakeFinishLineTransmission(Globals._gameManager.playerBlob);
                             await ReceiveTransmission(Globals._gameManager.blobEntities);
+                            break;
+                        }
+                    case GameState.Closed:
+                        {
+                            MakeDisconnectTransmission(Globals._gameManager.playerBlob);
                             break;
                         }
                     default:
@@ -139,6 +145,20 @@ namespace Goofy_Groovers.Managers
             writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
         }
 
+        public static void MakeDisconnectTransmission(BlobEntity playerBlob)
+        {
+            // Create objects reading and writing to the network stream
+            writer = new StreamWriter(stream);
+
+            var jsonMessage = new
+            {
+                messageType = "PlayerDisconnected",
+                player = playerBlob,
+            };
+            writer.WriteLine(JsonConvert.SerializeObject(jsonMessage));
+            writer.FlushAsync();   //We empty the buffer and make sure that all data is sent to the server
+        }
+
         public static async Task ReceiveTransmission(List<BlobEntity> blobs)
         {
             reader = new StreamReader(stream);
@@ -168,7 +188,7 @@ namespace Goofy_Groovers.Managers
                                         lock (Globals._gameManager.toKeepEntitiesIntact)
                                         {
                                             BlobEntity localPlayer = blobs.FirstOrDefault(player => player.blobUserId == jsonData.playerList[iterator].blobUserId);
-                                            if (localPlayer == null)
+                                            if (localPlayer == null && !jsonData.playerList[iterator].disconnected)
                                             {
                                                 bufferEntity = new BlobEntity();
 
@@ -213,7 +233,7 @@ namespace Goofy_Groovers.Managers
                                             if (blobs.ElementAt(iteratorSecond).blobUserId == jsonData.playerList[iterator].blobUserId)
                                             {
                                                 objectFound = true;
-
+                                                blobs.ElementAt(iteratorSecond).disconnected = jsonData.playerList[iterator].disconnected;
                                                 if (!blobs.ElementAt(iteratorSecond).isJumping)
                                                 {
                                                     if (jsonData.playerList.ElementAt(iterator).isJumping)
@@ -234,7 +254,7 @@ namespace Goofy_Groovers.Managers
                                             }
                                         }
 
-                                        if (!objectFound)
+                                        if (!objectFound && !jsonData.playerList[iterator].disconnected)
                                         {
                                             bufferEntity = new BlobEntity();
                                             bufferEntity.SetUserId(jsonData.playerList[iterator].blobUserId);
@@ -301,6 +321,17 @@ namespace Goofy_Groovers.Managers
             }
         }
 
+        private void ClearPlayerList(List<BlobEntity> blobs)
+        {
+            lock (Globals._gameManager.toKeepEntitiesIntact)
+            {
+                foreach (BlobEntity blob in blobs)
+                {
+                    if (blob.disconnected)
+                        blobs.Remove(blob);
+                }
+            }
+        }
         public void SetServerName(string serverName)
         {
             this.serverName = serverName;

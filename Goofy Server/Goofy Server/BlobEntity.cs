@@ -22,6 +22,8 @@ public class BlobEntity
     public bool isStartingTheRace { get; set; }
     public bool finishedRace { get; set; } = false;
 
+    public bool disconnected { get; set; } = false;
+
     public BlobEntity()
     { }
 
