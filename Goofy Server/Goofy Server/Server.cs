@@ -123,13 +123,18 @@ public class Server
                             lobbyList.ElementAt(0).playerList.Add(jsonInput.player);
                         }
 
-                        if (lobbyList.ElementAt(0).raceStartTime != DateTime.MinValue)
+                        if (lobbyList.ElementAt(0).raceStartTime != DateTime.MinValue && lobbyList.ElementAt(0).raceStartTime >= DateTime.Now)
                         {
                             var responseMessage = new
                             {
                                 messageType = "RaceStart",
                                 startTime = lobbyList.ElementAt(0).raceStartTime,
                             };
+                            return JsonConvert.SerializeObject(responseMessage);
+                        }
+                        else if (lobbyList.ElementAt(0).raceStartTime != DateTime.MinValue && lobbyList.ElementAt(0).raceStartTime < DateTime.Now)
+                        {
+                            var responseMessage = new Response("CantJoin", new List<BlobEntity>());
                             return JsonConvert.SerializeObject(responseMessage);
                         }
                         else
@@ -263,6 +268,7 @@ public class Server
                                         if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
                                         {
                                             existingPlayerData.disconnected = true;
+                                            existingPlayerData.finishTime = -2;
 
                                             if (lobbyList.ElementAt(0).controllingPlayerId == existingPlayerData.blobUserId)
                                             {

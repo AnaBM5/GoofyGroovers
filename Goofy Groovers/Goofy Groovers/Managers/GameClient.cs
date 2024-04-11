@@ -196,12 +196,14 @@ namespace Goofy_Groovers.Managers
                                                 bufferEntity.SetUserName(jsonData.playerList[iterator].blobUserName);
                                                 bufferEntity.SetTexture(Globals._dotTexture);
                                                 bufferEntity.SetUserColor(jsonData.playerList[iterator].blobUserColor);
+                                                bufferEntity.worldPosition = jsonData.playerList[iterator].worldPosition;
                                                 bufferEntity.SetSecondsSinceJumpStarted(jsonData.playerList[iterator].elapsedSecondsSinceJumpStart);
 
                                                 blobs.Add(bufferEntity);
                                             }
                                         }
                                     }
+                                    Globals._gameManager.waitingOnLobby = false;
                                 }
                                 catch (Exception)
                                 { }
@@ -214,6 +216,19 @@ namespace Goofy_Groovers.Managers
                                 {
                                     Globals._gameManager.raceStartTime = jsonData.startTime;
                                     gameState = GameState.RaceScreen;
+                                }
+                                catch (Exception)
+                                { }
+                            }
+                            break;
+
+                        case "CantJoin":
+                            {
+                                try
+                                {
+                                    Globals._gameManager.waitingOnLobby = true;
+                                    Globals._gameManager.playerBlob.finishTime = -2;
+
                                 }
                                 catch (Exception)
                                 { }
