@@ -129,8 +129,12 @@ namespace Goofy_Groovers.Managers
             {
                 foreach (var blob in blobEntities)
                 {
-                    blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
-                    blob.Update(elapsedSeconds);
+                    if (!blob.disconnected)
+                    {
+                        blob.SetCameraPosition(_levelManager.GetCameraPosition(blob.GetWorldPosition()));
+                        blob.Update(elapsedSeconds);
+                    }
+                    
                 }
             }
 
@@ -324,12 +328,18 @@ namespace Goofy_Groovers.Managers
             // Vector2 endPointCameraPos = _levelManager.GetCameraPosition(playerBlob.GetEndpoint());
             //Globals._spriteBatch.Draw(Globals._dotTexture, new Rectangle((int)endPointCameraPos.X - 12, (int)endPointCameraPos.Y - 12, 25, 25), Color.BlueViolet);
 
-            foreach (var blob in blobEntities)
+            lock (Globals._gameManager.toKeepEntitiesIntact)
             {
-                blob.Draw(gameTime);
+
+
+                foreach (var blob in blobEntities)
+                {
+                    if (!blob.disconnected)
+                        blob.Draw(gameTime);
+                }
             }
 
-            if (countdownStarted && countdownMessages <= 3)
+            if (countdownStarted && countdownMessages<=3)
             {
                 if (countdownMessages > 0)
                     Globals._spriteBatch.DrawString(countdownFont, countdownMessages.ToString(), new Vector2(Globals.windowWidth / 2 - 50, Globals.windowHeight / 2 - 50), Color.Yellow);

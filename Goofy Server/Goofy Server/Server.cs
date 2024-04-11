@@ -41,7 +41,7 @@ public class Server
     public static TcpListener listener = new TcpListener(IPAddress.Any, 6066);
     public static List<Lobby> lobbyList = new();
     public string raceStarter = "";
-
+    private int playersFinished = 0;
     public static readonly Object toKeepEntitiesIntact = new Object();
 
     public Server()
@@ -111,7 +111,7 @@ public class Server
                             }
                         }
 
-                        if (lobbyList.ElementAt(0).playerList.Count == 0)
+                        if (lobbyList.ElementAt(0).controllingPlayerId == -1)
                             {
                                 lobbyList.ElementAt(0).controllingPlayerId = jsonInput.player.blobUserId;
                                 lobbyList.ElementAt(0).controllingPlayerName = jsonInput.player.blobUserName;
@@ -142,7 +142,7 @@ public class Server
 
                             foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
                             {
-                                if (existingPlayerData.blobUserId != jsonInput.player.blobUserId)
+                                if (existingPlayerData.blobUserId != jsonInput.player.blobUserId && !existingPlayerData.disconnected )
                                 {
                                     jsonResponse.playerList.Add(existingPlayerData);
                                 }
@@ -150,8 +150,8 @@ public class Server
 
                             return JsonConvert.SerializeObject(jsonResponse);
                         }
+                        break;
                     }
-
                 case "RaceStart":
                     {
                         lobbyList.ElementAt(0).raceStartTime = jsonInput.startTime;
@@ -239,6 +239,40 @@ public class Server
                                 {
                                     jsonResponse.endTime = lobbyList.ElementAt(0).raceEndTime;
                                 }    
+                            }
+                        }
+                        else
+                        {
+                            jsonResponse = new Response("Error", new List<BlobEntity>());
+                            jsonResponse.message = "Player object is null";
+                        }
+                    }
+                    break;
+
+                case "PlayerDisconnected":
+                    {
+                        if (jsonInput.player != null)
+                        {
+                            if (lobbyList.ElementAt(0).playerList.Any(it => it.blobUserId == jsonInput.player.blobUserId))
+                            {
+                                lock (toKeepEntitiesIntact)
+                                {
+                                    foreach (BlobEntity existingPlayerData in lobbyList.ElementAt(0).playerList)
+                                    {
+                                        if (existingPlayerData.blobUserId == jsonInput.player.blobUserId)
+                                        {
+                                            existingPlayerData.disconnected = true;
+
+                                            if (lobbyList.ElementAt(0).controllingPlayerId == existingPlayerData.blobUserId)
+                                            {
+                                                lobbyList.ElementAt(0).controllingPlayerId = -1;
+                                                lobbyList.ElementAt(0).controllingPlayerName = "";
+                                            }
+
+                                        }
+                                    }
+                                }
+
                             }
                         }
                         else
