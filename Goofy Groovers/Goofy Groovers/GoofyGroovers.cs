@@ -568,7 +568,7 @@ namespace Goofy_Groovers
                         Globals._spriteBatch.Draw(leaderBoardInterface, new Vector2(leaderBoardPosition, 0), null, Color.White, 0f, Vector2.Zero, new Vector2(scaleXLeader, scaleYLeader), SpriteEffects.None, 0f);
 
                         List<BlobEntity> blobEntities = new List<BlobEntity>(Globals._gameManager.blobEntities);
-                        blobEntities.RemoveAll(entity => entity.finishTime == -1);
+                        blobEntities.RemoveAll(entity => entity.finishTime <= -1);
                         blobEntities.Sort((x, y) => x.finishTime.CompareTo(y.finishTime));
                         for (int iterator = 0; iterator < blobEntities.Count; iterator++)
                         {
